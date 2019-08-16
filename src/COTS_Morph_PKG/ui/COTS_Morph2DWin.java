@@ -6,6 +6,7 @@ import java.util.TreeMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPoint;
+import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
 
 public class COTS_Morph2DWin extends COTS_MorphWin {
@@ -23,6 +24,34 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	
 	}//initMe
 
+
+	/**
+	 * return the initial bounds for the maps in the world space
+	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
+	 */
+	protected final myPointf[][] get2MapBndPts(){
+		myPointf[][] bndPts = new myPointf[2][4];
+		//width of area per map
+		float widthPerMap = .5f*rectDim[2], 
+				halfWidth = .5f*widthPerMap;
+		float size = rectDim[3] * .4f,
+				halfSize = .5f * size;
+
+		
+		float minX =rectDim[0]+ halfWidth - halfSize, minY = (rectDim[1]+.5f*rectDim[3]) - .5f*size;		
+		float maxX = minX + size, maxY = minY + size;
+		
+		bndPts[0] = new myPointf[]{ new myPointf(minX, minY,0),
+									new myPointf(maxX, minY,0),
+									new myPointf(minX, maxY,0),
+									new myPointf(maxX, maxY,0)};
+		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap, minY,0),
+									new myPointf(maxX + widthPerMap, minY,0),
+									new myPointf(minX + widthPerMap, maxY,0),
+									new myPointf(maxX + widthPerMap, maxY,0)};
+			
+		return bndPts;
+	}
 
 	@Override
 	protected final int initAllPrivBtns_Indiv(ArrayList<Object[]> tmpBtnNamesArray) {
@@ -65,6 +94,12 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 
 	/////////////////////////////
 	// draw routines
+	@Override
+	protected final void _drawMe_Indiv(float animTimeMod){
+		if(getPrivFlags(drawMapIDX)) {	for(int i=0;i<maps[0].length;++i) {maps[0][i].drawLabels_2D(pa);}}
+		
+	}
+	
 
 	
 	////////////////////////

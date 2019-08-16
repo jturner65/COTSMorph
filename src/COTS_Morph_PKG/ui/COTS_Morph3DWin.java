@@ -6,6 +6,7 @@ import java.util.TreeMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPoint;
+import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
 
 public class COTS_Morph3DWin  extends COTS_MorphWin {
@@ -22,6 +23,32 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	
 	}//initMe
 
+	/**
+	 * return the initial bounds for the maps in the world space
+	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
+	 */
+	protected final myPointf[][] get2MapBndPts(){
+		myPointf[][] bndPts = new myPointf[2][4];
+		
+//		//boundary regions for enclosing cube - given as min and difference of min and max
+//		public float[][] cubeBnds = new float[][]{//idx 0 is min, 1 is diffs
+//			new float[]{-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f},//mins
+//			new float[]{gridDimX,gridDimY,gridDimZ}};			//diffs
+			
+		float minX = pa.cubeBnds[0][0], minY = pa.cubeBnds[0][1], minZ = pa.cubeBnds[0][2];
+		float maxX = pa.cubeBnds[0][0] + pa.cubeBnds[1][0], maxY = pa.cubeBnds[0][1] + pa.cubeBnds[1][1], maxZ = pa.cubeBnds[0][2] + pa.cubeBnds[1][2];
+		
+		
+		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY, maxZ),
+									new myPointf(minX, minY, maxZ),
+									new myPointf(minX, maxY, minZ),
+									new myPointf(minX, minY, minZ)};
+		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY, maxZ),
+									new myPointf(maxX, minY, maxZ),
+									new myPointf(maxX, maxY, minZ),
+									new myPointf(maxX, minY, minZ)};
+		return bndPts;
+	}
 
 	@Override
 	protected final int initAllPrivBtns_Indiv(ArrayList<Object[]> tmpBtnNamesArray) {
@@ -65,6 +92,12 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	/////////////////////////////
 	// draw routines
 
+	@Override
+	protected final void _drawMe_Indiv(float animTimeMod){
+		if(getPrivFlags(drawMapIDX)) {	for(int i=0;i<maps[0].length;++i) {maps[0][i].drawLabels_3D(pa, this);}}
+		
+	}
+	
 	
 	
 	////////////////////////

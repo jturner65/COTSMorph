@@ -4,25 +4,41 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import COTS_Morph_PKG.maps.biLinMap;
+import COTS_Morph_PKG.maps.base.baseMap;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.io.MsgCodes;
+import base_Utils_Objects.vectorObjs.myPointf;
 
 public abstract class COTS_MorphWin extends myDispWindow {
 	
 	//ui vars
 	public static final int
-		gIDX_TimeVal 			= 0;
+		gIDX_TimeVal 			= 0,
+		gIDX_MapType			= 1;
 
-	protected static final int numBaseCOTSWinUIObjs = 1;
+	protected static final int numBaseCOTSWinUIObjs = 2;
 	
-	
+	/**
+	 * array holding maps
+	 */
+	protected baseMap[][] maps;
 	//boolean priv flags
 	public static final int 
 		debugAnimIDX 			= 0,				//debug
-		rebuildCOTSIDX			= 1;
-	protected static final int numBaseCOTSWinPrivFlags = 2;
+		rebuildCOTSIDX			= 1,
+		drawMapIDX				= 2,				//draw mappings
+		drawMapIDXFillOrWf		= 3,
+		sweepMapsIDX			= 4;				//sweep from one mapping to other mapping
+	protected static final int numBaseCOTSWinPrivFlags = 5;
+	
+	protected static final String[] mapTypes = new String[] {
+		"Bilinear",
+		"Mobius",
+		"COTS",			
+	};
 	
 	/**
 	 * # of priv flags from base class and instancing class
@@ -48,12 +64,24 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		setFlags(drawRightSideMenu, true);
 		// init specific sim flags
 		initPrivFlags(numPrivFlags);
+		//initially set to show maps
+		setPrivFlags(drawMapIDX,true);
+		maps = new baseMap[mapTypes.length][];
+		for(int i=0;i<maps.length;++i) {maps[i] = new baseMap[2];}
+		myPointf[][] bndPts = get2MapBndPts();
+		for(int i=0;i<maps[0].length;++i) {maps[0][i] = new biLinMap(bndPts[i], i);}
 
+	
 		pa.setAllMenuBtnNames(menuBtnNames);
 
 		initMe_Indiv();
 	}//initMe
 	protected abstract void initMe_Indiv();
+	/**
+	 * return the initial bounds for the maps in the world space
+	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
+	 */
+	protected abstract myPointf[][] get2MapBndPts();
 
 
 	@Override
@@ -63,6 +91,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		// true tag, false tag, btn IDX
 		tmpBtnNamesArray.add(new Object[] { "Debugging", "Debug", debugAnimIDX });
 		tmpBtnNamesArray.add(new Object[] { "Rebuilding", "Rebuild", rebuildCOTSIDX });
+		tmpBtnNamesArray.add(new Object[] { "Showing Maps", "Show Maps",drawMapIDX});
+		tmpBtnNamesArray.add(new Object[] { "Show Filled Maps", "Show Wireframe Maps",drawMapIDXFillOrWf});
+		tmpBtnNamesArray.add(new Object[] { "Running Sweep", "Run Sweeps", sweepMapsIDX});
+		
 		//instance-specific buttons
 		numPrivFlags = initAllPrivBtns_Indiv(tmpBtnNamesArray);
 		
@@ -80,8 +112,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 */
 	@Override
 	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
-		tmpUIObjArray.put(gIDX_TimeVal,new Object[] { new double[] { 0.0, 1.0, 0.001 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 
+		tmpListObjVals.put(gIDX_MapType, mapTypes);
 		
+		tmpUIObjArray.put(gIDX_TimeVal,new Object[] { new double[] { 0.0, 1.0, 0.001 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 
+		tmpUIObjArray.put(gIDX_MapType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},0.0, "Map Type to Show" ,new boolean[]{true, true, true}}); 
 		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
 
@@ -106,7 +140,11 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		int flIDX = idx / 32, mask = 1 << (idx % 32);
 		privFlags[flIDX] = (val ? privFlags[flIDX] | mask : privFlags[flIDX] & ~mask);
 		switch (idx) {// special actions for each flag
-			case debugAnimIDX	: {			break;		}
+			case debugAnimIDX		: {			break;		}
+			case rebuildCOTSIDX		: {			break;		}
+			case drawMapIDX			: {			break;		}
+			case drawMapIDXFillOrWf	: { 		break;		}
+			case sweepMapsIDX		: {			break;		}
 			default 			: {setPrivFlags_Indiv(idx,val);}
 		}
 	}
@@ -135,9 +173,14 @@ public abstract class COTS_MorphWin extends myDispWindow {
 
 	@Override
 	protected final void drawMe(float animTimeMod) {
-		
-
+		if(getPrivFlags(drawMapIDX)) {	
+			if(getPrivFlags(drawMapIDXFillOrWf)) {	for(int i=0;i<maps[0].length;++i) {maps[0][i].drawMap_Fill(pa);}}
+			else {									for(int i=0;i<maps[0].length;++i) {maps[0][i].drawMap_Wf(pa);}}
+		}
+		_drawMe_Indiv(animTimeMod);
 	}
+	
+	protected abstract void _drawMe_Indiv(float animTimeMod);
 	
 	@Override
 	public final void drawCustMenuObjs() {
