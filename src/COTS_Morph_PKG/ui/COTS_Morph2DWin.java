@@ -3,6 +3,7 @@ package COTS_Morph_PKG.ui;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPoint;
@@ -30,25 +31,27 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
 	 */
 	protected final myPointf[][] get2MapBndPts(){
+		System.out.println("2d get2MapBndPts");
 		myPointf[][] bndPts = new myPointf[2][4];
 		//width of area per map
 		float widthPerMap = .5f*rectDim[2], 
 				halfWidth = .5f*widthPerMap;
-		float size = rectDim[3] * .4f,
+		float size = rectDim[3] * .35f,
 				halfSize = .5f * size;
 
 		
-		float minX =rectDim[0]+ halfWidth - halfSize, minY = (rectDim[1]+.5f*rectDim[3]) - .5f*size;		
+		float minX =rectDim[0]+ halfWidth - halfSize, minY = (rectDim[1]+.5f*rectDim[3]) - .5f*size - 150.0f;		
 		float maxX = minX + size, maxY = minY + size;
 		
-		bndPts[0] = new myPointf[]{ new myPointf(minX, minY,0),
+		bndPts[0] = new myPointf[]{ new myPointf(minX+.01f, minY+.01f,0),
 									new myPointf(maxX, minY,0),
-									new myPointf(minX, maxY,0),
-									new myPointf(maxX, maxY,0)};
-		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap, minY,0),
+									new myPointf(maxX, maxY,0),
+									new myPointf(minX, maxY,0)};
+		
+		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap+.01f, minY+.01f,0),
 									new myPointf(maxX + widthPerMap, minY,0),
-									new myPointf(minX + widthPerMap, maxY,0),
-									new myPointf(maxX + widthPerMap, maxY,0)};
+									new myPointf(maxX + widthPerMap, maxY,0),
+									new myPointf(minX + widthPerMap, maxY,0)};
 			
 		return bndPts;
 	}
@@ -95,51 +98,52 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	/////////////////////////////
 	// draw routines
 	@Override
-	protected final void _drawMe_Indiv(float animTimeMod){
-		if(getPrivFlags(drawMapIDX)) {	for(int i=0;i<maps[0].length;++i) {maps[0][i].drawLabels_2D(pa);}}
+	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
+		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_2D(pa,showLbls);}
 		
-	}
+	}//_drawMe_Indiv
 	
 
 	
 	////////////////////////
 	// keyboard and mouse
 
+	@Override
+	protected final boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
+		//check every map for closest control corner to click location
+		TreeMap<Float,baseMap>  mapDists = new TreeMap<Float,baseMap>();
+		for(int j=0;j<maps[currMapTypeIDX].length;++j) {	
+			mapDists.put(maps[currMapTypeIDX][j].findClosestCntlPt_2D(new myPointf(mouseX,mouseY,0)), maps[currMapTypeIDX][j]);
+		}
+		Float minSqDist = mapDists.firstKey();
+		if(minSqDist < minSqClickDist) {
+			currMseModMap = mapDists.get(minSqDist);
+			return true;
+		}
+		currMseModMap = null;
+		return false;
+	}
+	
 	
 	@Override
 	protected boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld) {
-		
 		return false;
 	}
 
 	@Override
-	protected boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
-		
+	protected boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
+		if(currMseModMap != null) {
+			currMseModMap.mseDrag_2D(1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY));
+			return true;
+		}		
 		return false;
 	}
-
+	
 	@Override
-	protected boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D,
-			myVector mseDragInWorld, int mseBtn) {
-		
-		return false;
-	}
-
-	@Override
-	protected void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc) {
-		
-
-	}
-
-	@Override
-	protected void hndlMouseRelIndiv() {
-		
-
-	}
-
+	protected final void mouseRelease_IndivMorphWin(){}
 
 	@Override
 	protected final myPoint getMsePtAs3DPt(myPoint mseLoc) {	return new myPoint(mseLoc.x, mseLoc.y, 0);}	
 
 
-}
+}//class COTS_Morph2DWin

@@ -68,7 +68,7 @@ public class COTS_MorphMain extends my_procApplet {
 	 */
 	@Override
 	protected void initMainFlags_Priv() {
-		setMainFlagToShow_debugMode(false);
+		setMainFlagToShow_debugMode(true);
 		setMainFlagToShow_saveAnim(true); 
 		setMainFlagToShow_runSim(false);
 		setMainFlagToShow_singleStep(false);

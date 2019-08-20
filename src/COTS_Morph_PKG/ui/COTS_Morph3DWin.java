@@ -3,11 +3,13 @@ package COTS_Morph_PKG.ui;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
+import base_Utils_Objects.vectorObjs.myVectorf;
 
 public class COTS_Morph3DWin  extends COTS_MorphWin {
 	
@@ -20,7 +22,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	
 	@Override
 	protected final void initMe_Indiv() {
-	
+		setFlags(drawMseEdge,true);
 	}//initMe
 
 	/**
@@ -28,6 +30,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
 	 */
 	protected final myPointf[][] get2MapBndPts(){
+		System.out.println("3d get2MapBndPts");
 		myPointf[][] bndPts = new myPointf[2][4];
 		
 //		//boundary regions for enclosing cube - given as min and difference of min and max
@@ -39,14 +42,14 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		float maxX = pa.cubeBnds[0][0] + pa.cubeBnds[1][0], maxY = pa.cubeBnds[0][1] + pa.cubeBnds[1][1], maxZ = pa.cubeBnds[0][2] + pa.cubeBnds[1][2];
 		
 		
-		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY, maxZ),
+		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY+1.0f, maxZ),
 									new myPointf(minX, minY, maxZ),
-									new myPointf(minX, maxY, minZ),
-									new myPointf(minX, minY, minZ)};
-		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY, maxZ),
+									new myPointf(minX, minY, minZ),
+									new myPointf(minX, maxY, minZ)};
+		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY+1.0f, maxZ),
 									new myPointf(maxX, minY, maxZ),
-									new myPointf(maxX, maxY, minZ),
-									new myPointf(maxX, minY, minZ)};
+									new myPointf(maxX, minY, minZ),
+									new myPointf(maxX, maxY, minZ)};
 		return bndPts;
 	}
 
@@ -91,11 +94,9 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 
 	/////////////////////////////
 	// draw routines
-
 	@Override
-	protected final void _drawMe_Indiv(float animTimeMod){
-		if(getPrivFlags(drawMapIDX)) {	for(int i=0;i<maps[0].length;++i) {maps[0][i].drawLabels_3D(pa, this);}}
-		
+	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
+		for(int i=0;i<maps[0].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_3D(pa, showLbls, this);}
 	}
 	
 	
@@ -108,30 +109,43 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		
 		return false;
 	}
+	
+	private myPointf _rayOrigin;
+	private myVectorf _rayDir;
 
 	@Override
 	protected final boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
-		
+		//check every map for closest control corner to click location
+		TreeMap<Float,baseMap>  mapDists = new TreeMap<Float,baseMap>();
+		//get a point on ray through mouse location in world
+		_rayOrigin = pa.c.getMseLoc_f();
+		_rayDir = pa.c.getEyeToMouseRay_f();
+		//myVectorf _rayDir = new myVectorf(pa.c.getMse2DtoMse3DinWorld(focusTar));
+		for(int j=0;j<maps[currMapTypeIDX].length;++j) {	
+			mapDists.put(maps[currMapTypeIDX][j].findClosestCntlPt_3D(_rayOrigin, _rayDir), maps[currMapTypeIDX][j]);
+		}
+		Float minSqDist = mapDists.firstKey();
+		if(minSqDist < minSqClickDist) {
+			currMseModMap = mapDists.get(minSqDist);
+			return true;
+		}
+		currMseModMap = null;
 		return false;
 	}
 
 	@Override
-	protected final boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D,
-			myVector mseDragInWorld, int mseBtn) {
-		
+	protected final boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
+		if(currMseModMap != null) {
+			currMseModMap.mseDrag_3D(mseDragInWorld);
+			return true;
+		}
 		return false;
 	}
-
+	
 	@Override
-	protected final void snapMouseLocs(int oldMouseX, int oldMouseY, int[] newMouseLoc) {
-		
-
-	}
-
-	@Override
-	protected final void hndlMouseRelIndiv() {
-		
-
+	protected final void mouseRelease_IndivMorphWin(){
+		_rayOrigin = null;
+		_rayDir = null;
 	}
 
 
