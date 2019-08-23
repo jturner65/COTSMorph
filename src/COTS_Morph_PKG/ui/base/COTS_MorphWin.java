@@ -6,8 +6,10 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.maps.COTSMap;
 import COTS_Morph_PKG.maps.biLinMap;
-import COTS_Morph_PKG.maps.mobiusMap;
 import COTS_Morph_PKG.maps.base.baseMap;
+import COTS_Morph_PKG.morphs.CarrierSimMorph;
+import COTS_Morph_PKG.morphs.LERPMorph;
+import COTS_Morph_PKG.morphs.LogPolarMorph;
 import COTS_Morph_PKG.morphs.base.baseMorph;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
@@ -15,18 +17,25 @@ import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.io.MsgCodes;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
+import base_Utils_Objects.vectorObjs.myVector;
+import processing.core.PImage;
 
 public abstract class COTS_MorphWin extends myDispWindow {
 	
 	//ui vars
 	public static final int
-		gIDX_TimeVal 			= 0,
-		gIDX_NumCellsPerSide    = 1,
-		gIDX_MapType			= 2,
-		gIDX_MorphType			= 3;
+		gIDX_MorphTVal 			= 0,
+		gIDX_MorphSpeed			= 1,
+		gIDX_NumCellsPerSide    = 2,
+		gIDX_MapType			= 3,
+		gIDX_MorphType			= 4;
 
-	protected static final int numBaseCOTSWinUIObjs = 4;
-	
+	protected static final int numBaseCOTSWinUIObjs = 5;
+	/**
+	 * animation variables
+	 */
+	protected float morphProgress = 0.0f, sign = 1.0f, morphSpeed = 1.0f;
+
 	/**
 	 * currently selected map type
 	 */
@@ -45,37 +54,45 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	public static final int 
 		debugAnimIDX 			= 0,				//debug
 		resetMapCrnrsIDX		= 1,
-		drawMapIDX				= 2,				//draw mappings
-		drawMapIDXFillOrWfIDX	= 3,
-		drawCntlPtLblsIDX		= 4,
-		sweepMapsIDX			= 5;				//sweep from one mapping to other mapping
-	protected static final int numBaseCOTSWinPrivFlags = 6;
+		matchMapCrnrsIDX		= 2,				//match map corners - map 1 will get corners set from map 0
+		
+		drawMapIDX				= 3,				//draw mappings
+		drawMap_CntlPtsIDX		= 4,				//draw map control poin
+		drawMap_FillOrWfIDX		= 5,				//draw either filled checkerboards or wireframe for mapping grid
+		drawMap_CellCirclesIDX 	= 6,				//draw inscribed circles within checkerboard cells
+		drawMap_ImageIDX		= 7,				//draw the map's image
+		drawMap_OrthoFrameIDX 	= 8, 				//draw orthogonal frame at map's center
+		drawMap_CntlPtLblsIDX	= 9,				//draw labels for control points
+		drawMap_MorphIDX		= 10,
+		sweepMapsIDX			= 11;				//sweep from one mapping to other mapping
+	protected static final int numBaseCOTSWinPrivFlags = 12;
 	
 	/**
 	 * types of maps supported
 	 */
 	protected static final String[] mapTypes = new String[] {
 		"Bilinear",
-	//	"Mobius",
 		"COTS",			
 	};
 	//need an index per map type
 	public static final int
 		bilinearMapIDX		= 0,
-		//mobiusMapIDX	 	= 1,
 		COTSMapIDX		 	= 1;
 	
 	/**
 	 * array holding maps
 	 */
 	protected baseMap[][] maps;
+	//morph map in progress
+	protected baseMap[] morphMaps;
 
 	/**
 	 * types of morphs supported
 	 */
 	protected static final String[] morphTypes = new String[] {
-		"Drawn Line",
-		"Minkowski"			
+		"LERP",
+		"Carrier Similarity",
+		"Log Polar"			
 	};
 	/**
 	 * array holding morphs
@@ -83,8 +100,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected baseMorph[] morphs;
 	//need an index per morph type
 	public static final int
-		drawnLineMorphIDX 		= 0,
-		minkMorphIDX			= 1;
+		LERPMorphIDX			= 0,
+		CarrierSimIDX			= 1,
+		LogPolarMorphIDX 		= 2;
 	
 	/**
 	 * map being currently modified by mouse interaction
@@ -112,11 +130,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		{ "---", "---", "---", "---" }, // row 3
 		{ "---", "---", "---", "---" }, // row 2
 		{ "---", "---", "---", "---" }, 
-		{ "---", "---", "---", "---", "---" } };
+		{ "---", "---", "---", "---", "---" } 
+	};
 
+	/**
+	 * images to use for each map
+	 */
+	public PImage[] textureImgs;
+		
 	
-	public COTS_MorphWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt, boolean _canDrawTraj) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, _canDrawTraj);
+	public COTS_MorphWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
+		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);
 	}
 	
 	@Override
@@ -127,20 +151,36 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		initPrivFlags(numPrivFlags);
 		//initially set to show maps
 		setPrivFlags(drawMapIDX,true);
-		setPrivFlags(drawMapIDXFillOrWfIDX,true);
+		setPrivFlags(drawMap_FillOrWfIDX,true);
+		setPrivFlags(drawMap_CntlPtsIDX, true);
 		numCellsPerSide = (int) guiObjs[gIDX_NumCellsPerSide].getVal();
 		
+		textureImgs = new PImage[2];
+		textureImgs[0]=pa.loadImage("faceImage_0.jpg");
+		textureImgs[1]=pa.loadImage("faceImage_1.jpg");
+		
 		maps = new baseMap[mapTypes.length][];
+		
 		for(int i=0;i<maps.length;++i) {maps[i] = new baseMap[2];}
 		myPointf[][] bndPts = get2MapBndPts();
-		for(int i=0;i<maps[bilinearMapIDX].length;++i) {maps[bilinearMapIDX][i] = new biLinMap(bndPts[i], i,mapGridColors[i], numCellsPerSide);}
-		//for(int i=0;i<maps[mobiusMapIDX].length;++i) {maps[mobiusMapIDX][i] = new mobiusMap(bndPts[i], i,mapGridColors[i], numCellsPerSide);}
-		for(int i=0;i<maps[COTSMapIDX].length;++i) {maps[COTSMapIDX][i] = new COTSMap(bndPts[i], i,mapGridColors[i], numCellsPerSide);}
+		for(int i=0;i<maps[bilinearMapIDX].length;++i) {maps[bilinearMapIDX][i] = new biLinMap(this, bndPts[i], i,mapGridColors[i], numCellsPerSide);}
+		//for(int i=0;i<maps[mobiusMapIDX].length;++i) {maps[mobiusMapIDX][i] = new mobiusMap(this, bndPts[i], i,mapGridColors[i], numCellsPerSide);}
+		for(int i=0;i<maps[COTSMapIDX].length;++i) {maps[COTSMapIDX][i] = new COTSMap(this, bndPts[i], i,mapGridColors[i], numCellsPerSide);}
+	
+		morphMaps = new baseMap[mapTypes.length];
+		morphMaps[bilinearMapIDX] = new biLinMap(this, bndPts[0], 2,mapGridColors[0], numCellsPerSide);
+		morphMaps[COTSMapIDX] = new COTSMap(this, bndPts[0], 2,mapGridColors[0], numCellsPerSide);		
 		
+		for(int i=0;i<maps.length;++i) {
+			morphMaps[i].setImageToMap(textureImgs[0]);
+			for(int j=0;j<maps[i].length;++j) {		maps[i][j].setImageToMap(textureImgs[j]);	}
+		}
 		
 		morphs = new baseMorph[morphTypes.length];
-		
-		
+		morphs[LERPMorphIDX] = new LERPMorph(maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX]); 
+		morphs[CarrierSimIDX] = new CarrierSimMorph(maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX]); 
+		morphs[LogPolarMorphIDX] = new LogPolarMorph(maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX]);
+			
 		
 		currMseModMap = null;
 	
@@ -163,10 +203,16 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		// true tag, false tag, btn IDX
 		tmpBtnNamesArray.add(new Object[] { "Debugging", "Debug", debugAnimIDX });
 		tmpBtnNamesArray.add(new Object[] { "Resetting Maps", "Reset Maps", resetMapCrnrsIDX });
+		tmpBtnNamesArray.add(new Object[] { "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrsIDX });
 		tmpBtnNamesArray.add(new Object[] { "Showing Maps", "Show Maps",drawMapIDX});
-		tmpBtnNamesArray.add(new Object[] { "Show Filled Maps", "Show Wireframe Maps",drawMapIDXFillOrWfIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls",drawCntlPtLblsIDX});
-		tmpBtnNamesArray.add(new Object[] { "Running Sweep", "Run Sweeps", sweepMapsIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Ortho Frame", "Show Ortho Frame",drawMap_OrthoFrameIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Cntl Pts", "Show Cntl Pts",drawMap_CntlPtsIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls",drawMap_CntlPtLblsIDX});
+		tmpBtnNamesArray.add(new Object[] { "Show Checkerboard Maps", "Show Wireframe Maps",drawMap_FillOrWfIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Cell Circles", "Show Cell Circles",drawMap_CellCirclesIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Map Image", "Show Map Image",drawMap_ImageIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Morph Image", "Show Morph Image",drawMap_MorphIDX});
+		tmpBtnNamesArray.add(new Object[] { "Running Morph Sweep", "Run Morph Sweep", sweepMapsIDX});
 		
 		//instance-specific buttons
 		numPrivFlags = initAllPrivBtns_Indiv(tmpBtnNamesArray);
@@ -188,7 +234,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpListObjVals.put(gIDX_MapType, mapTypes);		
 		tmpListObjVals.put(gIDX_MorphType, morphTypes);
 		
-		tmpUIObjArray.put(gIDX_TimeVal,new Object[] { new double[] { 0.0, 1.0, 0.001 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 		
+		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 	
+		tmpUIObjArray.put(gIDX_MorphSpeed,new Object[] { new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", new boolean[] { false, false, true } }); 	
 		tmpUIObjArray.put(gIDX_NumCellsPerSide,new Object[] { new double[] { 2.0, 100.0, 1.0 }, 8.0, "# of Cells Per Grid Side", new boolean[]{true, false, true}}); 
 		tmpUIObjArray.put(gIDX_MapType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},0.0, "Map Type to Show", new boolean[]{true, true, true}}); 
 		tmpUIObjArray.put(gIDX_MorphType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphType).length-1, 1},0.0, "Morph Type to Process", new boolean[]{true, true, true}}); 
@@ -202,26 +249,20 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		float val = (float) guiObjs[UIidx].getVal();
 		int ival = (int) val;
 		switch (UIidx) {	
-			case gIDX_TimeVal : {			//morph value			
-				break;}			
+			case gIDX_MorphTVal : {			//morph value	
+				if(val != morphProgress) {				morphProgress = val;				}
+				break;}		
+			case gIDX_MorphSpeed : {		//multiplier for animating morph
+				if(val != morphSpeed) {					morphSpeed = val;				}
+				break;}
 			case gIDX_NumCellsPerSide : {	//# of cells per side for Map grid
-				if(numCellsPerSide != ival) {
-					numCellsPerSide = ival;
-					updateMapVals();
-				}
+				if(numCellsPerSide != ival) {			numCellsPerSide = ival;	updateMapVals();				}
 				break;}
 			case gIDX_MapType : {
-				if(currMapTypeIDX != ival) {
-					currMapTypeIDX = ival;
-					updateCurrentMapsAndMorph();
-				}				
+				if(currMapTypeIDX != ival) {			currMapTypeIDX = ival;	updateCurrentMapsForMorphs();	}				
 				break;}
 			case gIDX_MorphType : {
-				if(currMorphTypeIDX != ival) {
-					currMorphTypeIDX = ival;
-					updateCurrentMapsAndMorph();
-				}				
-				
+				if(currMorphTypeIDX != ival) {			currMorphTypeIDX = ival;				}							
 				break;}
 			default : {setUIWinVals_Indiv(UIidx, val);}
 		}
@@ -230,17 +271,18 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected abstract void setUIWinVals_Indiv(int UIidx, float val);
 	
 	protected final void updateMapVals() {
-		for(int i=0;i<maps.length;++i) {for(int j=0;j<maps[i].length;++j) {		maps[i][j].updateMapVals(numCellsPerSide, false);}}
+		for(int i=0;i<maps.length;++i) {
+			morphMaps[i].updateMapVals(numCellsPerSide, false);
+			for(int j=0;j<maps[i].length;++j) {		maps[i][j].updateMapVals(numCellsPerSide, false);}			
+		}
 	}
 	
 	/**
 	 * called whenever selected map or morph is changed
 	 */
-	protected final void updateCurrentMapsAndMorph() {
-		
-		
+	protected final void updateCurrentMapsForMorphs() {		
+		for(int i=0;i<morphs.length;++i) {morphs[i].setMaps( maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX]);}
 	}
-
 
 	@Override
 	public final void setPrivFlags(int idx, boolean val) {
@@ -254,8 +296,20 @@ public abstract class COTS_MorphWin extends myDispWindow {
 					addPrivBtnToClear(resetMapCrnrsIDX);
 				}
 				break;		}
+			case matchMapCrnrsIDX		: {
+				if(val) {	
+					matchAllMapCorners();
+					addPrivBtnToClear(matchMapCrnrsIDX);
+				}
+				break;}
 			case drawMapIDX				: {			break;		}
-			case drawMapIDXFillOrWfIDX	: { 		break;		}
+			case drawMap_CntlPtsIDX		: {			break;		}
+			case drawMap_FillOrWfIDX	: { 		break;		}
+			case drawMap_CellCirclesIDX : {			break;		}
+			case drawMap_ImageIDX		: {			break;		}
+			case drawMap_OrthoFrameIDX	: {			break;		}
+			case drawMap_CntlPtLblsIDX	: {			break;		}
+			case drawMap_MorphIDX		: {			break;		}						
 			case sweepMapsIDX			: {			break;		}
 			default 			: {setPrivFlags_Indiv(idx,val);}
 		}
@@ -264,9 +318,23 @@ public abstract class COTS_MorphWin extends myDispWindow {
 
 	protected void resetAllMapCorners() {
 		myPointf[][] bndPts = get2MapBndPts();
-		for(int i=0;i<maps.length;++i) {for(int j=0;j<maps[i].length;++j) {		maps[i][j].setCntlPts(bndPts[j], numCellsPerSide);	}}		
+		for(int i=0;i<maps.length;++i) {
+			morphMaps[i].setCntlPts(bndPts[0], numCellsPerSide);
+			for(int j=0;j<maps[i].length;++j) {		maps[i][j].setCntlPts(bndPts[j], numCellsPerSide);	}}	
+		
 	}
-	
+	/**
+	 * match map 1's corners to map 0's corners
+	 */
+	protected void matchAllMapCorners() {
+		myPointf[][] bndPts = get2MapBndPts();
+		for(int i=0;i<maps.length;++i) {
+			myPointf[] rawPts0 = maps[i][0].getCntlPts();
+			myPointf[] newPts = new myPointf[rawPts0.length];
+			for(int j=0;j<rawPts0.length;++j) {	newPts[j] = myPointf._add(myPointf._sub(rawPts0[j], bndPts[0][j]), bndPts[1][j]);}			
+			maps[i][1].setCntlPts(newPts, numCellsPerSide);	
+		}		
+	}//matchAllMapCorners	
 	
 	@Override
 	protected final void setVisScreenDimsPriv() {
@@ -287,15 +355,27 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		pa.translate(camVals[0], camVals[1], (float) dz);
 		setCamOrient();
 	}
-
 	@Override
 	protected final void drawMe(float animTimeMod) {
-		if(getPrivFlags(drawMapIDX)) {	
-			int curModMapIDX = (null==currMseModMap ? -1 : currMseModMap.mapIdx);
-			if(getPrivFlags(drawMapIDXFillOrWfIDX)) {	for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Fill(pa, i==curModMapIDX);}}
-			else {										for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Wf(pa, i==curModMapIDX);}}
+		int curModMapIDX = (null==currMseModMap ? -1 : currMseModMap.mapIdx);
+		if(getPrivFlags(drawMapIDX)) {				
+			if(getPrivFlags(drawMap_FillOrWfIDX)) {		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Fill(i==curModMapIDX,getPrivFlags(drawMap_CellCirclesIDX));}}
+			else {										for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Wf(i==curModMapIDX,getPrivFlags(drawMap_CellCirclesIDX));}}
 		}
-		_drawMe_Indiv(animTimeMod,getPrivFlags(drawCntlPtLblsIDX));
+		if(getPrivFlags(drawMap_ImageIDX)) {			for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Texture(i==curModMapIDX);}}
+		if(getPrivFlags(drawMap_CntlPtsIDX)){			for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_CntlPts(i==curModMapIDX);}}
+		if(getPrivFlags(drawMap_OrthoFrameIDX)) {		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawOrthoFrame();}}
+		if(getPrivFlags(drawMap_MorphIDX)) {
+			morphs[currMorphTypeIDX].setMorphT(morphProgress);
+			//morphs[currMorphTypeIDX].drawMorphedMap(getPrivFlags(drawMap_FillOrWfIDX), getPrivFlags(drawMap_CellCirclesIDX));			
+			morphs[currMorphTypeIDX].drawMorphedMap(true, getPrivFlags(drawMap_CellCirclesIDX));			
+		}
+		if(getPrivFlags(sweepMapsIDX)) {
+			morphProgress += (sign * (animTimeMod * morphSpeed));
+			guiObjs[gIDX_MorphTVal].setVal(morphProgress);
+			if(morphProgress > 1.0f) {morphProgress = 1.0f;sign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	sign = 1.0f;}
+		}
+		_drawMe_Indiv(animTimeMod,getPrivFlags(drawMap_CntlPtLblsIDX));
 	}
 	
 	protected abstract void _drawMe_Indiv(float animTimeMod, boolean showLbls);
@@ -333,7 +413,21 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	
 	////////////////////////
 	// keyboard and mouse
+//	@Override
+//	protected final boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
+//		if(currMseModMap == null) { return false;}
+//		i
+//		currMseModMap.mseDrag_3D(mseDragInWorld);
+//	
+//		return true;
+//	}
+//	
+//	protected abstract void mseDrag_Btn0(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld);
+//	protected abstract void mseDrag_Btn1(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld);
+//	protected abstract void mseDrag_Btn2(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld);
 	
+	
+
 	
 	@Override
 	protected final void hndlMouseRelIndiv() {
@@ -486,9 +580,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		}
 		msgObj.dispMessage("COTS_MorphWin", "handleSideMenuDebugSel", "End Debug functionality selection.",MsgCodes.info4);
 	}
-
-
-
 	
 	@Override
 	protected final void endShiftKeyI() {}

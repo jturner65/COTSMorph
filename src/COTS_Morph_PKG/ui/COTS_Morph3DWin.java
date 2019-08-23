@@ -15,9 +15,9 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	
 	private int _numPrivButtons = numBaseCOTSWinPrivFlags + 0;
 
-	public COTS_Morph3DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt, boolean _canDrawTraj) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, _canDrawTraj);		
-		super.initThisWin(_canDrawTraj, true, false);
+	public COTS_Morph3DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
+		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);		
+		super.initThisWin(false);
 	}
 	
 	@Override
@@ -96,7 +96,8 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	// draw routines
 	@Override
 	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
-		for(int i=0;i<maps[0].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_3D(pa, showLbls, this);}
+		for(int i=0;i<maps[0].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_3D( showLbls, this);}
+		if(getPrivFlags(drawMap_MorphIDX)) {	morphs[currMorphTypeIDX].drawHeaderAndLabels_3D( showLbls, this);}
 	}
 	
 	
@@ -117,15 +118,16 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	protected final boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
 		//check every map for closest control corner to click location
 		TreeMap<Float,baseMap>  mapDists = new TreeMap<Float,baseMap>();
+		//msgObj.dispInfoMessage("COTS_Morph3DWin", "hndlMouseClickIndiv", "Mouse button pressed : " + mseBtn + " Key Pressed : " + keyPressed + " Key Coded : " + keyCodePressed);
 		//get a point on ray through mouse location in world
 		_rayOrigin = pa.c.getMseLoc_f();
 		_rayDir = pa.c.getEyeToMouseRay_f();
 		//myVectorf _rayDir = new myVectorf(pa.c.getMse2DtoMse3DinWorld(focusTar));
 		for(int j=0;j<maps[currMapTypeIDX].length;++j) {	
-			mapDists.put(maps[currMapTypeIDX][j].findClosestCntlPt_3D(_rayOrigin, _rayDir), maps[currMapTypeIDX][j]);
+			mapDists.put(maps[currMapTypeIDX][j].findClosestCntlPt_3D(mseClckInWorld, _rayOrigin, _rayDir), maps[currMapTypeIDX][j]);
 		}
 		Float minSqDist = mapDists.firstKey();
-		if(minSqDist < minSqClickDist) {
+		if((minSqDist < minSqClickDist) || (keyPressed=='s') || (keyPressed=='S')  || (keyPressed=='r') || (keyPressed=='R'))  {
 			currMseModMap = mapDists.get(minSqDist);
 			return true;
 		}
@@ -136,7 +138,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	@Override
 	protected final boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
 		if(currMseModMap != null) {
-			currMseModMap.mseDrag_3D(mseDragInWorld);
+			currMseModMap.mseDrag_3D(mouseClickIn3D,mseDragInWorld,keyPressed,keyCodePressed);
 			return true;
 		}
 		return false;

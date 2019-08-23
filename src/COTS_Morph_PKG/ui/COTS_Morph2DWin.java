@@ -15,10 +15,10 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	private int _numPrivButtons = numBaseCOTSWinPrivFlags + 0;
 
 	
-	public COTS_Morph2DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt, boolean _canDrawTraj) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, _canDrawTraj);
+	public COTS_Morph2DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
+		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);
 		
-		super.initThisWin(_canDrawTraj, true, false);
+		super.initThisWin(false);
 	}
 	@Override
 	protected final void initMe_Indiv() {
@@ -99,12 +99,10 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	// draw routines
 	@Override
 	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
-		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_2D(pa,showLbls);}
-		
+		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_2D(showLbls);}
+		if(getPrivFlags(drawMap_MorphIDX)) {		morphs[currMorphTypeIDX].drawHeaderAndLabels_2D(showLbls);	}
 	}//_drawMe_Indiv
-	
-
-	
+		
 	////////////////////////
 	// keyboard and mouse
 
@@ -116,7 +114,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 			mapDists.put(maps[currMapTypeIDX][j].findClosestCntlPt_2D(new myPointf(mouseX,mouseY,0)), maps[currMapTypeIDX][j]);
 		}
 		Float minSqDist = mapDists.firstKey();
-		if(minSqDist < minSqClickDist) {
+		if((minSqDist < minSqClickDist) || (keyPressed=='s') || (keyPressed=='S')  || (keyPressed=='r') || (keyPressed=='R')) {
 			currMseModMap = mapDists.get(minSqDist);
 			return true;
 		}
@@ -133,7 +131,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	@Override
 	protected boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
 		if(currMseModMap != null) {
-			currMseModMap.mseDrag_2D(1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY));
+			currMseModMap.mseDrag_2D(mouseX, mouseY, 1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY),mseDragInWorld,keyPressed,keyCodePressed);
 			return true;
 		}		
 		return false;
