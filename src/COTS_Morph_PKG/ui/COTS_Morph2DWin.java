@@ -96,7 +96,9 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	@Override
 	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
 		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_2D(showLbls);}
-		if(getPrivFlags(drawMap_MorphIDX)) {		morphs[currMorphTypeIDX].drawHeaderAndLabels_2D(showLbls);	}
+		if(getPrivFlags(drawMap_MorphIDX)) {		
+			morphs[currMorphTypeIDX].drawHeaderAndLabels_2D(showLbls);	
+		}
 	}//_drawMe_Indiv
 		
 	////////////////////////

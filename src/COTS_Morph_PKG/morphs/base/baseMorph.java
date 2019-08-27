@@ -81,6 +81,10 @@ public abstract class baseMorph {
 	
 	protected abstract void calcMorph_Indiv(float tA, float tB);
 	
+	public final void drawMorphedMap_CntlPts() {
+		curMorphMap.drawMap_CntlPts(false);
+	}
+	
 	public final void drawMorphedMap(boolean _isFill, boolean _drawCircles) {
 		if(_isFill) {	curMorphMap.drawMap_Fill(false, _drawCircles);}
 		else {			curMorphMap.drawMap_Wf(false, _drawCircles);}	

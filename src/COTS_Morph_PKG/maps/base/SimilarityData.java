@@ -9,7 +9,7 @@ import base_Utils_Objects.vectorObjs.myVectorf;
  * @author john
  *
  */
-public class COTSData {
+public class SimilarityData {
 	/**
 	 * Spiral scaling factors
 	 */
@@ -32,7 +32,7 @@ public class COTSData {
 	protected boolean resetBranching;
 	
 	
-	public COTSData() {	}
+	public SimilarityData() {	}
 	
 	/**
 	 * update the data for owning COTS based on passed control points

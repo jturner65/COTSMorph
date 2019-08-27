@@ -1,12 +1,10 @@
 package COTS_Morph_PKG.maps;
 
-import COTS_Morph_PKG.maps.base.COTSData;
+import COTS_Morph_PKG.maps.base.SimilarityData;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.windowUI.myDispWindow;
-import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
  * COTS map based on Jarek's paper
@@ -18,12 +16,12 @@ public class COTSMap extends baseMap {
 	/**
 	 * data holding COTS map control values
 	 */
-	protected COTSData cots;
+	protected SimilarityData cots;
 	
 
 	public COTSMap(COTS_MorphWin _win, myPointf[] _cntlPts, int _mapIdx, int[][] _pClrs, int _numCellPerSide) {	
 		super(_win,_cntlPts, _mapIdx, _pClrs, _numCellPerSide, "COTS Map");	
-		cots = new COTSData();
+		cots = new SimilarityData();
 		updateMapFromCntlPtVals_Indiv( true);
 	}
 	
@@ -36,11 +34,11 @@ public class COTSMap extends baseMap {
 
 		cots.updateCntlPoints(cntlPts, reset, basisVecs[0], basisVecs[2],basisVecs[1]);		
 		
-	    if((this.mapIdx == 0) || (this.mapIdx == 1)){
-		    String debug = this.mapTitle + " reset : " + reset + " | share : " + this.shouldShareBranching + " | "+ cots.getDebugStr()+ " | A : " + cntlPts[0].toStrBrf();
-		    //for(int i=0;i<cntlPts.length;++i) { 	debug +="\n\t"+cntlPts[i].toStrBrf();   }
-		    System.out.println(debug);
-	    }
+//	    if((this.mapIdx == 0) || (this.mapIdx == 1)){
+//		    String debug = this.mapTitle + " reset : " + reset + " | share : " + this.shouldShareBranching + " | "+ cots.getDebugStr()+ " | A : " + cntlPts[0].toStrBrf();
+//		    //for(int i=0;i<cntlPts.length;++i) { 	debug +="\n\t"+cntlPts[i].toStrBrf();   }
+//		    System.out.println(debug);
+//	    }
 //	    a/s between AB and DC : 0.0021673138 | 1.0043322 || a/s between AD and BC : -0.004325232 | 1.0021533 || F : (-41836.438,-85003.484)
 //		(651.9,431.3)
 //		(1113.2999,430.3)

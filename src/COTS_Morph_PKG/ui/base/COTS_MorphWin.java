@@ -404,7 +404,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		if(getPrivFlags(drawMap_MorphIDX)) {
 			morphs[currMorphTypeIDX].setMorphT(morphProgress);
 			//morphs[currMorphTypeIDX].drawMorphedMap(getPrivFlags(drawMap_FillOrWfIDX), getPrivFlags(drawMap_CellCirclesIDX));			
-			morphs[currMorphTypeIDX].drawMorphedMap(true, getPrivFlags(drawMap_CellCirclesIDX));			
+			morphs[currMorphTypeIDX].drawMorphedMap(true, getPrivFlags(drawMap_CellCirclesIDX));	
+			if(getPrivFlags(drawMap_CntlPtsIDX)){morphs[currMorphTypeIDX].drawMorphedMap_CntlPts();}
 		}
 		if(getPrivFlags(sweepMapsIDX)) {
 			morphProgress += (sign * (animTimeMod * morphSpeed));
