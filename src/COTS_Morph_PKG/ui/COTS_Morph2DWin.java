@@ -31,24 +31,20 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
 	 */
 	protected final myPointf[][] get2MapBndPts(){
-		System.out.println("2d get2MapBndPts");
 		myPointf[][] bndPts = new myPointf[2][4];
 		//width of area per map
-		float widthPerMap = .5f*rectDim[2], 
-				halfWidth = .5f*widthPerMap;
-		float size = rectDim[3] * .35f,
-				halfSize = .5f * size;
-
+		float widthPerMap = .5f*rectDim[2], 	halfWidth = .5f*widthPerMap;
+		float size = rectDim[3] * .35f,			halfSize = .5f * size;
 		
 		float minX =rectDim[0]+ halfWidth - halfSize, minY = (rectDim[1]+.5f*rectDim[3]) - .5f*size - 150.0f;		
 		float maxX = minX + size, maxY = minY + size;
 		
-		bndPts[0] = new myPointf[]{ new myPointf(minX+.01f, minY+.01f,0),
+		bndPts[0] = new myPointf[]{ new myPointf(minX+.1f, minY-.1f,0),
 									new myPointf(maxX, minY,0),
 									new myPointf(maxX, maxY,0),
 									new myPointf(minX, maxY,0)};
 		
-		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap+.01f, minY+.01f,0),
+		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap+.1f, minY-.01f,0),
 									new myPointf(maxX + widthPerMap, minY,0),
 									new myPointf(maxX + widthPerMap, maxY,0),
 									new myPointf(minX + widthPerMap, maxY,0)};

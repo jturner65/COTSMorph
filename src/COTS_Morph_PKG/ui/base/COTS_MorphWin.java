@@ -15,9 +15,7 @@ import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.io.MsgCodes;
-import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVector;
 import processing.core.PImage;
 
 public abstract class COTS_MorphWin extends myDispWindow {
@@ -28,14 +26,15 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		gIDX_MorphSpeed			= 1,
 		gIDX_NumCellsPerSide    = 2,
 		gIDX_MapType			= 3,
-		gIDX_MorphType			= 4;
+		gIDX_MorphType			= 4,
+		gIDX_SetBrnchOff		= 5,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
+		gIDX_MorphScope			= 6;			//whether animation interpolation only operates on control points, or whether it also works on internal values (such as cots fixed point, angle and scale)
 
-	protected static final int numBaseCOTSWinUIObjs = 5;
+	protected static final int numBaseCOTSWinUIObjs = 7;
 	/**
 	 * animation variables
 	 */
 	protected float morphProgress = 0.0f, sign = 1.0f, morphSpeed = 1.0f;
-
 	/**
 	 * currently selected map type
 	 */
@@ -44,6 +43,14 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * currently selected morph type
 	 */
 	protected int currMorphTypeIDX = 0;
+	/**
+	 * method to share branches - 0 : no branch sharing, 1 : use map 0, 2 : use map 1, 3 : use most recent edit
+	 */
+	protected int currBranchShareStrategy = 0;
+	/**
+	 * scope of interpolation - either control points only (0), or internal variables along with control points (1)
+	 */
+	protected int currMorphScope = 0;
 	/**
 	 * currently set # of cells per side in grid
 	 */
@@ -54,18 +61,21 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	public static final int 
 		debugAnimIDX 			= 0,				//debug
 		resetMapCrnrsIDX		= 1,
-		matchMapCrnrsIDX		= 2,				//match map corners - map 1 will get corners set from map 0
+		resetMapCrnrs_0IDX		= 2,
+		resetMapCrnrs_1IDX		= 3,
+		matchMapCrnrs_0IDX		= 4,				//match map corners - map 1 will get corners set from map 0
+		matchMapCrnrs_1IDX		= 5,				//match map corners - map 0 will get corners set from map 1
 		
-		drawMapIDX				= 3,				//draw mappings
-		drawMap_CntlPtsIDX		= 4,				//draw map control poin
-		drawMap_FillOrWfIDX		= 5,				//draw either filled checkerboards or wireframe for mapping grid
-		drawMap_CellCirclesIDX 	= 6,				//draw inscribed circles within checkerboard cells
-		drawMap_ImageIDX		= 7,				//draw the map's image
-		drawMap_OrthoFrameIDX 	= 8, 				//draw orthogonal frame at map's center
-		drawMap_CntlPtLblsIDX	= 9,				//draw labels for control points
-		drawMap_MorphIDX		= 10,
-		sweepMapsIDX			= 11;				//sweep from one mapping to other mapping
-	protected static final int numBaseCOTSWinPrivFlags = 12;
+		drawMapIDX				= 6,				//draw mappings
+		drawMap_CntlPtsIDX		= 7,				//draw map control poin
+		drawMap_FillOrWfIDX		= 8,				//draw either filled checkerboards or wireframe for mapping grid
+		drawMap_CellCirclesIDX 	= 9,				//draw inscribed circles within checkerboard cells
+		drawMap_ImageIDX		= 10,				//draw the map's image
+		drawMap_OrthoFrameIDX 	= 11, 				//draw orthogonal frame at map's center
+		drawMap_CntlPtLblsIDX	= 12,				//draw labels for control points
+		drawMap_MorphIDX		= 13,
+		sweepMapsIDX			= 14;				//sweep from one mapping to other mapping
+	protected static final int numBaseCOTSWinPrivFlags = 15;
 	
 	/**
 	 * types of maps supported
@@ -90,7 +100,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * types of morphs supported
 	 */
 	protected static final String[] morphTypes = new String[] {
-		"LERP",
+		"LERP",						//linearly interpolate control points
 		"Carrier Similarity",
 		"Log Polar"			
 	};
@@ -173,7 +183,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 		for(int i=0;i<maps.length;++i) {
 			morphMaps[i].setImageToMap(textureImgs[0]);
-			for(int j=0;j<maps[i].length;++j) {		maps[i][j].setImageToMap(textureImgs[j]);	}
+			for(int j=0;j<maps[i].length;++j) {		maps[i][j].setImageToMap(textureImgs[j]);	maps[i][j].setOtrMap(maps[i][(j+1)%maps[i].length]);}
 		}
 		
 		morphs = new baseMorph[morphTypes.length];
@@ -203,7 +213,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		// true tag, false tag, btn IDX
 		tmpBtnNamesArray.add(new Object[] { "Debugging", "Debug", debugAnimIDX });
 		tmpBtnNamesArray.add(new Object[] { "Resetting Maps", "Reset Maps", resetMapCrnrsIDX });
-		tmpBtnNamesArray.add(new Object[] { "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrsIDX });
+		tmpBtnNamesArray.add(new Object[] { "Resetting Map 0", "Reset Map 0", resetMapCrnrs_0IDX });
+		tmpBtnNamesArray.add(new Object[] { "Resetting Map 1", "Reset Map 1", resetMapCrnrs_1IDX });
+		tmpBtnNamesArray.add(new Object[] { "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrs_0IDX });
+		tmpBtnNamesArray.add(new Object[] { "Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs", matchMapCrnrs_1IDX });
 		tmpBtnNamesArray.add(new Object[] { "Showing Maps", "Show Maps",drawMapIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Ortho Frame", "Show Ortho Frame",drawMap_OrthoFrameIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Cntl Pts", "Show Cntl Pts",drawMap_CntlPtsIDX});
@@ -233,13 +246,19 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
 		tmpListObjVals.put(gIDX_MapType, mapTypes);		
 		tmpListObjVals.put(gIDX_MorphType, morphTypes);
+		tmpListObjVals.put(gIDX_MorphScope, new String[] {"Cntl Points Only", "Cntl Pts and Internal Vars"});
+		tmpListObjVals.put(gIDX_SetBrnchOff, new String[] {"No Branch Sharing", "Force from A", "Force from B", "Force from Edit"});
 		
 		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 	
 		tmpUIObjArray.put(gIDX_MorphSpeed,new Object[] { new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", new boolean[] { false, false, true } }); 	
 		tmpUIObjArray.put(gIDX_NumCellsPerSide,new Object[] { new double[] { 2.0, 100.0, 1.0 }, 8.0, "# of Cells Per Grid Side", new boolean[]{true, false, true}}); 
+		
+		tmpUIObjArray.put(gIDX_SetBrnchOff,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_SetBrnchOff).length-1, 1},0.0, "Branch Sharing Strategy", new boolean[]{true, true, true}});
 		tmpUIObjArray.put(gIDX_MapType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},0.0, "Map Type to Show", new boolean[]{true, true, true}}); 
+		
 		tmpUIObjArray.put(gIDX_MorphType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphType).length-1, 1},0.0, "Morph Type to Process", new boolean[]{true, true, true}}); 
-				
+		tmpUIObjArray.put(gIDX_MorphScope,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphScope).length-1, 1},0.0, "Scope of Morph", new boolean[]{true, true, true}}); 
+		
 		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
 	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
@@ -250,19 +269,25 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		int ival = (int) val;
 		switch (UIidx) {	
 			case gIDX_MorphTVal : {			//morph value	
-				if(val != morphProgress) {				morphProgress = val;				}
+				if(val != morphProgress) {				morphProgress = val;}
 				break;}		
 			case gIDX_MorphSpeed : {		//multiplier for animating morph
-				if(val != morphSpeed) {					morphSpeed = val;				}
+				if(val != morphSpeed) {					morphSpeed = val;}
 				break;}
 			case gIDX_NumCellsPerSide : {	//# of cells per side for Map grid
-				if(numCellsPerSide != ival) {			numCellsPerSide = ival;	updateMapVals();				}
+				if(numCellsPerSide != ival) {			numCellsPerSide = ival;	updateMapVals();}
 				break;}
 			case gIDX_MapType : {
-				if(currMapTypeIDX != ival) {			currMapTypeIDX = ival;	updateCurrentMapsForMorphs();	}				
+				if(currMapTypeIDX != ival) {			currMapTypeIDX = ival;	updateMorphsWithCurrMaps();}				
 				break;}
 			case gIDX_MorphType : {
-				if(currMorphTypeIDX != ival) {			currMorphTypeIDX = ival;				}							
+				if(currMorphTypeIDX != ival) {			currMorphTypeIDX = ival;}							
+				break;}
+			case gIDX_SetBrnchOff : {
+				if(currBranchShareStrategy != ival) {	currBranchShareStrategy = ival; updateMapVals();}		
+				break;}
+			case gIDX_MorphScope : {
+				if(currMorphScope != ival) {			currMorphScope = ival;	updateMorphsWithMorphScope();}	
 				break;}
 			default : {setUIWinVals_Indiv(UIidx, val);}
 		}
@@ -272,16 +297,19 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	
 	protected final void updateMapVals() {
 		for(int i=0;i<maps.length;++i) {
-			morphMaps[i].updateMapVals(numCellsPerSide, false);
-			for(int j=0;j<maps[i].length;++j) {		maps[i][j].updateMapVals(numCellsPerSide, false);}			
+			morphMaps[i].updateMapVals(numCellsPerSide, currBranchShareStrategy, false);
+			for(int j=0;j<maps[i].length;++j) {		maps[i][j].updateMapVals(numCellsPerSide, currBranchShareStrategy, false);}			
 		}
 	}
 	
 	/**
 	 * called whenever selected map or morph is changed
 	 */
-	protected final void updateCurrentMapsForMorphs() {		
+	protected final void updateMorphsWithCurrMaps() {		
 		for(int i=0;i<morphs.length;++i) {morphs[i].setMaps( maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX]);}
+	}
+	protected final void updateMorphsWithMorphScope() {
+		for(int i=0;i<morphs.length;++i) {morphs[i].setMorphType(currMorphScope);}
 	}
 
 	@Override
@@ -291,16 +319,19 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		switch (idx) {// special actions for each flag
 			case debugAnimIDX			: {			break;		}
 			case resetMapCrnrsIDX		: {			
-				if(val) {					
-					resetAllMapCorners();
-					addPrivBtnToClear(resetMapCrnrsIDX);
-				}
+				if(val) {		resetAllMapCorners();	addPrivBtnToClear(resetMapCrnrsIDX);		}
 				break;		}
-			case matchMapCrnrsIDX		: {
-				if(val) {	
-					matchAllMapCorners();
-					addPrivBtnToClear(matchMapCrnrsIDX);
-				}
+			case resetMapCrnrs_0IDX		: {			
+				if(val) {		resetMapCorners(0);		addPrivBtnToClear(resetMapCrnrs_0IDX);		}
+				break;		}
+			case resetMapCrnrs_1IDX		: {			
+				if(val) {		resetMapCorners(1);		addPrivBtnToClear(resetMapCrnrs_1IDX);		}
+				break;		}
+			case matchMapCrnrs_0IDX		: {
+				if(val) {		matchAllMapCorners(0,1);	addPrivBtnToClear(matchMapCrnrs_0IDX);	}
+				break;}
+			case matchMapCrnrs_1IDX		: {
+				if(val) {		matchAllMapCorners(1,0);	addPrivBtnToClear(matchMapCrnrs_1IDX);	}
 				break;}
 			case drawMapIDX				: {			break;		}
 			case drawMap_CntlPtsIDX		: {			break;		}
@@ -323,16 +354,21 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			for(int j=0;j<maps[i].length;++j) {		maps[i][j].setCntlPts(bndPts[j], numCellsPerSide);	}}	
 		
 	}
+	protected void resetMapCorners(int mapIDX) {
+		myPointf[][] bndPts = get2MapBndPts();
+		for(int i=0;i<maps.length;++i) {	maps[i][mapIDX].setCntlPts(bndPts[mapIDX], numCellsPerSide);}
+		
+	}
 	/**
-	 * match map 1's corners to map 0's corners
+	 * match map destIDX corners to map srcIDX's corners
 	 */
-	protected void matchAllMapCorners() {
+	protected void matchAllMapCorners(int srcIDX, int destIDX) {
 		myPointf[][] bndPts = get2MapBndPts();
 		for(int i=0;i<maps.length;++i) {
-			myPointf[] rawPts0 = maps[i][0].getCntlPts();
+			myPointf[] rawPts0 = maps[i][srcIDX].getCntlPts();
 			myPointf[] newPts = new myPointf[rawPts0.length];
-			for(int j=0;j<rawPts0.length;++j) {	newPts[j] = myPointf._add(myPointf._sub(rawPts0[j], bndPts[0][j]), bndPts[1][j]);}			
-			maps[i][1].setCntlPts(newPts, numCellsPerSide);	
+			for(int j=0;j<rawPts0.length;++j) {	newPts[j] = myPointf._add(myPointf._sub(rawPts0[j], bndPts[srcIDX][j]), bndPts[destIDX][j]);}			
+			maps[i][destIDX].setCntlPts(newPts, numCellsPerSide);	
 		}		
 	}//matchAllMapCorners	
 	

@@ -10,8 +10,11 @@ public class LERPMorph extends baseMorph {
 	}
 	
 	@Override
-	protected final int calcMorph_Int(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));};
-
+	protected final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));}
+	@Override
+	protected float calcMorph_Float(float tA, float AVal, float tB, float BVal) {		return (tA*AVal) + (tB*BVal);}
+	@Override
+	protected double calcMorph_Double(float tA, double AVal, float tB, double BVal) {		return (tA*AVal) + (tB*BVal);}
 	
 	/**
 	 * use currently set t value to calculate morph
@@ -21,18 +24,10 @@ public class LERPMorph extends baseMorph {
 		//lerp between control points of mapA and mapB
 		myPointf[] aCntlPts = mapA.getScl_CntlPts(tA), bCntlPts = mapB.getScl_CntlPts(tB);
 		myPointf[] delPts = new myPointf[aCntlPts.length];
-		boolean notTest = false;
-		if(notTest) {
-			for(int i=0;i<delPts.length;++i) {	delPts[i]= myPointf._add(aCntlPts[i], bCntlPts[i]);}
-			curMorphMap.setCntlPts(delPts);
+		for(int i=0;i<delPts.length;++i) {	delPts[i]= myPointf._add(aCntlPts[i], bCntlPts[i]);}
+		curMorphMap.setCntlPts(delPts);
 			//curMorphMap.moveCntlPts(delPts);
-		} else {
-			myPointf[] morphCntlPts = curMorphMap.getCntlPts();
-			for(int i=0;i<delPts.length;++i) {	delPts[i]= myPointf._sub( myPointf._add(aCntlPts[i], bCntlPts[i]),morphCntlPts[i]);}
-			//System.out.println(""+curMorphMap.mapIdx + "|"+ at + "|" + bt);
-			curMorphMap.addCntlPts(delPts);
-		}
-		
+	
 		
 	}
 

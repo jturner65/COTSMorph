@@ -15,17 +15,22 @@ public abstract class baseMorph {
 	protected baseMap mapA, mapB;
 	
 	/**
-	 * current time in
+	 * current time in morph
 	 */
-	protected float t;
+	protected float morphT;
 	
+	/**
+	 * scope of morph interpolation : 0 is only control points; 1 is control points and internal variables
+	 */
+	protected int morphScope;
 	/**
 	 * current morph map - will be same type as passed maps
 	 */
 	protected baseMap curMorphMap;
 
 	public baseMorph(baseMap _a, baseMap _b, baseMap _morphMap) {
-		t=.5f;
+		morphT=.5f;
+		morphScope = 0;
 		setMaps(_a,_b,_morphMap);
 	}
 	
@@ -37,8 +42,13 @@ public abstract class baseMorph {
 	}
 	
 	public final void setMorphT(float _t) {
-		t=_t;
+		morphT=_t;
 		calcMorph();		
+	}
+	
+	public final void setMorphType(int _mType) {
+		morphScope = _mType;
+		calcMorph();	
 	}
 	
 	
@@ -46,13 +56,16 @@ public abstract class baseMorph {
 	 * use currently set t value to calculate morph
 	 */
 	protected final void calcMorph() {
+		//update morph map with map a's vals
+		curMorphMap.updateMeWithMapVals(mapA);
+		
 		//calculate checker board and grid color morphs
-		float at = 1.0f-t, bt = t;
+		float at = 1.0f-morphT, bt = morphT;
 		int[][] aPlyClrs = mapA.getPolyColors(),bPlyClrs = mapB.getPolyColors(), curPlyClrs = new int[aPlyClrs.length][aPlyClrs[0].length];
-		for(int i=0;i<aPlyClrs.length;++i) {for(int j=0;j<aPlyClrs[i].length;++j) {	curPlyClrs[i][j] = calcMorph_Int(at,aPlyClrs[i][j],bt,bPlyClrs[i][j]);}}
+		for(int i=0;i<aPlyClrs.length;++i) {for(int j=0;j<aPlyClrs[i].length;++j) {	curPlyClrs[i][j] = calcMorph_Integer(at,aPlyClrs[i][j],bt,bPlyClrs[i][j]);}}
 		curMorphMap.setPolyColors(curPlyClrs);		
 		int[] aGridClr = mapA.getGridColor(), bGridClr = mapB.getGridColor(), curGridClrs = new int[aGridClr.length];
-		for(int i=0;i<aGridClr.length;++i) {curGridClrs[i]=calcMorph_Int(at,aGridClr[i],bt,bGridClr[i]);}
+		for(int i=0;i<aGridClr.length;++i) {curGridClrs[i]=calcMorph_Integer(at,aGridClr[i],bt,bGridClr[i]);}
 		curMorphMap.setGridColor(curGridClrs);
 		
 		//calculate geometry morph
@@ -60,7 +73,12 @@ public abstract class baseMorph {
 		//any global post-morph calc
 		
 	};
-	protected abstract int calcMorph_Int(float tA, int AVal, float tB, int BVal);
+	protected abstract int calcMorph_Integer(float tA, int AVal, float tB, int BVal);
+	
+	protected abstract float calcMorph_Float(float tA, float AVal, float tB, float BVal);
+	protected abstract double calcMorph_Double(float tA, double AVal, float tB, double BVal);
+	
+	
 	protected abstract void calcMorph_Indiv(float tA, float tB);
 	
 	public final void drawMorphedMap(boolean _isFill, boolean _drawCircles) {

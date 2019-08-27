@@ -30,7 +30,6 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
 	 */
 	protected final myPointf[][] get2MapBndPts(){
-		System.out.println("3d get2MapBndPts");
 		myPointf[][] bndPts = new myPointf[2][4];
 		
 //		//boundary regions for enclosing cube - given as min and difference of min and max
@@ -42,11 +41,11 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		float maxX = pa.cubeBnds[0][0] + pa.cubeBnds[1][0], maxY = pa.cubeBnds[0][1] + pa.cubeBnds[1][1], maxZ = pa.cubeBnds[0][2] + pa.cubeBnds[1][2];
 		
 		
-		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY+1.0f, maxZ),
+		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY+1.0f, maxZ-1.0f),
 									new myPointf(minX, minY, maxZ),
 									new myPointf(minX, minY, minZ),
 									new myPointf(minX, maxY, minZ)};
-		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY+1.0f, maxZ),
+		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY+1.0f, maxZ-1.0f),
 									new myPointf(maxX, minY, maxZ),
 									new myPointf(maxX, minY, minZ),
 									new myPointf(maxX, maxY, minZ)};

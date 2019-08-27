@@ -2,16 +2,12 @@ package COTS_Morph_PKG;
 
 import processing.core.*;
 
-import java.io.File;
-import java.util.TreeMap;
 
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
 import COTS_Morph_PKG.ui.COTS_MorphSideBarMenu;
 import base_UI_Objects.*;
 import base_UI_Objects.windowUI.myDispWindow;
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myVector;
 /**
  * Experiment with self organizing maps in applications related to graphics and geometry
  * 

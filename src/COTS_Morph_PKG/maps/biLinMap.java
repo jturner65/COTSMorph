@@ -11,7 +11,8 @@ public class biLinMap extends baseMap {
 	/**
 	 * Instance-class specific initialization
 	 */	
-	protected final void updateCntlPtVals_Indiv(boolean reset) {
+	@Override
+	protected final void updateMapFromCntlPtVals_Indiv(boolean reset) {
 	}
 
 	@Override
@@ -26,23 +27,19 @@ public class biLinMap extends baseMap {
 		
 	}
 
-
-
 	@Override
 	protected void mseRelease_Indiv() {	}
 
 	@Override
-	protected boolean updateMapVals_Indiv(boolean hasBeenUpdated) {
+	protected boolean updateMapVals_Indiv() {	boolean hasBeenUpdated = false;		return hasBeenUpdated;}
+	@Override
+	protected final void _drawPointLabels_2D_Indiv() {	}
+	@Override
+	protected final void _drawPointLabels_3D_Indiv(myDispWindow animWin) {	}
+	@Override
+	public void updateMeWithMapVals(baseMap otrMap) {
 		// TODO Auto-generated method stub
-		return hasBeenUpdated;
-	}
-	@Override
-	protected final void _drawPointLabels_2D_Indiv() {
-	}
-	@Override
-	protected final void _drawPointLabels_3D_Indiv(myDispWindow animWin) {
 		
 	}
-
 
 }//class biLinMap
