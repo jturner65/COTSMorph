@@ -44,7 +44,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 									new myPointf(maxX, maxY,0),
 									new myPointf(minX, maxY,0)};
 		
-		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap+.1f, minY-.01f,0),
+		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap-.1f, minY-.2f,0),
 									new myPointf(maxX + widthPerMap, minY,0),
 									new myPointf(maxX + widthPerMap, maxY,0),
 									new myPointf(minX + widthPerMap, maxY,0)};
@@ -69,14 +69,12 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 * @param tmpListObjVals
 	 */
 	@Override
-	protected void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
-		
+	protected void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {	
 	}
 
 	@Override
 	protected void setUIWinVals_Indiv(int UIidx, float val) {
 		switch (UIidx) {	
-		
 		}
 
 	}//setUIWinVals
@@ -96,7 +94,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	@Override
 	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
 		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_2D(showLbls);}
-		if(getPrivFlags(drawMap_MorphIDX)) {		
+		if(getPrivFlags(drawMorph_MapIDX)) {		
 			morphs[currMorphTypeIDX].drawHeaderAndLabels_2D(showLbls);	
 		}
 	}//_drawMe_Indiv

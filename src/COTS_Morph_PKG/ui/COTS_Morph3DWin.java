@@ -23,6 +23,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	@Override
 	protected final void initMe_Indiv() {
 		setFlags(drawMseEdge,true);
+		setFlags(showRightSideMenu, true);
 	}//initMe
 
 	/**
@@ -45,7 +46,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 									new myPointf(minX, minY, maxZ),
 									new myPointf(minX, minY, minZ),
 									new myPointf(minX, maxY, minZ)};
-		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY+1.0f, maxZ-1.0f),
+		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY-1.0f, maxZ-1.0f),
 									new myPointf(maxX, minY, maxZ),
 									new myPointf(maxX, minY, minZ),
 									new myPointf(maxX, maxY, minZ)};
@@ -96,7 +97,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	@Override
 	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
 		for(int i=0;i<maps[0].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_3D( showLbls, this);}
-		if(getPrivFlags(drawMap_MorphIDX)) {	morphs[currMorphTypeIDX].drawHeaderAndLabels_3D( showLbls, this);}
+		if(getPrivFlags(drawMorph_MapIDX)) {	morphs[currMorphTypeIDX].drawHeaderAndLabels_3D( showLbls, this);}
 	}
 	
 	

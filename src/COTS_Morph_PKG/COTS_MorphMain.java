@@ -229,28 +229,11 @@ public class COTS_MorphMain extends my_procApplet {
 		visFlags[flIDX] = (val ?  visFlags[flIDX] | mask : visFlags[flIDX] & ~mask);
 		switch (idx){
 			case showUIMenu 	    : { dispWinFrames[dispMenuIDX].setFlags(myDispWindow.showIDX,val);    break;}											//whether or not to show the main ui window (sidebar)			
-			case showCOTS_2DMorph	: {setDispAndModMapMgr(showCOTS_2DMorph, dispCOTS_2DMorph, val);break;}
-			case showCOTS_3DMorph	: {setDispAndModMapMgr(showCOTS_3DMorph, dispCOTS_3DMorph, val);break;}
+			case showCOTS_2DMorph	: {setWinFlagsXOR(dispCOTS_2DMorph, val);break;}
+			case showCOTS_3DMorph	: {setWinFlagsXOR(dispCOTS_3DMorph, val);break;}
 			default : {break;}
 		}
 	}//setFlags  
-	/**
-	 * send appropriate map manager to map manager window
-	 * @param flagIDX
-	 * @param dispIDX
-	 * @param val
-	 */
-	private void setDispAndModMapMgr(int flagIDX, int dispIDX, boolean val) {
-		setWinFlagsXOR(dispIDX, val);
-//		if(dispIDX != curFocusWin) {
-//		//if(val) {//(val) && (getVisFlag(showSOMMapUI))) {
-//			System.out.println("Sending window map mgr from setDispAndModMapMgr : " + dispWinFrames[curFocusWin].name);
-//			SOM_MapManager mapMgr = ((SOM_AnimWorldWin)dispWinFrames[curFocusWin]).getMapMgr();
-//			if(null != mapMgr) {			((SOM_MapUIWin)dispWinFrames[dispSOMMapIDX]).setMapMgr(mapMgr);			}		
-//		//}
-//		}
-	}//setDispAndModMapMgr
-	
 	
 	@Override
 	//get vis flag

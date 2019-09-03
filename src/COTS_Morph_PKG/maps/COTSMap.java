@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.maps;
 
-import COTS_Morph_PKG.maps.base.SimilarityData;
 import COTS_Morph_PKG.maps.base.baseMap;
+import COTS_Morph_PKG.similarities.COTS_Similarity;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -16,12 +16,17 @@ public class COTSMap extends baseMap {
 	/**
 	 * data holding COTS map control values
 	 */
-	protected SimilarityData cots;
+	protected COTS_Similarity cots;
 	
 
-	public COTSMap(COTS_MorphWin _win, myPointf[] _cntlPts, int _mapIdx, int[][] _pClrs, int _numCellPerSide) {	
-		super(_win,_cntlPts, _mapIdx, _pClrs, _numCellPerSide, "COTS Map");	
-		cots = new SimilarityData();
+	public COTSMap(COTS_MorphWin _win, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, int _numCellPerSide, String _mapTitle) {	
+		super(_win,_cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_numCellPerSide, _mapTitle);
+		cots = new COTS_Similarity(basisVecs[0], basisVecs[2], basisVecs[1]);
+		updateMapFromCntlPtVals_Indiv( true);
+	}
+	public COTSMap(COTSMap _otrMap) {
+		super(_otrMap);
+		cots = new COTS_Similarity(_otrMap.cots);
 		updateMapFromCntlPtVals_Indiv( true);
 	}
 	
@@ -30,9 +35,9 @@ public class COTSMap extends baseMap {
 	 */	
 	@Override
 	protected final void updateMapFromCntlPtVals_Indiv(boolean reset) {
-		if(null==cots) {return;}
+		if(null==cots) {return;}		//need this check since cots similarity not built before this is first called
 
-		cots.updateCntlPoints(cntlPts, reset, basisVecs[0], basisVecs[2],basisVecs[1]);		
+		cots.deriveSimilarityFromCntlPts(cntlPts, reset);		
 		
 //	    if((this.mapIdx == 0) || (this.mapIdx == 1)){
 //		    String debug = this.mapTitle + " reset : " + reset + " | share : " + this.shouldShareBranching + " | "+ cots.getDebugStr()+ " | A : " + cntlPts[0].toStrBrf();
@@ -52,18 +57,27 @@ public class COTSMap extends baseMap {
 		cots.setBranching(((COTSMap)otrMap).cots.getBranching());
 		updateMapFromOtrMapVals(false);
 	}
-
 	
 	@Override
 	public myPointf calcMapPt(float tx, float ty) {
 		//tx interpolates between "vertical" edges, scale and angle, ty interpolates between "horizontal" edges, scale and angle
-		//mapPoint(myPointf A, float tx, float ty, myVectorf I, myVectorf J)
-		return cots.mapPoint(cntlPts[0], tx, ty, basisVecs[2], basisVecs[1]);
-		//return spiralPoint(spiralPoint(cntlPts[0],mv,av, tx,basisVecs[2], basisVecs[1]),mu,au, ty,basisVecs[2], basisVecs[1]);
+		return cots.mapPoint(cntlPts[0], tx, ty);
 	}
 	
 	@Override
+	public myPointf getCenterPoint() {
+		return cots.getF();
+	}
+
+	
+	@Override
 	protected boolean updateMapVals_Indiv() {		boolean hasBeenUpdated = false;		return hasBeenUpdated;}
+	
+	@Override
+	protected float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+		yOff = cots.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
+		return yOff;
+	}
 	
 	/**
 	 * instance-specific point drawing
@@ -73,21 +87,21 @@ public class COTSMap extends baseMap {
 	protected void _drawPoints_Indiv() {
 		pa.sphereDetail(5);
 		pa.setStroke(polyColors[1], 255);
-		_drawPt(cots.F, sphereRad*1.5f);		
+		_drawPt(cots.getF(), sphereRad*1.5f);		
 	}
 	
 	@Override
 	protected final void _drawPointLabels_2D_Indiv() {
-		_drawLabelAtPt(cots.F,"Spiral Center : "+ cots.F.toStrBrf(), 2.5f,-2.5f);		
+		_drawLabelAtPt(cots.getF(),"Spiral Center : "+ cots.getF().toStrBrf(), 2.5f,-2.5f);		
 	}
 	
 	@Override
 	protected final void _drawPointLabels_3D_Indiv(myDispWindow animWin) {
-		_drawLabelAtPt_UnSetCam(animWin,cots.F,"Spiral Center : "+ cots.F.toStrBrf(), 2.5f,-2.5f);
+		_drawLabelAtPt_UnSetCam(animWin,cots.getF(),"Spiral Center : "+ cots.getF().toStrBrf(), 2.5f,-2.5f);
 	}
 
 	@Override
 	protected void mseRelease_Indiv() {}
 
-}
+}//COTSMap
 
