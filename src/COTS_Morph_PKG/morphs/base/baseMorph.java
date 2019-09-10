@@ -28,7 +28,7 @@ public abstract class baseMorph {
 	/**
 	 * scope of morph interpolation : 0 is only control points; 1 is control points and internal variables
 	 */
-	protected int morphScope;
+	protected int morphScope=0;
 	/**
 	 * current morph map - will be same type as passed maps
 	 */
@@ -50,47 +50,7 @@ public abstract class baseMorph {
 		morphScope = _morphScope;
 		setMaps(_a,_b,_morphMap);
 	}
-	
-	public final void setMaps(baseMap _a, baseMap _b, baseMap _morphMap) {
-		mapA = _a;
-		mapB = _b;		
-		curMorphMap = _morphMap;
-		if(buildMorphMapAra) {setMorphMapAra();}
-		calcMorph();
-	}
-	
-	protected final void setMorphMapAra() {
-		baseMap tmpMap;
-		ArrayList<baseMap> mapAra = new ArrayList<baseMap>();
-		for (float t = 0.0f; t <=1.0f; t+= .1f) {
-			tmpMap = win.buildCopyMapOfPassedMapType(mapA, "Morph @ t="+String.format("%2d", t));
-			float tA = 1.0f-t, tB = t;
-			//initial code for morph, if necessary
-			initCalcMorph_Indiv(tA, tB);
-			//morph colors
-			_morphColors(tmpMap, tA, tB);
-			//calculate geometry morph
-			//myPointf[] delPts = 
-			calcMorphOfDeltaCntlPts(tmpMap, tA, tB);	
-			//update map with point deltas
-			//if(null!=delPts) {tmpMap.updateCntlPts(delPts);}
-			mapAra.add(tmpMap);
 		
-		}
-		morphMapArray = mapAra.toArray(new baseMap[0]);
-	}//setMorphMapAra()
-	
-	
-	public final void setMorphT(float _t) {
-		morphT=_t;
-		calcMorph();		
-	}
-	
-	public final void setMorphScope(int _mScope) {
-		morphScope = _mScope;
-		calcMorph();	
-	}
-	
 	private final void _morphColors(baseMap _curMorphMap, float tA, float tB) {
 		//calculate checker board and grid color morphs
 		int[][] aPlyClrs = mapA.getPolyColors(),bPlyClrs = mapB.getPolyColors(), curPlyClrs = new int[aPlyClrs.length][aPlyClrs[0].length];
@@ -132,7 +92,7 @@ public abstract class baseMorph {
 	 */
 	protected final myPointf[] calcMorphOfDeltaCntlPts(baseMap _curMorphMap, float tA, float tB) {
 		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(), morphCntlPts = _curMorphMap.getCntlPts();
-		myPointf[] newPts = new myPointf[aCntlPts.length];
+		myPointf[] newPts = new myPointf[aCntlPts.length+2];
 		myPointf[] delPts = new myPointf[aCntlPts.length];
 		for(int i=0;i<aCntlPts.length;++i) {	
 			newPts[i]= calcMorph_Point(tA, aCntlPts[i], tB, bCntlPts[i]);//myPointf._add(myPointf._mult(aCntlPts[i], tA), myPointf._mult(bCntlPts[i], tB));
@@ -142,9 +102,7 @@ public abstract class baseMorph {
 		newPts[newPts.length-2] = _curMorphMap.getCOV();
 		newPts[newPts.length-1] = _curMorphMap.getCenterPoint();		
 		return newPts;
-	}
-
-	
+	}//calcMorphOfDeltaCntlPts	
 
 	//////////////////////////////
 	// draw routines	
@@ -163,14 +121,23 @@ public abstract class baseMorph {
 		yOff += sideBarYDisp;
 		pa.translate(10.0f,sideBarYDisp, 0.0f);		
 		yOff = curMorphMap.drawRightSideBarMenuDescr(yOff, sideBarYDisp, false);
-		
-		
 		return yOff;
 	}
+	
+	private final float _drawMorphScope(float yOff, float sideBarYDisp, String[] _scopeList) {
+		pa.pushMatrix();pa.pushStyle();
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.0f, "Morph Scope : ");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, _scopeList[morphScope]);
+		pa.popStyle();pa.popMatrix();			
+		yOff += sideBarYDisp;
+		pa.translate(0.0f,sideBarYDisp, 0.0f);		
+		return yOff;
+	}
+	
 	public final float drawMorphRtSdMenuDescr(float yOff, float sideBarYDisp, float _morphSpeed, String[] _scopeList) {
 		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.0f, morphTitle);
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, "  Morph Between :");
+			//pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.0f, morphTitle);
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, "Morph Between :");
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, mapA.mapTitle);
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, " and");
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, mapB.mapTitle);
@@ -188,13 +155,7 @@ public abstract class baseMorph {
 		yOff += sideBarYDisp;
 		pa.translate(0.0f,sideBarYDisp, 0.0f);		
 		
-		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.0f, "Morph Scope : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, _scopeList[morphScope]);
-		pa.popStyle();pa.popMatrix();		
-		
-		yOff += sideBarYDisp;
-		pa.translate(0.0f,sideBarYDisp, 0.0f);	
+		yOff = _drawMorphScope(yOff, sideBarYDisp, _scopeList);
 		
 		yOff = drawMorphRtSdMenuDescr_Indiv(yOff, sideBarYDisp);
 		
@@ -240,19 +201,50 @@ public abstract class baseMorph {
 		
 		pa.popStyle();pa.popMatrix();	
 	}
-
-
 	
 	public final void drawMorphedMap(boolean _isFill, boolean _drawCircles) {
-		if(_isFill) {	curMorphMap.drawMap_Fill(false);}
-		else {			curMorphMap.drawMap_Wf(false);}	
+		if(_isFill) {	curMorphMap.drawMap_Fill();}
+		else {			curMorphMap.drawMap_Wf();}	
 		if(_drawCircles) {
 			if(_isFill) {	curMorphMap.drawMap_PolyCircles_Fill();}	
 			else {			curMorphMap.drawMap_PolyCircles_Wf();}		
 		}
 	}
 
-	public final void drawHeaderAndLabels_2D(boolean _drawLabels) {							curMorphMap.drawHeaderAndLabels_2D(_drawLabels);}
-	public final void drawHeaderAndLabels_3D(boolean _drawLabels, myDispWindow animWin) {	curMorphMap.drawHeaderAndLabels_3D(_drawLabels,animWin);}
+	public final void drawHeaderAndLabels(boolean _drawLabels) {							curMorphMap.drawHeaderAndLabels(_drawLabels);}
+	
+	/////////////////////////
+	// setters/getters
+	
+	public final void setMorphT(float _t) {			morphT=_t;				calcMorph();}	
+	public final void setMorphScope(int _mScope) {	morphScope = _mScope;	calcMorph();}
+	public final void setMaps(baseMap _a, baseMap _b, baseMap _morphMap) {
+		mapA = _a;
+		mapB = _b;		
+		curMorphMap = _morphMap;
+		if(buildMorphMapAra) {setMorphMapAra();}
+		calcMorph();
+	}
+	
+	protected final void setMorphMapAra() {
+		baseMap tmpMap;
+		ArrayList<baseMap> mapAra = new ArrayList<baseMap>();
+		for (float t = 0.0f; t <=1.0f; t+= .1f) {
+			tmpMap = win.buildCopyMapOfPassedMapType(mapA, "Morph @ t="+String.format("%2d", t));
+			float tA = 1.0f-t, tB = t;
+			//initial code for morph, if necessary
+			initCalcMorph_Indiv(tA, tB);
+			//morph colors
+			_morphColors(tmpMap, tA, tB);
+			//calculate geometry morph
+			//myPointf[] delPts = 
+			calcMorphOfDeltaCntlPts(tmpMap, tA, tB);	
+			//update map with point deltas
+			//if(null!=delPts) {tmpMap.updateCntlPts(delPts);}
+			mapAra.add(tmpMap);		
+		}
+		morphMapArray = mapAra.toArray(new baseMap[0]);
+	}//setMorphMapAra()	
+
 	
 }//class baseMorph

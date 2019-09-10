@@ -5,19 +5,26 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.maps.COTSMap;
+import COTS_Morph_PKG.maps.TriangleBiLinMap;
+import COTS_Morph_PKG.CarrierSimTransformMorph;
 import COTS_Morph_PKG.maps.BiLinMap;
 import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.morphs.CarrierSimMorph;
+import COTS_Morph_PKG.morphs.CarrierSimDiagMorph;
 import COTS_Morph_PKG.morphs.DualCarrierSimMorph;
 import COTS_Morph_PKG.morphs.LERPMorph;
 import COTS_Morph_PKG.morphs.LogPolarMorph;
+import COTS_Morph_PKG.morphs.PointNormalMorph;
 import COTS_Morph_PKG.morphs.base.baseMorph;
+import COTS_Morph_PKG.similarities.SpiralSimilarityWithTranslation;
+import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.io.MsgCodes;
+import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
+import base_Utils_Objects.vectorObjs.myVector;
 import base_Utils_Objects.vectorObjs.myVectorf;
 import processing.core.PImage;
 
@@ -30,47 +37,27 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		gIDX_NumCellsPerSide    = 2,
 		gIDX_MapType			= 3,
 		gIDX_MorphType			= 4,
-		gIDX_SetBrnchOff		= 5,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
-		gIDX_MorphScope			= 6;			//whether animation interpolation only operates on control points, or whether it also works on internal values (such as cots fixed point, angle and scale)
-
-	protected static final int numBaseCOTSWinUIObjs = 7;
-	/**
-	 * animation variables
-	 */
-	protected float morphProgress = 0.5f, sign = 1.0f, morphSpeed = 1.0f;
-	/**
-	 * method to share branches - 0 : no branch sharing, 1 : use map 0, 2 : use map 1, 3 : use most recent edit
-	 */
-	protected int currBranchShareStrategy = 0;
-	/**
-	 * currently selected map type
-	 */
-	protected int currMapTypeIDX = 1;
-	/**
-	 * currently selected morph type
-	 */
-	protected int currMorphTypeIDX = 0;
-	/**
-	 * scope of interpolation - either control points only (0), or internal variables along with control points (1)
-	 */
-	protected int currMorphScope = 1;
-	/**
-	 * currently set # of cells per side in grid
-	 */
-	protected int numCellsPerSide = 4;
-	
+		gIDX_SetBrnchOff		= 5//,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
+		//gIDX_MorphScope			= 6;			//whether animation interpolation only operates on control points, or whether it also works on internal values (such as cots fixed point, angle and scale)
+		;
+	protected static final int numBaseCOTSWinUIObjs = 6;
 	
 	//boolean priv flags
 	public static final int 
 		debugAnimIDX 			= 0,				//debug
 		resetMapCrnrsIDX		= 1,
+		
 		resetMapCrnrs_0IDX		= 2,
 		resetMapCrnrs_1IDX		= 3,
+		
 		matchMapCrnrs_0IDX		= 4,				//match map corners - map 1 will get corners set from map 0
 		matchMapCrnrs_1IDX		= 5,				//match map corners - map 0 will get corners set from map 1
-		findDiffBFromAIDX		= 6,				//find angle, scale and displacement from A to B
-		findDiffAFromBIDX		= 7,				//find angle, scale and displacement from B to A
 		
+		findDiffFromAtoBIDX		= 6,				//find angle, scale and displacement from A to B
+		findDiffFromBToAIDX		= 7,				//find angle, scale and displacement from B to A
+		
+		//////////////////////
+		// drawing map flags
 		drawMapIDX				= 8,				//draw map grid
 		drawMap_CntlPtsIDX		= 9,				//draw map control poin
 		drawMap_FillOrWfIDX		= 10,				//draw either filled checkerboards or wireframe for mapping grid
@@ -79,31 +66,46 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		drawMap_OrthoFrameIDX 	= 13, 				//draw orthogonal frame at map's center
 		drawMap_CntlPtLblsIDX	= 14,				//draw labels for control points
 		drawMap_CopyIDX			= 15,				//draw the copy map of the similarity between A and B
-
-		drawMorph_MapIDX		= 16,				//draw morph frame
-		drawMorph_CntlPtTrajIDX = 17,				//show trajectory of COV and control pts
-		drawMorph_FillOrWfIDX 	= 18,
-		sweepMapsIDX			= 19;				//sweep from one mapping to other mapping
-	protected static final int numBaseCOTSWinPrivFlags = 20;
+		drawMap_EdgeLinesIDX	= 16,				//draw the edge lines linking map A and B
+		
+		//////////////////////
+		// drawing morph flags
+		drawMorph_MapIDX		= 17,				//draw morph frame
+		drawMorph_CntlPtTrajIDX = 18,				//show trajectory of COV and control pts
+		drawMorph_FillOrWfIDX 	= 19,
+		
+		//////////////////////
+		// animating morph flags		
+		sweepMapsIDX			= 20;				//sweep from one mapping to other mapping
+	protected static final int numBaseCOTSWinPrivFlags = 21;
+	/**
+	 * # of priv flags from base class and instancing class
+	 */
+	private int numPrivFlags;
 	
 	/**
 	 * types of maps supported
 	 */
 	protected static final String[] mapTypes = new String[] {
+		"Triangle",
 		"Bilinear",
 		"COTS",			
 	};
 	//need an index per map type
 	public static final int
-		bilinearMapIDX		= 0,
-		COTSMapIDX		 	= 1;
-	
+		triangleMapIDX		= 0,
+		bilinearMapIDX		= 1,
+		COTSMapIDX		 	= 2;	
 	/**
 	 * array holding maps
 	 */
 	protected baseMap[][] maps;
 	/**
-	 * copy map to display if being copied
+	 * idx's of maps to use for similarity mapping
+	 */
+	protected int fromMapIDX = -1, toMapIDX = -1;
+	/**
+	 * copy map to display if being copied or similarity mapped
 	 */
 	protected baseMap copyMap;
 	
@@ -114,24 +116,30 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * types of morphs supported
 	 */
 	protected static final String[] morphTypes = new String[] {
+		"Point-Normal",
 		"LERP",						//linearly interpolate control points
-		"Carrier Similarity",
+		"Carrier Sim Diag",
+		"Carrier Sim Reg Trans",
 		"Dual Carrier Similarity",
 		"Log Polar"			
 	};
 	
-	protected static final String[] morphScopes = new String[] {"Cntl Points Only", "Cntl Pts and Internal Vars"};
-	protected static final String[] branchShareStrategies = new String[] {"No Branch Sharing", "Force from A", "Force from B", "Force from Edit"};
+	//need an index per morph type
+	public static final int
+		PointNormalIDX			= 0,
+		LERPMorphIDX			= 1,
+		CarrierSimDiagIDX		= 2,
+		CarrierSimRegTransIDX	= 3,
+		DualCarrierSimIDX		= 4,
+		LogPolarMorphIDX 		= 5;
+	
 	/**
 	 * array holding morphs
 	 */
 	protected baseMorph[] morphs;
-	//need an index per morph type
-	public static final int
-		LERPMorphIDX			= 0,
-		CarrierSimIDX			= 1,
-		DualCarrierSimIDX		= 2,
-		LogPolarMorphIDX 		= 3;
+	
+	protected static final String[] morphScopes = new String[] {"Cntl Points Only", "Cntl Pts and Internal Vars"};
+	protected static final String[] branchShareStrategies = new String[] {"No Branch Sharing", "Force from A", "Force from B", "Force from Edit"};
 	
 	/**
 	 * map being currently modified by mouse interaction
@@ -139,19 +147,43 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected baseMap currMseModMap;
 	//minimum distance for click to be considered within range of control point
 	protected final float minSqClickDist = 2500.0f;
-	
+	/**
+	 * morph animation variables
+	 */
+	protected float morphProgress = 0.5f, sign = 1.0f, morphSpeed = 1.0f;
+	/**
+	 * currently selected map type
+	 */
+	protected int currMapTypeIDX = COTSMapIDX;
+	/**
+	 * currently selected morph type
+	 */
+	protected int currMorphTypeIDX = LERPMorphIDX;
+	/**
+	 * scope of interpolation - either control points only (0), or internal variables along with control points (1)
+	 */
+	protected int currMorphScope = 1;
+	/**
+	 * method to share branches - 0 : no branch sharing, 1 : use map 0, 2 : use map 1, 3 : use most recent edit
+	 */
+	protected int currBranchShareStrategy = 0;
+	/**
+	 * currently set # of cells per side in grid
+	 */
+	protected int numCellsPerSide = 4;	
 	/**
 	 * colors for each of 2 maps' grids
 	 */
 	protected final int[][][] mapGridColors = new int[][][] {
-		{{255,200,0,255},{90,0,222,255}},		//map grid 0
-		{{55,255,10,255},{255,0,0,255}}		//map grid 1
+		{{90,0,222,255},{0,225,10,255}},		//map grid 0
+		{{255,200,0,255},{255,0,0,255}}		//map grid 1
 	};
+	
+		//text scale value for display
+	protected static final float txtSclVal = 1.25f;	
+		//bounds for the key frame maps in this window
+	public myPointf[][] bndPts;
 
-	/**
-	 * # of priv flags from base class and instancing class
-	 */
-	private int numPrivFlags;
 
 	public String[][] menuBtnNames = new String[][] { // each must have literals for every button defined in side bar
 		// menu, or ignored
@@ -184,6 +216,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		setPrivFlags(drawMap_CntlPtsIDX, true);
 		setPrivFlags(drawMorph_FillOrWfIDX, true);
 		numCellsPerSide = (int) guiObjs[gIDX_NumCellsPerSide].getVal();
+		//initialize the bounds for this map
+		bndPts = getKeyFrameMapBndPts();
 		//initialize all maps
 		_initMaps();
 		//initialize all morphs
@@ -208,7 +242,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			maps[i] = new baseMap[2];
 			for(int j=0;j<maps[i].length;++j) {maps[i][j] = buildMapOfPassedType(i,j, "");}
 		}
-		
+		fromMapIDX = 0;
+		toMapIDX = 1;
 		morphMaps = new baseMap[mapTypes.length];
 		for(int i=0;i<morphMaps.length;++i) {	morphMaps[i]=buildMapOfPassedType(i,0, "Morph"); copyMap = buildCopyMapOfPassedMapType(maps[i][0], "Copy");}
 				
@@ -222,6 +257,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	public baseMap buildCopyMapOfPassedMapType(baseMap mapA, String _mapNameSuffix) {	
 		baseMap map;
 		switch (mapA.mapTypeIDX) {
+			case triangleMapIDX		: {	map = new TriangleBiLinMap((TriangleBiLinMap)mapA);		break;}
 			case bilinearMapIDX 	: {	map = new BiLinMap((BiLinMap)mapA);		break;}
 			case COTSMapIDX 		: {	map = new COTSMap((COTSMap)mapA); 		break;}
 			default		:{
@@ -234,8 +270,12 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	}//buildCopyMapOfPassedMapType		
 	
 	public baseMap buildMapOfPassedType(int _mapType, int _mapValIdx, String _mapNameSuffix) {
-		myPointf[][] bndPts = get2MapBndPts();
+		//myPointf[][] bndPts = getKeyFrameMapBndPts();
 		switch (_mapType) {
+			case triangleMapIDX		: {	
+				myPointf[] triBndPts = new myPointf[3];
+				for(int i=0;i<triBndPts.length;++i) {		triBndPts[i]=bndPts[_mapValIdx][i];		}
+				return new TriangleBiLinMap(this, triBndPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], numCellsPerSide, mapTypes[_mapType] + ( _mapNameSuffix.length() == 0 ? "":  " " + _mapNameSuffix) + " Map"+ _mapValIdx );}
 			case bilinearMapIDX 	: {	return new BiLinMap(this, bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], numCellsPerSide, mapTypes[_mapType] + ( _mapNameSuffix.length() == 0 ? "":  " " + _mapNameSuffix) + " Map"+ _mapValIdx );}
 			case COTSMapIDX 		: {	return new COTSMap(this, bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], numCellsPerSide,  mapTypes[_mapType] + ( _mapNameSuffix.length() == 0 ? "":  " " + _mapNameSuffix) + " Map"+ _mapValIdx);}
 			default		:{
@@ -250,8 +290,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 */
 	private void _initMorphs() {
 		morphs = new baseMorph[morphTypes.length];
+		morphs[PointNormalIDX] = new PointNormalMorph(this,maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX],currMorphScope);
 		morphs[LERPMorphIDX] = new LERPMorph(this,maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX],currMorphScope); 
-		morphs[CarrierSimIDX] = new CarrierSimMorph(this,maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX],currMorphScope); 
+		morphs[CarrierSimDiagIDX] = new CarrierSimDiagMorph(this,maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX],currMorphScope); 		
+		morphs[CarrierSimRegTransIDX] = new CarrierSimTransformMorph(this,maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX],currMorphScope); 
 		morphs[DualCarrierSimIDX] = new DualCarrierSimMorph(this,maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX],currMorphScope); 
 		morphs[LogPolarMorphIDX] = new LogPolarMorph(this,maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX],currMorphScope);		
 	}
@@ -262,7 +304,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * return the initial bounds for the maps in the world space
 	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
 	 */
-	protected abstract myPointf[][] get2MapBndPts();
+	protected abstract myPointf[][] getKeyFrameMapBndPts();
 
 	@Override
 	public final void initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray) {
@@ -276,8 +318,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpBtnNamesArray.add(new Object[] { "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrs_0IDX });
 		tmpBtnNamesArray.add(new Object[] { "Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs", matchMapCrnrs_1IDX });
 		
-		tmpBtnNamesArray.add(new Object[] { "Finding Dist From A to B","Find Dist From A to B", findDiffBFromAIDX});	
-		tmpBtnNamesArray.add(new Object[] { "Finding Dist From B to A","Find Dist From B to A", findDiffAFromBIDX});			
+		tmpBtnNamesArray.add(new Object[] { "Finding Dist From A to B","Find Dist From A to B", findDiffFromAtoBIDX});	
+		tmpBtnNamesArray.add(new Object[] { "Finding Dist From B to A","Find Dist From B to A", findDiffFromBToAIDX});			
 		
 		tmpBtnNamesArray.add(new Object[] { "Showing Maps", "Show Maps",drawMapIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Registration Map", "Show Registration Maps",drawMap_CopyIDX});
@@ -286,7 +328,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpBtnNamesArray.add(new Object[] { "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls",drawMap_CntlPtLblsIDX});
 		tmpBtnNamesArray.add(new Object[] { "Show Checkerboard Maps", "Show Wireframe Maps",drawMap_FillOrWfIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Cell Circles", "Show Cell Circles",drawMap_CellCirclesIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Edge Lines", "Show Edge Lines",drawMap_EdgeLinesIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Map Image", "Show Map Image",drawMap_ImageIDX});
+		
 		tmpBtnNamesArray.add(new Object[] { "Showing Morph Map", "Show Morph Map",drawMorph_MapIDX});
 		tmpBtnNamesArray.add(new Object[] { "Show Morph Checkerboard", "Show Morph Wireframe",drawMorph_FillOrWfIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj",drawMorph_CntlPtTrajIDX});
@@ -312,7 +356,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
 		tmpListObjVals.put(gIDX_MapType, mapTypes);		
 		tmpListObjVals.put(gIDX_MorphType, morphTypes);
-		tmpListObjVals.put(gIDX_MorphScope, morphScopes);
+		//tmpListObjVals.put(gIDX_MorphScope, morphScopes);
 		tmpListObjVals.put(gIDX_SetBrnchOff, branchShareStrategies);
 		
 		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 1.0* morphProgress,"Progress of Morph", new boolean[] { false, false, true } }); 	
@@ -323,7 +367,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpUIObjArray.put(gIDX_MapType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},1.0* currMapTypeIDX, "Map Type to Show", new boolean[]{true, true, true}}); 
 		
 		tmpUIObjArray.put(gIDX_MorphType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphType).length-1, 1},1.0* currMorphTypeIDX, "Morph Type to Process", new boolean[]{true, true, true}}); 
-		tmpUIObjArray.put(gIDX_MorphScope,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphScope).length-1, 1},1.0* currMorphScope, "Scope of Morph", new boolean[]{true, true, true}}); 
+		//tmpUIObjArray.put(gIDX_MorphScope,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphScope).length-1, 1},1.0* currMorphScope, "Scope of Morph", new boolean[]{true, true, true}}); 
 		
 		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
@@ -347,14 +391,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				if(currMapTypeIDX != ival) {			currMapTypeIDX = ival;	updateMorphsWithCurrMaps();}				
 				break;}
 			case gIDX_MorphType : {
-				if(currMorphTypeIDX != ival) {			currMorphTypeIDX = ival;}							
+				if(currMorphTypeIDX != ival) {			
+					currMorphTypeIDX = ival;
+					if(CarrierSimRegTransIDX==currMorphTypeIDX) {findDifferenceBetweenMaps(true, false);}
+				}						 	
 				break;}
 			case gIDX_SetBrnchOff : {
 				if(currBranchShareStrategy != ival) {	currBranchShareStrategy = ival; updateMapVals();}		
 				break;}
-			case gIDX_MorphScope : {
-				if(currMorphScope != ival) {			currMorphScope = ival;	updateMorphsWithMorphScope();}	
-				break;}
+//			case gIDX_MorphScope : {
+//				if(currMorphScope != ival) {			currMorphScope = ival;	updateMorphsWithMorphScope();}	
+//				break;}
 			default : {setUIWinVals_Indiv(UIidx, val);}
 		}
 
@@ -362,9 +409,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected abstract void setUIWinVals_Indiv(int UIidx, float val);
 	
 	protected final void updateMapVals() {
+		mapUpdFromUIData upd = new mapUpdFromUIData(new int[] {numCellsPerSide, currBranchShareStrategy},new boolean[] {false});
 		for(int i=0;i<maps.length;++i) {
-			morphMaps[i].updateMapVals(numCellsPerSide, currBranchShareStrategy, false);
-			for(int j=0;j<maps[i].length;++j) {		maps[i][j].updateMapVals(numCellsPerSide, currBranchShareStrategy, false);}			
+			morphMaps[i].updateMapVals_FromUI(upd);
+			for(int j=0;j<maps[i].length;++j) {		maps[i][j].updateMapVals_FromUI(upd);}			
 		}
 	}
 	
@@ -374,9 +422,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final void updateMorphsWithCurrMaps() {		
 		for(int i=0;i<morphs.length;++i) {morphs[i].setMaps( maps[currMapTypeIDX][0],  maps[currMapTypeIDX][1], morphMaps[currMapTypeIDX]);}
 	}
-	protected final void updateMorphsWithMorphScope() {
-		for(int i=0;i<morphs.length;++i) {morphs[i].setMorphScope(currMorphScope);}
-	}
+//	protected final void updateMorphsWithMorphScope() {
+//		for(int i=0;i<morphs.length;++i) {morphs[i].setMorphScope(currMorphScope);}
+//	}
 
 	@Override
 	public final void setPrivFlags(int idx, boolean val) {
@@ -400,21 +448,24 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				if(val) {		matchAllMapCorners(1,0);	addPrivBtnToClear(matchMapCrnrs_1IDX);	}
 				break;}
 			
-			case findDiffBFromAIDX			: {
-				if(val) {		findDifferenceBetweenMaps(maps[currMapTypeIDX][0],maps[currMapTypeIDX][1], true);	addPrivBtnToClear(findDiffBFromAIDX);	}
+			case findDiffFromAtoBIDX			: {
+				if(val) {		fromMapIDX = 0; toMapIDX = 1;findDifferenceBetweenMaps(true, true);	addPrivBtnToClear(findDiffFromAtoBIDX);	}
 				break;}
-			case findDiffAFromBIDX			: {
-				if(val) {		findDifferenceBetweenMaps(maps[currMapTypeIDX][1],maps[currMapTypeIDX][0], true);	addPrivBtnToClear(findDiffAFromBIDX);	}
+			case findDiffFromBToAIDX			: {
+				if(val) {		fromMapIDX = 1; toMapIDX = 0;findDifferenceBetweenMaps(true, true);	addPrivBtnToClear(findDiffFromBToAIDX);	}
 				break;}
 						
 			case drawMapIDX					: {			break;		}
 			case drawMap_CntlPtsIDX			: {			break;		}
 			case drawMap_FillOrWfIDX		: { 		break;		}
 			case drawMap_CellCirclesIDX 	: {			break;		}
+			case drawMap_EdgeLinesIDX		: {			break;		}
 			case drawMap_ImageIDX			: {			break;		}
 			case drawMap_OrthoFrameIDX		: {			break;		}
 			case drawMap_CntlPtLblsIDX		: {			break;		}
-			case drawMap_CopyIDX			: {			break;		}
+			case drawMap_CopyIDX			: {
+				if (val) {findDifferenceBetweenMaps(true, true);}
+				break;		}
 			case drawMorph_MapIDX			: {			break;		}	
 			case drawMorph_CntlPtTrajIDX 	: {			break;		}
 			case drawMorph_FillOrWfIDX		: {			break;		}
@@ -424,40 +475,42 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	}
 	protected abstract void setPrivFlags_Indiv(int idx, boolean val);
 
-	public void findDifferenceBetweenMaps(baseMap fromMap,baseMap toMap, boolean setCopyMap) {
+	public void findDifferenceBetweenMaps(boolean setCopyMap, boolean dispMod) {
+		
+		baseMap fromMap = maps[currMapTypeIDX][fromMapIDX];
+		baseMap toMap = maps[currMapTypeIDX][toMapIDX];
+		
 		myVectorf dispBetweenMaps = new myVectorf();
 		float[] angleAndScale = new float[2];
 		toMap.findDifferenceToMe(fromMap, dispBetweenMaps, angleAndScale);
-		msgObj.dispInfoMessage("COTS_MorphWin", "findDiffBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " : Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
+		if(dispMod) {
+			msgObj.dispInfoMessage("COTS_MorphWin", "findDiffBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
+		}
 		if(setCopyMap) {		
 			copyMap = buildCopyMapOfPassedMapType(fromMap, "Copy");
-			
 			copyMap.registerMeToVals(dispBetweenMaps, angleAndScale);
 		}
-	
 	}
 	
-	
+	/**
+	 * reset all instances of either "floor"/A or "ceiling"/B map
+	 */	
 	protected void resetAllMapCorners() {
-		myPointf[][] bndPts = get2MapBndPts();
-		for(int i=0;i<maps.length;++i) {
-			morphMaps[i].setCntlPts(bndPts[0], numCellsPerSide);
-			for(int j=0;j<maps[i].length;++j) {		maps[i][j].setCntlPts(bndPts[j], numCellsPerSide);	}
-		}			
+		for(int i=0;i<morphMaps.length;++i) {			morphMaps[i].setCntlPts(bndPts[0], numCellsPerSide);		}
+		for(int i=0;i<maps.length;++i) {			for(int j=0;j<maps[i].length;++j) {		maps[i][j].setCntlPts(bndPts[j], numCellsPerSide);	}		}			
 	}
-	protected void resetMapCorners(int mapIDX) {
-		myPointf[][] bndPts = get2MapBndPts();
-		for(int i=0;i<maps.length;++i) {	maps[i][mapIDX].setCntlPts(bndPts[mapIDX], numCellsPerSide);}
-		
-	}
+	/**
+	 * reset all instances of either "floor"/A or "ceiling"/B map
+	 * @param mapIDX
+	 */
+	protected void resetMapCorners(int mapIDX) {	for(int i=0;i<maps.length;++i) {	maps[i][mapIDX].setCntlPts(bndPts[mapIDX], numCellsPerSide);}}
 	/**
 	 * match map destIDX corners to map srcIDX's corners
 	 */
 	protected void matchAllMapCorners(int srcIDX, int destIDX) {
-		myPointf[][] bndPts = get2MapBndPts();
+		//myPointf[][] bndPts = getKeyFrameMapBndPts();
 		for(int i=0;i<maps.length;++i) {
-			myPointf[] rawPts0 = maps[i][srcIDX].getCntlPts();
-			myPointf[] newPts = new myPointf[rawPts0.length];
+			myPointf[] rawPts0 = maps[i][srcIDX].getCntlPts(), newPts = new myPointf[rawPts0.length];
 			for(int j=0;j<rawPts0.length;++j) {	newPts[j] = myPointf._add(myPointf._sub(rawPts0[j], bndPts[srcIDX][j]), bndPts[destIDX][j]);}			
 			maps[i][destIDX].setCntlPts(newPts, numCellsPerSide);	
 		}		
@@ -487,18 +540,20 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		pa.pushMatrix();pa.pushStyle();
 		int curModMapIDX = (null==currMseModMap ? -1 : currMseModMap.mapIdx);
 		if(getPrivFlags(drawMapIDX)) {				
-			if(getPrivFlags(drawMap_FillOrWfIDX)) {		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Fill(i==curModMapIDX);}}
-			else {										for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Wf(i==curModMapIDX);}}
+			if(getPrivFlags(drawMap_FillOrWfIDX)) {		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Fill();}}
+			else {										for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Wf();}}
 		}
 		if(getPrivFlags(drawMap_CellCirclesIDX)) {
 			if(getPrivFlags(drawMap_FillOrWfIDX)) {		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_PolyCircles_Fill();}}		
 			else {										for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_PolyCircles_Wf();}}			
 		}
 		if(getPrivFlags(drawMap_CopyIDX)) {			
-			if(getPrivFlags(drawMap_FillOrWfIDX)) { copyMap.drawMap_Fill(false);	}	
-			else {									copyMap.drawMap_Wf(false);	}		
+			if(getPrivFlags(drawMap_FillOrWfIDX)) { copyMap.drawMap_Fill();	}	
+			else {									copyMap.drawMap_Wf();	}		
 		}
-		if(getPrivFlags(drawMap_ImageIDX)) {			for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Texture(i==curModMapIDX);}}
+		if(getPrivFlags(drawMap_EdgeLinesIDX)) {		maps[currMapTypeIDX][0].drawMap_EdgeLines();}
+		
+		if(getPrivFlags(drawMap_ImageIDX)) {			for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_Texture();}}
 		if(getPrivFlags(drawMap_CntlPtsIDX)){			for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawMap_CntlPts(i==curModMapIDX);}}
 		if(getPrivFlags(drawMap_OrthoFrameIDX)) {		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawOrthoFrame();}}
 		if(getPrivFlags(drawMorph_CntlPtTrajIDX)) {		morphs[currMorphTypeIDX].drawMorphedMap_CntlPtTraj();}
@@ -512,15 +567,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			guiObjs[gIDX_MorphTVal].setVal(morphProgress);
 			if(morphProgress > 1.0f) {morphProgress = 1.0f;sign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	sign = 1.0f;}
 		}
-		_drawMe_Indiv(animTimeMod,getPrivFlags(drawMap_CntlPtLblsIDX));
+		boolean showLbls = getPrivFlags(drawMap_CntlPtLblsIDX);
+		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels(showLbls);}
+		if(getPrivFlags(drawMorph_MapIDX)) {			morphs[currMorphTypeIDX].drawHeaderAndLabels(showLbls);}
+		_drawMe_Indiv(animTimeMod);
 		pa.popStyle();pa.popMatrix();	
 	}
 	
-	protected abstract void _drawMe_Indiv(float animTimeMod, boolean showLbls);
+	protected abstract void _drawMe_Indiv(float animTimeMod);
 	
 	@Override
 	public final void drawCustMenuObjs() {
-		
 
 	}
 
@@ -553,9 +610,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		_yOff = copyMap.drawRightSideBarMenuDescr(_yOff, sideBarYDisp, true);
 		if(getPrivFlags(drawMorph_MapIDX)) {
 			_yOff = morphs[currMorphTypeIDX].drawMapRtSdMenuDescr(_yOff, sideBarYDisp);
-		}
-		
-		
+		}		
 		return _yOff;
 	}
 	/**
@@ -577,6 +632,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 
 	}
+		
+	public abstract void _drawLabelAtPt(myPointf p, String lbl, float xOff, float yOff);	
 	
 	/////////////////////////////
 	// window control
@@ -593,22 +650,75 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	
 	////////////////////////
 	// keyboard and mouse
-//	@Override
-//	protected final boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
-//		if(currMseModMap == null) { return false;}
-//		i
-//		currMseModMap.mseDrag_3D(mseDragInWorld);
-//	
-//		return true;
-//	}
-//	
-//	protected abstract void mseDrag_Btn0(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld);
-//	protected abstract void mseDrag_Btn1(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld);
-//	protected abstract void mseDrag_Btn2(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld);
 	
-	
+	//move without click
+	@Override
+	protected final boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld) {
+		
+		return false;
+	}
 
+	@Override
+	protected final boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
+		//check every map for closest control corner to click location
+		TreeMap<Float,baseMap>  mapDists = new TreeMap<Float,baseMap>();
+		//msgObj.dispInfoMessage("COTS_Morph3DWin", "hndlMouseClickIndiv", "Mouse button pressed : " + mseBtn + " Key Pressed : " + keyPressed + " Key Coded : " + keyCodePressed);
+		//get a point on ray through mouse location in world
+		myPointf _rayOrigin = pa.c.getMseLoc_f();
+		myVectorf _rayDir = pa.c.getEyeToMouseRay_f();
+		myPointf mseLocInWorld_f = getMouseClkPtInWorld(mseClckInWorld,mouseX,mouseY);
+		
+		for(int j=0;j<maps[currMapTypeIDX].length;++j) {	
+			mapDists.put(maps[currMapTypeIDX][j].findClosestCntlPt(mseLocInWorld_f, _rayOrigin, _rayDir), maps[currMapTypeIDX][j]);
+		}
+		Float minSqDist = mapDists.firstKey();
+		if((minSqDist < minSqClickDist) || (keyPressed=='s') || (keyPressed=='S')  || (keyPressed=='r') || (keyPressed=='R'))  {
+			currMseModMap = mapDists.get(minSqDist);
+			return true;
+		}
+		currMseModMap = null;
+		return false;
+	}
+	/**
+	 * function to find location in map world of mouse click
+	 * @param mseClckInWorld
+	 * @param mouseX
+	 * @param mouseY
+	 * @return
+	 */
+	public abstract myPointf getMouseClkPtInWorld(myPoint mseClckInWorld,int mouseX, int mouseY);
+	/**
+	 * called by maps - finds distance to either passed point (in 2D) or passed ray cast (in 3D)
+	 * @param _pt0
+	 * @param _pt
+	 * @param _rayOrigin
+	 * @param _rayDir
+	 * @return
+	 */
+	public abstract Float findDistToPtOrRay(myPointf _pt0, myPointf _pt, myPointf _rayOrigin, myVectorf _rayDir);	
 	
+	@Override
+	protected final boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
+		if(currMseModMap != null) {
+			handleMapMseDrag(mouseX, mouseY, pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
+			if((CarrierSimRegTransIDX==currMorphTypeIDX) || (getPrivFlags(drawMap_CopyIDX))) {findDifferenceBetweenMaps(true, false);}
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * handle map-specific mouse drag interaction
+	 * @param mouseX mouse x
+	 * @param mouseY mouse y
+	 * @param pmouseX previous mouse x
+	 * @param pmouseY previous mouse y
+	 * @param mouseClickIn3D 3d location of mouse 
+	 * @param mseDragInWorld displacement vector of mouse, in plane of screen normal
+	 * @param mseBtn which button was pressed
+	 */
+	protected abstract void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn);
+
 	@Override
 	protected final void hndlMouseRelIndiv() {
 		for(int i=0;i<maps.length;++i) {for(int j=0;j<maps[i].length;++j) {	maps[i][j].mseRelease();}}

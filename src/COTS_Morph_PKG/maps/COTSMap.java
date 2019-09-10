@@ -1,10 +1,14 @@
 package COTS_Morph_PKG.maps;
 
+import java.util.TreeMap;
+
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.similarities.COTS_Similarity;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.vectorObjs.myPointf;
+import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
  * COTS map based on Jarek's paper
@@ -38,17 +42,6 @@ public class COTSMap extends baseMap {
 		if(null==cots) {return;}		//need this check since cots similarity not built before this is first called
 
 		cots.deriveSimilarityFromCntlPts(cntlPts, reset);		
-		
-//	    if((this.mapIdx == 0) || (this.mapIdx == 1)){
-//		    String debug = this.mapTitle + " reset : " + reset + " | share : " + this.shouldShareBranching + " | "+ cots.getDebugStr()+ " | A : " + cntlPts[0].toStrBrf();
-//		    //for(int i=0;i<cntlPts.length;++i) { 	debug +="\n\t"+cntlPts[i].toStrBrf();   }
-//		    System.out.println(debug);
-//	    }
-//	    a/s between AB and DC : 0.0021673138 | 1.0043322 || a/s between AD and BC : -0.004325232 | 1.0021533 || F : (-41836.438,-85003.484)
-//		(651.9,431.3)
-//		(1113.2999,430.3)
-//		(1113.2999,893.7)
-//		(649.9,893.7)
 	}
 	
 
@@ -65,43 +58,74 @@ public class COTSMap extends baseMap {
 	}
 	
 	@Override
+	protected final void setOtrMap_Indiv() {};
+	@Override
 	public myPointf getCenterPoint() {
 		return cots.getF();
 	}
-
 	
 	@Override
-	protected boolean updateMapVals_Indiv() {		boolean hasBeenUpdated = false;		return hasBeenUpdated;}
-	
-	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp) {
-		yOff = cots.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
-		return yOff;
+	protected boolean updateMapVals_FromUI_Indiv(mapUpdFromUIData upd) {		boolean hasBeenUpdated = false;		return hasBeenUpdated;}
+	/**
+	 * build a set of edge points around the edge of this map
+	 */
+	protected final myPointf[][] buildEdgePoints() {
+		 myPointf[][] ePts = new myPointf[cntlPts.length][numCellsPerSide];
+		 if(null==cots) {return ePts;}
+		 for(int j=0;j<ePts[0].length;++j) { 
+			 float t = (1.0f*j)/ePts[0].length;
+			 ePts[0][j] = calcMapPt(t, 0.0f);
+			 ePts[1][j] = calcMapPt(1.0f, t);
+			 ePts[2][j] = calcMapPt(1.0f-t, 1.0f);
+			 ePts[3][j] = calcMapPt(0.0f, 1.0f-t);
+		 }
+		return ePts;
 	}
+	
+	/////////////////////
+	// draw routines
 	
 	/**
 	 * instance-specific point drawing
 	 * @param pa
 	 */
 	@Override
-	protected void _drawPoints_Indiv() {
+	protected void _drawCntlPoints_Indiv(boolean isCurMap) {
 		pa.sphereDetail(5);
 		pa.setStroke(polyColors[1], 255);
 		_drawPt(cots.getF(), sphereRad*1.5f);		
 	}
 	
 	@Override
-	protected final void _drawPointLabels_2D_Indiv() {
-		_drawLabelAtPt(cots.getF(),"Spiral Center : "+ cots.getF().toStrBrf(), 2.5f,-2.5f);		
+	protected final void _drawPointLabels_Indiv() {
+		win._drawLabelAtPt(cots.getF(),"Spiral Center : "+ cots.getF().toStrBrf(), 2.5f,-2.5f);		
 	}
 	
+	
 	@Override
-	protected final void _drawPointLabels_3D_Indiv(myDispWindow animWin) {
-		_drawLabelAtPt_UnSetCam(animWin,cots.getF(),"Spiral Center : "+ cots.getF().toStrBrf(), 2.5f,-2.5f);
+	protected float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+		yOff = cots.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
+		return yOff;
 	}
 
+	/**
+	 * manage mouse/map movement for child-class specific fields
+	 */	
+	@Override	
+	protected final void findClosestCntlPt_Indiv(myPointf _mseLoc, myPointf _rayOrigin, myVectorf _rayDir, TreeMap<Float, myPointf> ptsByDist) {}	
 	@Override
-	protected void mseRelease_Indiv() {}
+	protected final void mseDragInMap_Indiv(myVectorf defVec, myPointf mseClickIn3D_f,boolean isScale,boolean isRotation,  char key, int keyCode) {}
+	@Override
+	protected final void dilateMap_Indiv(float amt) {}
+	@Override
+	protected final void rotateMapInPlane_Indiv(float thet) {}
+	@Override
+	protected void moveMapInPlane_Indiv(myVectorf defVec) {}
+	@Override
+	protected void moveCntlPtInPlane_Indiv(myVectorf defVec) {}
+
+	@Override
+	protected final void mseRelease_Indiv() {	}
 
 }//COTSMap
 

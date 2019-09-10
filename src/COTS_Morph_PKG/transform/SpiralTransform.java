@@ -55,6 +55,21 @@ public class SpiralTransform extends baseTransform {
 	}
 	
 	/**
+	 * manually build this transformation
+	 * @param scale scale of transformation
+	 * @param angle angle of rotational difference - must be +/- PI
+	 * @param A, B transformation should map from A to B, for building center point
+	 */
+	public final void buildTransformation(float angle, float scale, myPointf A, myPointf B) {
+		m=scale;
+		a=angle;
+		//no branching, since this angle will be set to be +/- PI
+		a_BranchDisp = 0.0f;
+		 F = spiralCenter(m,a,A,B);  
+	}
+	
+	
+	/**
 	 * build this transformation from control point array
 	 * 		 cntl pts expected to be in circle so that 0 maps to 3 and 1 maps to 2
 	 * @param cntlPts
@@ -174,12 +189,6 @@ public class SpiralTransform extends baseTransform {
 		myVectorf V = projVecToMapPlane(U._dot(CA)/uSqMag, rU._dot(CA)/uSqMag);
 		return myPointf._add(A, V);
 	}
-	
-	/**
-	 * call after recalculating the center point - this will translate the center point by passed displacement
-	 * @param _disp
-	 */
-	public final void translateCenterPointByVec(myVectorf _disp) {	F._add(_disp);}
 	
 	/**
 	 * calc 1D transformation point for given point

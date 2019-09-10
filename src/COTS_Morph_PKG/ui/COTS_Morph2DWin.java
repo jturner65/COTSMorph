@@ -6,31 +6,28 @@ import java.util.TreeMap;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
+import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
+import base_Utils_Objects.vectorObjs.myVectorf;
 
 public class COTS_Morph2DWin extends COTS_MorphWin {
 	
 	private int _numPrivButtons = numBaseCOTSWinPrivFlags + 0;
 
-	
 	public COTS_Morph2DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);
-		
+		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);		
 		super.initThisWin(false);
 	}
 	@Override
-	protected final void initMe_Indiv() {
-	
+	protected final void initMe_Indiv() {	
 	}//initMe
-
-
 	/**
 	 * return the initial bounds for the maps in the world space
 	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
 	 */
-	protected final myPointf[][] get2MapBndPts(){
+	protected final myPointf[][] getKeyFrameMapBndPts(){
 		myPointf[][] bndPts = new myPointf[2][4];
 		//width of area per map
 		float widthPerMap = .5f*rectDim[2], 	halfWidth = .5f*widthPerMap;
@@ -92,45 +89,53 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	/////////////////////////////
 	// draw routines
 	@Override
-	protected final void _drawMe_Indiv(float animTimeMod, boolean showLbls){
-		for(int i=0;i<maps[currMapTypeIDX].length;++i) {maps[currMapTypeIDX][i].drawHeaderAndLabels_2D(showLbls);}
-		if(getPrivFlags(drawMorph_MapIDX)) {		
-			morphs[currMorphTypeIDX].drawHeaderAndLabels_2D(showLbls);	
-		}
+	protected final void _drawMe_Indiv(float animTimeMod){
+		
+		
 	}//_drawMe_Indiv
+	
+	
+	/**
+	 * called by maps
+	 * @param p
+	 * @param lbl
+	 * @param xOff
+	 * @param yOff
+	 */
+	public final void _drawLabelAtPt(myPointf p, String lbl, float xOff, float yOff) {
+		pa.pushMatrix();pa.pushStyle();	
+		pa.translate(p);
+		pa.scale(txtSclVal);
+		pa.text(lbl, xOff,yOff,0); 
+		pa.popStyle();pa.popMatrix();
+	}
+
 		
 	////////////////////////
 	// keyboard and mouse
 
 	@Override
-	protected final boolean hndlMouseClickIndiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
-		//check every map for closest control corner to click location
-		TreeMap<Float,baseMap>  mapDists = new TreeMap<Float,baseMap>();
-		for(int j=0;j<maps[currMapTypeIDX].length;++j) {	
-			mapDists.put(maps[currMapTypeIDX][j].findClosestCntlPt_2D(new myPointf(mouseX,mouseY,0)), maps[currMapTypeIDX][j]);
-		}
-		Float minSqDist = mapDists.firstKey();
-		if((minSqDist < minSqClickDist) || (keyPressed=='s') || (keyPressed=='S')  || (keyPressed=='r') || (keyPressed=='R')) {
-			currMseModMap = mapDists.get(minSqDist);
-			return true;
-		}
-		currMseModMap = null;
-		return false;
-	}
-	
-	
+	public final Float findDistToPtOrRay(myPointf _pt0, myPointf _pt, myPointf _notUsedPt, myVectorf _notUsedVec) {		return myPointf._SqrDist(_pt0, _pt);	};
 	@Override
-	protected boolean hndlMouseMoveIndiv(int mouseX, int mouseY, myPoint mseClckInWorld) {
-		return false;
-	}
+	public final myPointf getMouseClkPtInWorld(myPoint mseClckInWorld,int mouseX, int mouseY) {return new myPointf(mouseX,mouseY,0);}
 
+	/**
+	 * handle map-specific mouse drag interaction
+	 * @param mouseX mouse x
+	 * @param mouseY mouse y
+	 * @param pmouseX previous mouse x
+	 * @param pmouseY previous mouse y
+	 * @param mouseClickIn3D 3d location of mouse 
+	 * @param mseDragInWorld displacement vector of mouse, in plane of screen normal
+	 * @param mseBtn which button was pressed
+	 */
 	@Override
-	protected boolean hndlMouseDragIndiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
-		if(currMseModMap != null) {
-			currMseModMap.mseDrag_2D(mouseX, mouseY, 1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY),mseDragInWorld,keyPressed,keyCodePressed);
-			return true;
-		}		
-		return false;
+	protected final void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
+		//myVectorf mseDragInWorld_f = new myVectorf(mseDragInWorld);
+		myVectorf defVec = new myVectorf(1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY),0.0f);
+		myPointf mseClickIn3D_f = new myPointf(mouseX, mouseY, 0);
+		currMseModMap.mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
+		//currMseModMap.mseDrag_2D(mouseX, mouseY, 1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY),mseDragInWorld,keyPressed,keyCodePressed);
 	}
 	
 	@Override
