@@ -1,5 +1,6 @@
 package COTS_Morph_PKG.transform.base;
 
+import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
@@ -10,16 +11,19 @@ import base_Utils_Objects.vectorObjs.myVectorf;
  *
  */
 public abstract class baseTransform {
+	public final String name;
 	/**
 	 * basis of plane for transform
 	 */
 	protected myVectorf norm, I, J;
 	
-	public baseTransform(myVectorf _n, myVectorf _I, myVectorf _J) {
+	public baseTransform(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {
+		name=_name;
 		setNewFrame(_n,_I,_J);
 	}
 	
-	public baseTransform(baseTransform _otr) {
+	public baseTransform(String _name, baseTransform _otr) {
+		name= _name;
 		setNewFrame(_otr.norm,_otr.I,_otr.J);
 	}
 	
@@ -43,20 +47,20 @@ public abstract class baseTransform {
 		J=new myVectorf(_J);
 	}
 	
-	/**
-	 * build this transformation from control point array
-	 * 		 cntl pts expected to be in circle so that 0 maps to 3 and 1 maps to 2
-	 * @param cntlPts
-	 * @param flags any instance-specific flags to use to build transformation 
-	 */	
-	public abstract void buildTransformation(myPointf[] cntlPts, boolean[] flags);
+//	/**
+//	 * build this transformation from control point array
+//	 * 		 cntl pts expected to be in circle so that 0 maps to 3 and 1 maps to 2
+//	 * @param cntlPts
+//	 * @param flags any instance-specific flags to use to build transformation 
+//	 */	
+//	public abstract void buildTransformation(myPointf[] cntlPts,  mapCntlFlags flags);
 	/**
 	 * build this transformation from two edge pt arrays
 	 * 		 cntl pts expected to be in circle so that 0 maps to 3 and 1 maps to 2
 	 * @param cntlPts
 	 * @param flags any instance-specific flags to use to build transformation 
 	 */	
-	public abstract void buildTransformation(myPointf[] e0, myPointf[] e1, boolean[] flags);
+	public abstract void buildTransformation(myPointf[] e0, myPointf[] e1,  mapCntlFlags flags);
 	
 	/**
 	 * calc 1D transformation point for given point

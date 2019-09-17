@@ -1,6 +1,8 @@
 package COTS_Morph_PKG.transform;
 
+import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.transform.base.baseTransform;
+import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.MyMathUtils;
@@ -15,7 +17,7 @@ public class SpiralTransform extends baseTransform {
 	/**
 	 * spiral angle
 	 */
-	protected float a = 0.0f;//, old_a = 0.0f;
+	protected float a = 0.0f, old_alpha = 0.0f, old_old_alpha = 0.0f;
 	/**
 	 * half-rotation values used to compensate for branching of atan2
 	 */
@@ -27,31 +29,33 @@ public class SpiralTransform extends baseTransform {
 	/**
 	 * whether branching should be reset
 	 */
-	protected boolean resetBranching = false;
+	//protected boolean resetBranching = false;
 	
-	protected static final String[] rtMenuDispType = new String[] {"Scale","Angle","Branching"};
+	protected static final String[] rtMenuDispType = new String[] {"Scale","Angle","Branch"};
 
 
-	public SpiralTransform(myVectorf _n, myVectorf _I, myVectorf _J) {	super(_n, _I, _J);}
+	public SpiralTransform(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	super( _name+"_Spiral", _n, _I, _J);}
 	
-	public SpiralTransform(SpiralTransform _otr) {
-		super(_otr);
+	public SpiralTransform(String _name, SpiralTransform _otr) {
+		super( _name+"_Spiral_Cpy",_otr);
 		m= _otr.m;
 		a= _otr.a;
-		//old_a = _otr.old_a;
+		old_old_alpha = _otr.old_old_alpha;
+		old_alpha = _otr.old_alpha;
 		a_BranchDisp = _otr.a_BranchDisp;
 		F = new myPointf(_otr.F);
-		resetBranching = _otr.resetBranching;
+		//resetBranching = _otr.resetBranching;
 	}
 	
 	@Override
 	protected final void reset_Indiv() {
 		 m = 1.0f;
 		 a = 0.0f; 
-		// old_a = 0.0f; 
+		 old_alpha = 0.0f; 
+		 old_old_alpha = 0.0f;
 		 a_BranchDisp = 0.0f; 
 		 F = new myPointf();
-		 resetBranching = false;
+		// resetBranching = false;
 	}
 	
 	/**
@@ -62,33 +66,25 @@ public class SpiralTransform extends baseTransform {
 	 */
 	public final void buildTransformation(float angle, float scale, myPointf A, myPointf B) {
 		m=scale;
+		old_old_alpha = old_alpha;
+		old_alpha = a;
 		a=angle;
 		//no branching, since this angle will be set to be +/- PI
 		a_BranchDisp = 0.0f;
-		 F = spiralCenter(m,a,A,B);  
+		F = spiralCenter(m,a,A,B);  
 	}
 	
-	
 	/**
-	 * build this transformation from control point array
-	 * 		 cntl pts expected to be in circle so that 0 maps to 3 and 1 maps to 2
-	 * @param cntlPts
-	 * @param flags any instance-specific flags to use to build transformation 
-	 */	
-	@Override
-	public final void buildTransformation(myPointf[] cntlPts, boolean[] flags) {
-	    m = spiralScale(cntlPts[0],cntlPts[1],cntlPts[3],cntlPts[2]); 	
-		//old_a = a;
-	    float an = spiralAngle(cntlPts[0],cntlPts[1],cntlPts[3],cntlPts[2]); // new values	    
-	    if((resetBranching) || flags[0]) {
-	    	a = an;
-	    	a_BranchDisp = 0.0f;
-	    	resetBranching = false;
-	    } else {
-	    	a_BranchDisp = calcAngleDelWthBranching(an + a_BranchDisp, a, a_BranchDisp);
-		    a=(an + a_BranchDisp);
-	    }    
-	    F = spiralCenter(m,a,cntlPts[0],cntlPts[3]);  
+	 * calcluate the optimal value for alpha given the passed alpha new value - the new alpha value that is closest to the old alpha value, based on branching 2piK offsets
+	 * also need to update branching
+	 * @return
+	 */
+	private void calcOptimalAlpha(float alphaNew, mapCntlFlags flags) {	
+		//if((old_old_alpha != old_alpha) || (a != old_alpha)) {
+		if(flags.getDebug()) {// && ((old_old_alpha != old_alpha) || (a != old_alpha))) {
+			System.out.println(name+" : Old Old alpha : " + old_old_alpha +" | Old alpha : " + old_alpha + " alphaNew : " + alphaNew + " | a : " + a + " | a_BranchDisp : " + a_BranchDisp);
+		}
+		
 	}
 	
 	/**
@@ -98,20 +94,27 @@ public class SpiralTransform extends baseTransform {
 	 * @param flags any instance-specific flags to use to build transformation 
 	 */	
 	@Override
-	public final void buildTransformation(myPointf[] e0,myPointf[] e1, boolean[] flags) {
+	public final void buildTransformation(myPointf[] e0,myPointf[] e1,  mapCntlFlags flags) {
 	    m = spiralScale(e0[0],e0[1],e1[0],e1[1]); 	
-		//old_a = a;
-	    float an = spiralAngle(e0[0],e0[1],e1[0],e1[1]); // new values	    
-	    if((resetBranching) || flags[0]) {
-	    	a = an;
+	    float alphaNew = spiralAngle(e0[0],e0[1],e1[0],e1[1]); // new values	
+	    
+		boolean reset = flags.getResetBranching();
+		boolean optimizeAlpha = flags.getOptimizeAlpha();			//this is performed for morphing, to keep alpha close as possible to previous alpha
+		old_old_alpha = old_alpha;
+		old_alpha = a;	    	
+		if(reset) {	    	
 	    	a_BranchDisp = 0.0f;
-	    	resetBranching = false;
 	    } else {
-	    	a_BranchDisp = calcAngleDelWthBranching(an + a_BranchDisp, a, a_BranchDisp);
-		    a=(an + a_BranchDisp);
-	    }    
+	    	a_BranchDisp = calcAngleDelWthBranching(alphaNew + a_BranchDisp, a, a_BranchDisp);
+	    }  
+	    a=(alphaNew + a_BranchDisp);
+	    
+	    if(optimizeAlpha) {
+	    	calcOptimalAlpha(alphaNew, flags);
+	    }
+	    
 	    F = spiralCenter(m,a,e0[0],e1[0]);  
-	}
+	}//buildTransformation
 
 	
 	/**
@@ -146,6 +149,7 @@ public class SpiralTransform extends baseTransform {
 		float iXVal = (float) ((x*c)-x-(y*s)), jYVal= (float) ((x*s)+(y*c)-y);			
 		return myPointf._add(P,iXVal,I,jYVal,J); 
 	}; 
+	
 	public float spiralAngle(myPointf A, myPointf B, myPointf C, myPointf D) {return myVectorf._angleBetween_Xprod(new myVectorf(A,B),new myVectorf(C,D), norm);}
 	public float spiralScale(myPointf A, myPointf B, myPointf C, myPointf D) {return myPointf._dist(C,D)/ myPointf._dist(A,B);}
 	
@@ -166,7 +170,8 @@ public class SpiralTransform extends baseTransform {
 				a=AB._dot(AC)/AB2, 
 				b=rAB._dot(AC)/AB2, 
 				x=(a-mu*( a*c+b*s)), y=(b-mu*(-a*s+b*c)), d=1+mu*(mu-2*c);  if((c!=1)&&(mu!=1)) { x/=d; y/=d; };
-		return new myPointf(new myPointf(A,x,AB),y,rAB);
+		myPointf res = new myPointf(new myPointf(A,x,AB),y,rAB);
+		return res;
 	 }
 
 	
@@ -187,7 +192,8 @@ public class SpiralTransform extends baseTransform {
 				rU = myVectorf._rotAroundAxis(U, norm, MyMathUtils.halfPi_f);		
 		float uSqMag = U.sqMagn;
 		myVectorf V = projVecToMapPlane(U._dot(CA)/uSqMag, rU._dot(CA)/uSqMag);
-		return myPointf._add(A, V);
+		myPointf res = myPointf._add(A, V);
+		return res;
 	}
 	
 	/**
@@ -218,11 +224,11 @@ public class SpiralTransform extends baseTransform {
 	@Override
 	public final float drawRightSideBarMenuDescr(my_procApplet pa, float yOff, float sideBarYDisp, String coordName) {
 		pa.translate(10.0f, 0.0f, 0.0f);
-		String[] dispVals = new String[]{String.format("%.4f",m),String.format("%.4f",a),String.format("%.4f",a_BranchDisp)};	
+		String[] dispVals = new String[]{String.format(baseMap.strPointDispFrmt8,m),String.format(baseMap.strPointDispFrmt8,a),String.format(baseMap.strPointDispFrmt8,a_BranchDisp)};	
 		pa.pushMatrix();pa.pushStyle();
 		for(int j=0;j<rtMenuDispType.length;++j) {			
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, rtMenuDispType[j] + " " + coordName + " : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightGreen, 255), 7.0f, dispVals[j]);
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, rtMenuDispType[j] + " " + coordName + " : ");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightGreen, 255), 6.0f, dispVals[j]);
 		}
 		pa.popStyle();pa.popMatrix();
 		yOff += sideBarYDisp;
@@ -230,7 +236,7 @@ public class SpiralTransform extends baseTransform {
 		
 		pa.pushMatrix();pa.pushStyle();		
 		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, F.toStrBrf());
+		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
 		pa.popStyle();pa.popMatrix();
 			
 		yOff += sideBarYDisp;
@@ -242,19 +248,18 @@ public class SpiralTransform extends baseTransform {
 		pa.translate(10.0f, 0.0f, 0.0f);
 		pa.pushMatrix();pa.pushStyle();		
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, F.toStrBrf());
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
 		pa.popStyle();pa.popMatrix();
 			
 		yOff += sideBarYDisp;
 		pa.translate(-10.0f,sideBarYDisp, 0.0f);
 		return yOff;
-		
 	}	
 	
 	/////////////////////////
 	// getters/setters
 	
-	public final void setResetBranching(boolean _reset) {resetBranching = _reset;}
+	//public final void setResetBranching(boolean _reset) {resetBranching = _reset;}
 	public final void setBranching(float brnchOffset) {
 		//remove old displacement
 		a -= a_BranchDisp;
@@ -274,9 +279,9 @@ public class SpiralTransform extends baseTransform {
 
 	@Override
 	protected String getDebugStr_Indiv() {
-		String dbgStr = " | a/s AB and DC : ";//old a : " +String.format("%.4f",old_a) +" |";
-		dbgStr += " Angle : " +String.format("%.4f",a) +" | Brnch :  "+String.format("%.4f",a_BranchDisp);
-		dbgStr += " | Scl : " + String.format("%.4f",m) + " || F : " + F.toStrBrf();
+		String dbgStr = " | a/s AB and DC : ";//old a : " +String.format(baseMap.strPointDispFrmt,old_a) +" |";
+		dbgStr += " Angle : " +String.format(baseMap.strPointDispFrmt8,a) +" | Brnch :  "+String.format(baseMap.strPointDispFrmt8,a_BranchDisp);
+		dbgStr += " | Scl : " + String.format(baseMap.strPointDispFrmt8,m) + " || F : " + F.toStrBrf();
 		return dbgStr;
 	}
 

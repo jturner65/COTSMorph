@@ -1,6 +1,7 @@
 package COTS_Morph_PKG.similarities.base;
 
 import COTS_Morph_PKG.transform.SpiralTransform;
+import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
@@ -11,6 +12,7 @@ import base_Utils_Objects.vectorObjs.myVectorf;
  *
  */
 public abstract class baseSimilarity {
+	public final String name;
 	/**
 	 * basis of plane similarity is working in
 	 */
@@ -21,24 +23,29 @@ public abstract class baseSimilarity {
 	protected SpiralTransform[] trans;
 
 	
-	public baseSimilarity(myVectorf _n, myVectorf _I, myVectorf _J) {	
+	public baseSimilarity(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	
+		name=_name;
 		norm=new myVectorf(_n);
 		I=new myVectorf(_I);
 		J=new myVectorf(_J);
 		trans = initTransform();
 	}
 	
-	public baseSimilarity(baseSimilarity _otr) {	
+	public baseSimilarity(String _name, baseSimilarity _otr) {
+		name=_name;
 		norm=new myVectorf(_otr.norm);
 		I=new myVectorf(_otr.I);
 		J=new myVectorf(_otr.J);
 		trans = new SpiralTransform[_otr.trans.length];  
-		for(int i=0;i<_otr.trans.length;++i) {	trans[i]=new SpiralTransform(_otr.trans[i]);}
+		for(int i=0;i<_otr.trans.length;++i) {	trans[i]=new SpiralTransform(_name, _otr.trans[i]);}
 	}//copy ctor
 
 	protected final SpiralTransform[] initTransform() {
 		SpiralTransform[] res = new SpiralTransform[getNumSpiralTransforms()];
-		for(int i=0;i<res.length;++i) {	res[i]=new SpiralTransform(norm,I,J);}
+		for(int i=0;i<res.length;++i) {	
+			String transName = name + "_trans_"+i;
+			res[i]=new SpiralTransform(transName, norm,I,J);
+		}
 		return res ;
 	}
 	
@@ -58,9 +65,9 @@ public abstract class baseSimilarity {
 	 * use this function if this similarity is describing/used by a COTS map
 	 * update the data for owning COTS based on passed control points
 	 * @param cntlPts
-	 * @param forceResetBranching whether branching state should be forced to be reset
+	 * @param flags : specific control flags passed from owning map
 	 */	
-	public abstract void deriveSimilarityFromCntlPts(myPointf[] cntlPts, boolean forceResetBranching);
+	public abstract void deriveSimilarityFromCntlPts(myPointf[] cntlPts, mapCntlFlags flags);
 
 				
 	/**
@@ -84,7 +91,8 @@ public abstract class baseSimilarity {
 	 * @param t time 
 	 * @return
 	 */	
-	public abstract myPointf transformPoint(myPointf A, float t);			
+	public final myPointf transformPoint(myPointf A, float t) {return transformPoint(A, 0, t);};			
+	public abstract myPointf transformPoint(myPointf A, int transformIDX, float t);			
 	/**
 	 * 2D mapping of transformation of point A
 	 * @param A corner of map
@@ -92,9 +100,8 @@ public abstract class baseSimilarity {
 	 * @param ty interpolant along underformed map y
 	 * @return
 	 */
-	public abstract myPointf mapPoint(myPointf A, float tx, float ty);
-		
-	
+	public final myPointf mapPoint(myPointf A, float tx, float ty) {return mapPoint(A, new int[] {0,1}, tx, ty);}
+	public abstract myPointf mapPoint(myPointf A, int[] transformIDX, float tx, float ty);
 
 	//////////////////////////
 	// draw routines
@@ -116,7 +123,8 @@ public abstract class baseSimilarity {
 	/////////////////////////
 	// getters/setters
 	public final myVectorf getNorm() {return norm;}
-	public final void setResetBranching(boolean _reset) {for (int i=0;i<trans.length;++i) {trans[i].setResetBranching(_reset);}}	
+	//public final void setResetAllBranching(boolean _reset) {for (int i=0;i<trans.length;++i) {trans[i].setBranching(0);}}	
+	public final void setAllBranchingZero() {for (int i=0;i<trans.length;++i) {trans[i].setBranching(0.0f);}}//setBranching
 	public final void setBranching(float[] brnchOffset) {for (int i=0;i<trans.length;++i) {trans[i].setBranching(brnchOffset[i]);}}//setBranching
 
 	public final float[] getBranching() {

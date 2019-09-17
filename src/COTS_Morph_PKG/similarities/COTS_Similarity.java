@@ -1,16 +1,15 @@
 package COTS_Morph_PKG.similarities;
 
 import COTS_Morph_PKG.similarities.base.baseSimilarity;
-import COTS_Morph_PKG.transform.SpiralTransform;
-import base_UI_Objects.IRenderInterface;
+import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
 public class COTS_Similarity extends baseSimilarity {
 
-	public COTS_Similarity(myVectorf _n, myVectorf _I, myVectorf _J) {	super(_n, _I, _J);	}
-	public COTS_Similarity(COTS_Similarity _otr) {	super(_otr);}
+	public COTS_Similarity(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	super(_name + "_COTS_Sim",_n, _I, _J);	}
+	public COTS_Similarity(String _name, COTS_Similarity _otr) {	super(_name + "_COTS_Sim_Cpy",_otr);}
 	
 	
 	/**
@@ -30,10 +29,15 @@ public class COTS_Similarity extends baseSimilarity {
 	 * @param forceResetBranching whether branching state should be forced to be reset
 	 */
 	@Override
-	public final void deriveSimilarityFromCntlPts(myPointf[] cntlPts, boolean forceResetBranching) {
-		boolean [] flags = new boolean[] {forceResetBranching};
-		trans[0].buildTransformation(cntlPts, flags);
-		trans[1].buildTransformation(new myPointf[] {cntlPts[0],cntlPts[3],cntlPts[2],cntlPts[1]}, flags);
+	public final void deriveSimilarityFromCntlPts(myPointf[] cntlPts, mapCntlFlags flags) {
+		myPointf[] e0 = new myPointf[] {cntlPts[0],cntlPts[1]},
+				e1 = new myPointf[] {cntlPts[3],cntlPts[2]},
+				e0Ortho = new myPointf[] {e0[0],e1[0]},
+				e1Ortho = new myPointf[] {e0[1],e1[1]};
+		trans[0].buildTransformation(e0,e1, flags);	
+		flags.setDebug(true);
+		trans[1].buildTransformation(e0Ortho, e1Ortho, flags);
+		flags.setDebug(false);
 	}
 	
 	/**
@@ -43,7 +47,7 @@ public class COTS_Similarity extends baseSimilarity {
 	 * @return
 	 */	
 	@Override			
-	public final myPointf transformPoint(myPointf A, float t) {	return trans[0].transformPoint(A, t);}
+	public final myPointf transformPoint(myPointf A, int transformIDX, float t) {	return trans[transformIDX].transformPoint(A, t);}
 
 	/**
 	 * map point to 
@@ -55,7 +59,7 @@ public class COTS_Similarity extends baseSimilarity {
 	 * @return
 	 */
 	@Override
-	public final myPointf mapPoint(myPointf A, float tx, float ty) {return trans[0].transformPoint(trans[1].transformPoint(A, tx), ty);}
+	public final myPointf mapPoint(myPointf A, int[] transformIDXs, float tx, float ty) {return trans[transformIDXs[0]].transformPoint(trans[transformIDXs[1]].transformPoint(A, tx), ty);}
 
 	@Override
 	protected float drawRightSideBarMenuDescr_Indiv(my_procApplet pa, float yOff, float sideBarYDisp) {		return yOff;	}

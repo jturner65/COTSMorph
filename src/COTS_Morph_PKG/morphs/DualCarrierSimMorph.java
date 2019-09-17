@@ -1,5 +1,7 @@
 package COTS_Morph_PKG.morphs;
 
+import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.morphs.base.baseMorph;
 import COTS_Morph_PKG.similarities.CarrierSimilarity;
@@ -7,27 +9,20 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class DualCarrierSimMorph extends baseMorph {
+public class DualCarrierSimMorph extends CarrierSimDiagMorph {
+
+	public DualCarrierSimMorph(COTS_MorphWin _win, baseMorphManager _morphMgr, mapPairManager _mapMgr, String _morphTitle) {super(_win, _morphMgr, _mapMgr, _morphTitle);}
 	/**
-	 * similarity that will act as carrier
+	 * this function will conduct calculations between the two keyframe maps, if such calcs are used, whenever either is modified.  this is morph dependent
+	 * @param _calledFrom : string denoting who called this method.  For debugging
 	 */
-	private CarrierSimilarity carrier;
-	
-
-	public DualCarrierSimMorph(COTS_MorphWin _win, baseMap _a, baseMap _b, baseMap _morphMap, int _morphScope) {
-		super(_win, _a, _b, _morphMap, _morphScope, "Dual Carrier Similiarty");
-		carrier = new CarrierSimilarity(mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);
-		calcMorph();	
-	}
-
 	@Override
-	protected void initCalcMorph_Indiv(float tA, float tB) {
-		if(null==carrier) {return;}
-		myPointf[] mapADiag = mapA.getCntlPtDiagonal(), mapBDiag = mapB.getCntlPtDiagonal();
+	public void mapCalcsAfterCntlPointsSet(String _calledFrom) {
+		// TODO Auto-generated method stub
 		
-		carrier.deriveSimilarityFromCntlPts(new myPointf[] {mapADiag[0],mapADiag[1],mapBDiag[0],mapBDiag[1]}, true);
-
 	}
+
+	
 	@Override
 	protected final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));}
 	@Override
@@ -35,13 +30,28 @@ public class DualCarrierSimMorph extends baseMorph {
 	@Override
 	protected double calcMorph_Double(float tA, double AVal, float tB, double BVal) {		return (tA*AVal) + (tB*BVal);}
 
+	/**
+	 * calcluate this morph algorithm between Apts and Bpts, putting result in destPts
+	 * @param Apts
+	 * @param Bpts
+	 * @param destPts
+	 * @param tA
+	 * @param tB
+	 */
 	@Override
-	protected myPointf calcMorph_Point(float tA, myPointf AVal, float tB, myPointf BVal) {
-		if(null==carrier) {return new myPointf(AVal);}
-		//return carrier.mapPoint(AVal,tA, tB);                                                                                                    
-		//return myPointf._add(myPointf._mult(carrier.transformPoint(AVal,tB), tA),myPointf._mult(carrier.transformPoint(BVal,tA), tB));		 
-		return myPointf._add(myPointf._mult(carrier.transformPoint(AVal,tB), tA),myPointf._mult(carrier.transformPoint(BVal,tA), tB));	
+	protected final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
+		for(int i=0;i<Apts.length;++i) {		
+			destPts[i]= (null==carrier) ? myPointf._add(new myPointf(Apts[i]),myVectorf._mult(normDispTimeVec, tB)) : myPointf._add(myPointf._mult(carrier.transformPoint(Apts[i],tB), tA),myPointf._mult(carrier.transformPoint(Bpts[i],tA), tB));
+			//destPts[i]= myPointf._add(res, myVectorf._mult(normDispTimeVec, tB));//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);	
+		}
 	}
+//	@Override
+//	protected myPointf calcMorph_Point(float tA, myPointf AVal, float tB, myPointf BVal) {
+//		if(null==carrier) {return new myPointf(AVal);}
+//		//return carrier.mapPoint(AVal,tA, tB);                                                                                                    
+//		//return myPointf._add(myPointf._mult(carrier.transformPoint(AVal,tB), tA),myPointf._mult(carrier.transformPoint(BVal,tA), tB));		 
+//		return myPointf._add(myPointf._mult(carrier.transformPoint(AVal,tB), tA),myPointf._mult(carrier.transformPoint(BVal,tA), tB));	
+//	}
 
 
 	@Override
@@ -52,5 +62,25 @@ public class DualCarrierSimMorph extends baseMorph {
 		
 		return yOff;
 	}
+	/**
+	 * this will draw instancing morph-specific data on screen 
+	 */
+	@Override
+	public void drawMorphSpecificValues(boolean debug, boolean _isFill, boolean _drawCircles) {
+		pa.pushMatrix();pa.pushStyle();	
+		pa.fill(0,0,0,255);
+		pa.stroke(0,0,0,255);
+		pa.strokeWeight(1.0f);
+		
+		pa.popStyle();pa.popMatrix();	
+	}
+	
+	@Override
+	public void resetAllBranching() {
+		carrier.setAllBranchingZero();
+		
+	}
 
-}
+
+
+}//class DualCarrierSimMorph

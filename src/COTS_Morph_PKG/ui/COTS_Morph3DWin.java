@@ -3,7 +3,6 @@ package COTS_Morph_PKG.ui;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPoint;
@@ -19,9 +18,11 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	private static final float mseDrag3DScl = 1.5f;
 	
 	public COTS_Morph3DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);		
+		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, true);		
 		super.initThisWin(false);
 	}
+	@Override
+	public final String getWinName() {return "COTS_Morph3DWin";}
 	
 	@Override
 	protected final void initMe_Indiv() {
@@ -41,13 +42,14 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		
 		
 		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY+1.0f, maxZ-1.0f),
-									new myPointf(minX, minY, maxZ),
-									new myPointf(minX, minY, minZ),
-									new myPointf(minX, maxY, minZ)};
+									new myPointf(minX, minY+1.0f, maxZ-2.0f),
+									new myPointf(minX, minY+2.0f, minZ-1.0f),
+									new myPointf(minX, maxY+2.0f, minZ-2.0f)};
+		
 		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY-1.0f, maxZ-1.0f),
-									new myPointf(maxX, minY, maxZ),
-									new myPointf(maxX, minY, minZ),
-									new myPointf(maxX, maxY, minZ)};
+									new myPointf(maxX, minY-1.0f, maxZ+1.0f),
+									new myPointf(maxX, minY-2.0f, minZ+2.0f),
+									new myPointf(maxX, maxY-2.0f, minZ-1.0f)};
 		return bndPts;
 	}
 
@@ -138,19 +140,19 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	@Override
 	protected final void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
 		myVectorf mseDragInWorld_f = new myVectorf(mseDragInWorld);
-		myVectorf defVec = myVectorf._add(myVectorf._mult(currMseModMap.basisVecs[1], mseDrag3DScl*mseDragInWorld_f._dot(currMseModMap.basisVecs[1])), myVectorf._mult(currMseModMap.basisVecs[2],mseDrag3DScl* mseDragInWorld_f._dot(currMseModMap.basisVecs[2])));		
+		myVectorf[] basisVecs = mapManagers[currMapTypeIDX].currMseModMap.basisVecs;
+		myVectorf defVec = myVectorf._add(myVectorf._mult(basisVecs[1], mseDrag3DScl*mseDragInWorld_f._dot(basisVecs[1])), myVectorf._mult(basisVecs[2],mseDrag3DScl* mseDragInWorld_f._dot(basisVecs[2])));		
 		myPointf mseClickIn3D_f = new myPointf(mouseClickIn3D.x, mouseClickIn3D.y, mouseClickIn3D.z);
-			
-		currMseModMap.mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
-		//currMseModMap.mseDrag_3D(mouseClickIn3D,mseDragInWorld,keyPressed,keyCodePressed);
+		//mapManagers[currMapTypeIDX].currMseModMap.mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
+		boolean changed = mapManagers[currMapTypeIDX].mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
+		if(changed) {
+			if(getPrivFlags(showOrientedLineupIDX)) {mapManagers[currMapTypeIDX].buildOrientedLineup();	}
+		}
 	}
-
 	
 	@Override
 	protected final void mouseRelease_IndivMorphWin(){
 	}
-
-
 	@Override
 	protected final myPoint getMsePtAs3DPt(myPoint mseLoc) {		return new myPoint(mseLoc);	}
 

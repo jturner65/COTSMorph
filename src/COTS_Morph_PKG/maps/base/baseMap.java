@@ -2,15 +2,15 @@ package COTS_Morph_PKG.maps.base;
 
 import java.util.TreeMap;
 
+import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.MyMathUtils;
-import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVector;
 import base_Utils_Objects.vectorObjs.myVectorf;
 import processing.core.PConstants;
 import processing.core.PImage;
@@ -22,9 +22,17 @@ import processing.core.PImage;
  */
 public abstract class baseMap {
 	/**
+	 * owning/controlling map manager - if null then map is not part of key frames
+	 */
+	protected final mapPairManager mgr;
+	/**
 	 * array of corner cntl points in current state;array of original control points - initial configuration
 	 */
 	protected myPointf[] cntlPts,origCntlPts;
+	/**
+	 * angles at each cntl pt
+	 */
+	protected float[] cntlPtAngles;
 	/**
 	 * equal spaced points around polygon edges
 	 */
@@ -36,11 +44,11 @@ public abstract class baseMap {
 	/**
 	 * point at center of cntrl points - "center" of map verts; control point currently being moved/modified by UI interaction
 	 */
-	protected myPointf cntlPtCOV,origCntlPtCOV, currMseModCntlPt;		
+	protected myPointf cntlPtCOV,origCntlPtCOV, currMseModCntlPt;	
 	/**
-	 * poly corner t values - recalced when cntlpts move - idx 1 is x idx, idx2 is y idx
+	 * the control point that is furthest from the cntlPtCOV - this will be used to scale the image for the lineup picture
 	 */
-	protected float[][][] polyPointTVals;	
+	protected myPointf mostDistCntlPt;
 	/**
 	 * # of cells per side in grid
 	 */
@@ -58,33 +66,26 @@ public abstract class baseMap {
 	 */
 	protected PImage imageToMap;	
 	/**
-	 * currently set branch sharing strategy, for maps that use angle branching (i.e. COTS)
-	 * 0 : do not share branching; 1: force all branching to be map A's branching; 2 : force all branching to be map B's branching; 3 : force all branching to be most recently edited map's branching
-	 */
-	protected int currBranchShareStrategy;
-	/**
-	 * whether this map should share branching
-	 */
-	protected boolean shouldShareBranching = false;	
-	/**
 	 * coplanar ortho frame for map idx 0 == norm; idx 1 == 'y' axis, idx 2 == 'x' axis
 	 */
 	public myVectorf[] basisVecs;
+	/**
+	 * whether or not this is a keyframe map
+	 */
+	public boolean isKeyFrameMap;
 
 		//rotational UI mod scale value
 	private static final float rotScl = .0025f;
 		//# of total points for edge of map
-	private static final float numTtlPtsPerEdge = 300.0f;
+	protected static final float numTtlPtsPerEdge = 300.0f;
 		//base radius of drawn sphere
-	protected static final float sphereRad = 5.0f;
-		//# of subdivisions per poly for checkerboard
-	protected float subDivPerPoly;
+	public static final float sphereRad = 5.0f;
 		//array of 2 poly colors
 	protected int[][] polyColors;
 		//color for grid ISO lines
 	protected int[] gridColor;
 
-	protected my_procApplet pa;
+	protected static my_procApplet pa;
 	protected COTS_MorphWin win;
 		//title of map for display	
 	public String mapTitle;
@@ -95,14 +96,19 @@ public abstract class baseMap {
 	protected final String[] cntlPtLbls;	
 		//display ortho frame
 	private myPointf[] orthoFrame;
+		//ref to UI object from map manager
+	private mapUpdFromUIData currUIVals;
+		//flag control construction for regular updates
+	protected mapCntlFlags regMapUpdateFlags;// = new boolean[] {false, false};
+		
+		//flag control construction for reset updates
+	protected mapCntlFlags resetMapUpdateFlags;// = new boolean[] {false, false};
+
 	
-	public baseMap(COTS_MorphWin _win, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, int _numCellPerSide, String _mapTitle) {
-		win=_win; pa=myDispWindow.pa;
-		mapTypeIDX = _mapTypeIDX;
-		mapIdx = _mapIdx;
-		mapTitle = _mapTitle;
-		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;
-		mapTitleOffset = new myPointf(0,0,0);
+	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
+		win=_win; pa=myDispWindow.pa; mgr = _mapMgr; currUIVals = _currUIVals;
+		mapTypeIDX = _mapTypeIDX;		mapIdx = _mapIdx;		
+		mapTitle = _mapTitle;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
 		polyColors = new int[_pClrs.length][];
 		for(int i=0;i<polyColors.length;++i) {
 			polyColors[i]=new int[_pClrs[i].length];
@@ -114,7 +120,7 @@ public abstract class baseMap {
 		cntlPtCOV = new myPointf(0,0,0);
 		currMseModCntlPt = null;
 		currMseClkLocVec = null;
-		
+		isKeyFrameMap = _isKeyFrame;
 		//build ortho basis for map based on initial control points
 		basisVecs = buildBasisVecs(myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize());
 		//build display-only ortho frame
@@ -131,16 +137,25 @@ public abstract class baseMap {
 			origCntlPtCOV._add(origCntlPts[i]);
 		}
 		origCntlPtCOV._div(origCntlPts.length);
+			//update flags for UI modification updates and for full resets
+		regMapUpdateFlags = new mapCntlFlags();
+		
+		resetMapUpdateFlags = new mapCntlFlags();
+		resetMapUpdateFlags.setResetBranching(true);
+		
 		//set control points and initialize 
-		setCntlPts(_cntlPts,_numCellPerSide);
+		setCntlPts(_cntlPts, resetMapUpdateFlags, currUIVals.getNumCellsPerSide());
 
 	}//ctor	
-	
-	public baseMap(baseMap _otr) {
-		win=_otr.win; pa=myDispWindow.pa;
+	/**
+	 * make a deep copy of passed map
+	 * @param _otr
+	 */
+	public baseMap(String _mapTitle, baseMap _otr) {
+		win=_otr.win; pa=myDispWindow.pa;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
 		mapIdx = _otr.mapIdx;
 		mapTypeIDX = _otr.mapTypeIDX;
-		mapTitle = _otr.mapTitle + " cpy" ;
+		mapTitle = _mapTitle ;
 		mapTtlXOff = _otr.mapTtlXOff;
 		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
 		polyColors = new int[_otr.polyColors.length][];
@@ -154,32 +169,36 @@ public abstract class baseMap {
 		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
 		currMseModCntlPt = null;
 		currMseClkLocVec = null;
-		
+		//keyframes are never copies
+		isKeyFrameMap = false;
 		//build ortho basis for map based on initial control points
 		basisVecs = new myVectorf[_otr.basisVecs.length];
 		for(int i=0;i<basisVecs.length;++i) {basisVecs[i]=new myVectorf(_otr.basisVecs[i]);}
 		//build display-only ortho frame
 		buildOrthoFrame();
 		//points and labels for points
-		origCntlPtCOV = new myPointf();
+		origCntlPtCOV = new myPointf(_otr.origCntlPtCOV);
 		cntlPts = new myPointf[_otr.cntlPts.length];
 		origCntlPts = new myPointf[cntlPts.length];
 		cntlPtLbls = new String[cntlPts.length];	
 		for(int i=0;i<cntlPts.length;++i) {	
-			cntlPts[i]= new myPointf();
+			cntlPts[i]= new myPointf(_otr.cntlPts[i]);
 			origCntlPts[i] = new myPointf(_otr.origCntlPts[i]);
 			cntlPtLbls[i]="" + ((char)(i+'A'));	
-			origCntlPtCOV._add(origCntlPts[i]);
+			//origCntlPtCOV._add(origCntlPts[i]);
 		}
-		origCntlPtCOV._div(origCntlPts.length);
-		this.setOtrMap(_otr.otrMap);
-		//set control points and initialize 
-		setCntlPts(_otr.cntlPts,_otr.numCellsPerSide);
+		//origCntlPtCOV._div(origCntlPts.length);
+			//update flags for UI modification updates and for full resets
+		regMapUpdateFlags = new mapCntlFlags();
+		
+		resetMapUpdateFlags = new mapCntlFlags();
+		resetMapUpdateFlags.setResetBranching(true);
+		updateNumCellsPerSide(_otr.numCellsPerSide);
+		//setCntlPts(_otr.cntlPts,regMapUpdateFlags, _otr.numCellsPerSide);
 		
 	}//copy ctor
 	
 
-	
 	/**
 	 * register another map to this map - this will transform the passed map to be as close as possible to this map and return the changes as parameters
 	 * @param otrMap
@@ -209,59 +228,61 @@ public abstract class baseMap {
 	 * @param angleAndScale
 	 */
 	public void registerMeToVals(myVectorf dispBetweenMaps, float[] angleAndScale) {
-		shouldShareBranching = false;
-		updateMapFromCntlPtVals(false);
-		moveMapInPlane(dispBetweenMaps);		updateMapFromCntlPtVals(false);
-		rotateMapInPlane(angleAndScale[0]);		updateMapFromCntlPtVals(false);
-		dilateMap(angleAndScale[1]);			updateMapFromCntlPtVals(false);
-	}
-	
+		registerMeToVals_PreIndiv(dispBetweenMaps,angleAndScale);
+		updateMapFromCntlPtVals(regMapUpdateFlags);
+		moveMapInPlane(dispBetweenMaps);		updateMapFromCntlPtVals(regMapUpdateFlags);
+		rotateMapInPlane(angleAndScale[0]);		updateMapFromCntlPtVals(regMapUpdateFlags);
+		dilateMap(angleAndScale[1]);			updateMapFromCntlPtVals(regMapUpdateFlags);
+	}	
+	protected abstract void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale);	
 	
 	/**
 	 * call every time control points change programmatically (not are moved, but set/forced to some value)
 	 * @param _cntlPts
 	 * @param _numCellPerSide
 	 */
-	public void setCntlPts(myPointf[] _cntlPts) {setCntlPts(_cntlPts, false, numCellsPerSide);}
-	public void setCntlPts(myPointf[] _cntlPts, int _numCellsPerSide) {setCntlPts(_cntlPts, true, _numCellsPerSide);}
-	private void setCntlPts(myPointf[] _cntlPts, boolean reset, int _numCellsPerSide) {
+	public void resetCntlPts(myPointf[] _cntlPts) {setCntlPts(_cntlPts, resetMapUpdateFlags, numCellsPerSide);}
+	/**
+	 * called by morph 
+	 * @param _cntlPts
+	 * @param flags
+	 */
+	public void setCntlPts(myPointf[] _cntlPts, mapCntlFlags flags) {setCntlPts(_cntlPts, flags, numCellsPerSide);}
+	
+	
+	private void setCntlPts(myPointf[] _cntlPts, mapCntlFlags flags, int _numCellsPerSide) {
 		updateNumCellsPerSide(_numCellsPerSide);
 		for(int i=0;i<cntlPts.length;++i) {		cntlPts[i].set(_cntlPts[i]);}
-		updateMapFromCntlPtVals(reset);
+		updateMapFromCntlPtVals(flags);
 	}	
 	
-	/**
-	 * update control points from morph
-	 */
-	public void updateCntlPts(myPointf[] _delCntlPts) {		
-		for(int i=0;i<cntlPts.length;++i) {		
-			cntlPts[i]._add(_delCntlPts[i]);
-			updateMapFromCntlPtVals(false);
-		}
-	}
+	
+//	/**
+//	 * update control points from morph - using this mechanism so that all values register a change/recalc of parameters
+//	 */
+//	public void updateCntlPts(myPointf[] _delCntlPts, mapCntlFlags flags) {		
+//		for(int i=0;i<cntlPts.length;++i) {		
+//			cntlPts[i]._add(_delCntlPts[i]);
+//			updateMapFromCntlPtVals(flags);
+//		}
+//	}
+	
 	/**
 	 * update map values from UI (non-cntl point values) and recalc poly points if necessary or forced
-	 * @param _numCellsPerSide
-	 * @param _branchSharingStrategy strategy for sharing angle branching, for cots maps.  
-	 * 			0 : no branch sharing
-	 * 			1 : force all branching to map A's branching
-	 * 			2 : force all branching to map B's branching
-	 * 			3 : force all branching to most recent edited map's branching
-	 * @param forceUpdate : force poly point recalc
+	 * @param upd
 	 */
-	 public void updateMapVals_FromUI(mapUpdFromUIData upd) {
+	public void updateMapVals_FromUI(mapUpdFromUIData upd) {
+		currUIVals.setAllVals(upd);
 		boolean changed = upd.forceUpdate();
-			//update cell count if neccessary
-		changed = updateNumCellsPerSide(upd.numCellsPerSide) || changed;
-			//update branch sharing strategy, if necessary
-		changed = updateBranchShareStrategy(upd.branchSharingStrategy) || changed;
-			//any instancing map-dependent quantities/updates that need to occur
+		//update cell count if neccessary
+		changed = updateNumCellsPerSide(upd.getNumCellsPerSide()) || changed;
+		//any instancing map-dependent quantities/updates that need to occur
 		changed = updateMapVals_FromUI_Indiv(upd) || changed;
-			//if any changes occur, update all map values accordingly
+		//if any changes occur, update all map values accordingly
 		if(changed) {
-			updateMapFromCntlPtVals(false);			
+			updateMapFromCntlPtVals(regMapUpdateFlags);			
 		}
-	}	
+	}
 	
 	/**
 	 * update the # of cells per side, and all other comparable quantities 
@@ -269,26 +290,16 @@ public abstract class baseMap {
 	 * @return if changed or not
 	 */
 	private boolean updateNumCellsPerSide(int _numCellsPerSide) {
-		if(numCellsPerSide == _numCellsPerSide) {return false;}
+		if(numCellsPerSide == _numCellsPerSide) {return false;}//no change so no modification
+		//only perform the following if # of cells has changed
 		numCellsPerSide = _numCellsPerSide;
-		//subDivPerPoly = (int) ((numCellsPerSide -1)/(1.0*numTtlPtsPerEdge)) + 1;
-		subDivPerPoly = numCellsPerSide/numTtlPtsPerEdge;
-		//rebuild poly t values
+		//rebuild poly t values, if used in this map
 		buildPolyPointTVals();
+		//update edge points
+		edgePts = buildEdgePoints();
 		return true;
 	}
 	
-	private boolean updateBranchShareStrategy(int _currBranchShareStrategy) {
-		if(currBranchShareStrategy == _currBranchShareStrategy) {return false;}
-		currBranchShareStrategy = _currBranchShareStrategy;
-		switch (currBranchShareStrategy) {
-			case 0 : {shouldShareBranching = false; break;}
-			case 1 : {shouldShareBranching = (mapIdx == 0); break;}
-			case 2 : {shouldShareBranching = (mapIdx == 1); break;}
-			case 3 : {shouldShareBranching = ((mapIdx == 0) || (mapIdx == 1)); break;}
-		}		
-		return true;
-	}
 
 	/**
 	 * instance specific updates
@@ -308,104 +319,93 @@ public abstract class baseMap {
 	/**
 	 * calc center of area point and map title offset
 	 */
-	protected final void setCurrCntrlPtCOV() {
+	protected final void finalizeValsAfterCntlPtsMod() {
 		cntlPtCOV.set(0,0,0);
 		for(int i=0;i<cntlPts.length;++i) {		cntlPtCOV._add(cntlPts[i]);}
 		cntlPtCOV._div(cntlPts.length);
+		float maxDist = -1.0f, dist;
+		mostDistCntlPt = null;
+		for(int i=0;i<cntlPts.length;++i) {	
+			dist = myPointf._dist(cntlPtCOV, cntlPts[i]);
+			if(dist >= maxDist) {		maxDist = dist;	mostDistCntlPt=cntlPts[i];}
+		}
 		//find location for map title offest - directly above cntlPtCOA
 		calcMapTitleOffset();
 		//find edge points around polygon
 		edgePts = buildEdgePoints();
+		//find angles at each cntl point
+		cntlPtAngles = buildCntlPtAngles();
 	}
 	
 	protected abstract myPointf[][] buildEdgePoints();
+	/**
+	 * build all angles of current control points
+	 * @return
+	 */
+	protected float[] buildCntlPtAngles() {
+		float[] angles = new float[cntlPts.length];
+		myVectorf AB, AC;
+		for(int i=0;i<cntlPts.length;++i) {
+			AB = new myVectorf(cntlPts[i], cntlPts[(i+1)%cntlPts.length]);
+			AC = new myVectorf(cntlPts[i], cntlPts[((i-1)+cntlPts.length)%cntlPts.length]);
+			angles[i]=myVectorf._angleBetween_Xprod(AB, AC, basisVecs[0]);		
+		}
+		return angles;
+	}
 	
 	/**
 	 * build all grid verts based on current control corner point positions
 	 * @return
 	 */
-	protected final void updateMapFromCntlPtVals(boolean reset) {
+	private final void updateMapFromCntlPtVals(mapCntlFlags flags) {
 		//instance-specifics
-		updateMapFromCntlPtVals_Indiv( reset);	
-		if((null != otrMap) && (shouldShareBranching)) {//share this map's branching with OTR map
+		updateMapFromCntlPtVals_Indiv(flags);	
+		if(null != otrMap) {//share this map's branching with OTR map
 			//force update of other map
-			otrMap.updateMeWithMapVals(this);
+			otrMap.updateMeWithMapVals(this,flags);
 		}
 		//find center of control points
-		setCurrCntrlPtCOV();
+		finalizeValsAfterCntlPtsMod();
 	}//calcPolyPoints
 	
 	/**
 	 * update this map's derived values without recalculating values
 	 * @param reset
 	 */
-	protected final void updateMapFromOtrMapVals(boolean reset) {
-		updateMapFromCntlPtVals_Indiv(reset);		
+	protected final void updateMapFromOtrMapVals(mapCntlFlags flags) {
+		updateMapFromCntlPtVals_Indiv(flags);		
 		//find center of control points
-		setCurrCntrlPtCOV();
+		finalizeValsAfterCntlPtsMod();
 	}
 		
-	public abstract void updateMeWithMapVals(baseMap otrMap);	
+	public abstract void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags);	
 	
 	/**
 	 * Instance-class specific initialization
 	 * @param reset whether internal state of inheriting map should be reset, if there is any
 	 */
-	protected abstract void updateMapFromCntlPtVals_Indiv(boolean reset);
+	protected abstract void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags);
 	
 	/**
 	 * precalculate the tx,ty values for the grid poly bounds - only necessary when numCellsPerSide changes
 	 */
-	protected final void buildPolyPointTVals() {
-		polyPointTVals = new float[numCellsPerSide+1][numCellsPerSide+1][2];			
-		float tx;		
-		for(int i=0;i<polyPointTVals.length;++i) {
-			tx = i/(1.0f*numCellsPerSide);
-			for(int j=0;j<polyPointTVals[i].length;++j) {
-				polyPointTVals[i][j][0]=tx;
-				polyPointTVals[i][j][1]=j/(1.0f*numCellsPerSide);	//ty			
-			}
-		}	
-		edgePts = buildEdgePoints();
-	}//buildPolyPointTVals
+	protected abstract void buildPolyPointTVals();
 	
 
 	///////////////////////
 	// draw routines
-	
-	/**
-	 * draw a point of a particular radius
-	 * @param p point to draw
-	 * @param rad radius of point
-	 */
-	protected void _drawPt(myPointf _p, float _rad) {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.translate(_p);
-		pa.sphere(_rad);
-		pa.popStyle();pa.popMatrix();	
-	}
-	
-	protected void _drawVec(myPointf _p, myPointf _pEnd, int[] _strkClr, float _rad) {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.stroke(_strkClr[0],_strkClr[1],_strkClr[2],255);
-		pa.line(_p.x, _p.y,_p.z,_pEnd.x, _pEnd.y,_pEnd.z);
-		pa.translate(_pEnd);
-		pa.sphere(_rad);
-		pa.popStyle();pa.popMatrix();	
-	}
-		 
-		
+		 		
 	/**
 	 * draw the control points for this map
 	 * @param pa
 	 */
-	private void _drawCntlPts(boolean isCurMap) {
+	private void _drawCntlPts(boolean isCurMap, int detail) {
 		pa.sphereDetail(5);
 		pa.stroke(0,0,0,255);
-		for(int i=0;i<cntlPts.length;++i) {	myPointf p = cntlPts[i];_drawPt(p, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));}
-		_drawPt(cntlPtCOV,sphereRad*1.5f);	
+		for(int i=0;i<cntlPts.length;++i) {	myPointf p = cntlPts[i];mgr._drawPt(p, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));}
+		if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {		mgr._drawPt(cntlPtCOV,sphereRad*1.5f);		}
 		//instance specific 
-		_drawCntlPoints_Indiv(isCurMap);
+		_drawCntlPoints_Indiv(isCurMap, detail);
 		
 	}//_drawPoints
 	
@@ -417,68 +417,8 @@ public abstract class baseMap {
 		for(int i=0;i<cntlPts.length;++i) {		pa.vertex(cntlPts[i].x,cntlPts[i].y,cntlPts[i].z);	}
 		pa.endShape(PConstants.CLOSE);	
 	}
-	
-	protected final void _drawPoly(int i, int j) {
-		myPointf pt;
-		float tx, ty = polyPointTVals[i][j][1];
-		pa.beginShape();
-		
-		pa.normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
-		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z);
-		}
-		tx = polyPointTVals[i+1][j][0];					
-		for (ty = polyPointTVals[i+1][j][1]; ty<polyPointTVals[i+1][j+1][1];ty+=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z);
-		}
-		
-		ty = polyPointTVals[i+1][j+1][1];
-		for (tx = polyPointTVals[i+1][j+1][0]; tx>polyPointTVals[i][j+1][0];tx-=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z);
-		}
-		tx = polyPointTVals[i][j+1][0];	
-		for (ty = polyPointTVals[i][j+1][1]; ty>polyPointTVals[i][j][1];ty-=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z);
-		}
-		pa.endShape(PConstants.CLOSE);	
-	}
-	
-	protected final void _drawPolyTexture(int i, int j) {
-		myPointf pt;
-		float tx, ty = polyPointTVals[i][j][1];
-		
-		pa.beginShape();
-		pa.texture(imageToMap);
-		pa.normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
-		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
-		}
-		tx = polyPointTVals[i+1][j][0];					
-		for (ty = polyPointTVals[i+1][j][1]; ty<polyPointTVals[i+1][j+1][1];ty+=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
-		}
-		
-		ty = polyPointTVals[i+1][j+1][1];
-		for (tx = polyPointTVals[i+1][j+1][0]; tx>polyPointTVals[i][j+1][0];tx-=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
-		}
-		tx = polyPointTVals[i][j+1][0];	
-		for (ty = polyPointTVals[i][j+1][1]; ty>polyPointTVals[i][j][1];ty-=subDivPerPoly) {
-			pt = calcMapPt(tx, ty);
-			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
-		}
-		pa.endShape(PConstants.CLOSE);	
-	}
-	
 	/**
-	 * this will draw lines linking both maps at corresponding points
+	 * this will draw direct lines linking both maps at corresponding edge points
 	 */
 	protected final void _drawLineBtwnMapEdges() {
 		if((null==edgePts) ||(edgePts.length==0)|| (null==edgePts[0])){return;}
@@ -490,95 +430,46 @@ public abstract class baseMap {
 				myPointf a = edgePts[i][j];
 				myPointf b = otrMap.edgePts[i][j];
 				pa.line(a,b);
-				//pa.line(edgePts[i][j], otrMap.edgePts[i][j]);
 			}
 		}		
 	}
-	
+		
+	public void drawMap_CntlPts(boolean isCurMap, int detail) {
+		pa.pushMatrix();pa.pushStyle();	
+		_drawCntlPts(isCurMap, detail);
+		pa.popStyle();pa.popMatrix();
+	}
+	public abstract void drawMap_Fill();	
+	public abstract void drawMap_PolyCircles_Fill();		
+	public abstract void drawMap_Wf();	
+	public abstract void drawMap_PolyCircles_Wf();
+	public abstract void drawMap_Texture();
 	
 	/**
-	 * draw deformed circles within cells
-	 */	
-	protected void _drawPolyCircles() {
+	 * this is called to display miniaturized lineup picture at current location - need to scale image to fit in frame
+	 * @param fillOrWf
+	 * @param drawCircles
+	 * @param drawTexture
+	 * @param frameDim
+	 */
+	public final void drawMap_LineUp(boolean fillOrWf, boolean drawCircles, boolean drawTexture, float frameDim) {
+		//need to center map and shrink to fit in square of size frameDim
 		pa.pushMatrix();pa.pushStyle();	
-		pa.setStrokeWt(2.0f);
-		pa.noFill();
-		float r = 1.f/(1.0f*numCellsPerSide), tx, ty, halfR = r/2.0f;
-		float circInterp = .12f;
-		myPointf pt;
-		for(int i=0;i<polyPointTVals.length-1;++i) {
-			float ri = r*i;
-			for(int j=0;j<polyPointTVals[i].length-1;++j) {
-				float rj = r * j;
-				pa.beginShape();
-			    for(float u=0; u<MyMathUtils.twoPi_f; u+=circInterp) {
-			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
-			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
-					pt = calcMapPt(tx, ty);
-					pa.vertex(pt.x,pt.y,pt.z);			    
-			    }
-				pa.endShape(PConstants.CLOSE);	
-			}	
+		if(win.is3D) {//rotate to bring into plane
+			float[] axisAngle = MyMathUtils.toAxisAngle(basisVecs, 2,1,0);
+			//win.getMsgObj().dispInfoMessage("baseMap::"+mapTitle, "drawMap_LineUp", " axis angle result : " + axisAngle[0]+","+axisAngle[1]+","+axisAngle[2]+","+axisAngle[3]);
+			pa.rotate(-axisAngle[0],axisAngle[1],axisAngle[2],axisAngle[3]);
+			pa.rotate(MyMathUtils.Pi_f, 1,0,0);
 		}
+		float scaleVal = frameDim/(2.0f * mostDistCntlPt._dist(cntlPtCOV));//2 x dist to get diameter instead of radius from COV
+		pa.scale(scaleVal);		
+		pa.translate(-cntlPtCOV.x,-cntlPtCOV.y, -cntlPtCOV.z );
+		drawMap_LineUp_Indiv(fillOrWf, drawCircles, drawTexture);
 		pa.popStyle();pa.popMatrix();
-	}//_drawMapCircles
+	};
 	
-	public void drawMap_Texture() {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.noFill();
-		pa.noStroke();
-		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals[i].length-1;++j) {		_drawPolyTexture(i,j);		}}			
-		pa.popStyle();pa.popMatrix();
-	}
+	protected abstract void drawMap_LineUp_Indiv(boolean fillOrWf, boolean drawCircles, boolean drawTexture);
 	
-	public void drawMap_CntlPts(boolean isCurMap) {
-		pa.pushMatrix();pa.pushStyle();	
-		_drawCntlPts(isCurMap);
-		pa.popStyle();pa.popMatrix();
-	}
-	
-	public void drawMap_Fill() {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.stroke(255,255,255,255);
-		pa.setStrokeWt(1.0f);
-		int clrIdx = 0;
-		
-		for(int i=0;i<polyPointTVals.length-1;++i) {
-			clrIdx = i % 2;
-			for(int j=0;j<polyPointTVals[i].length-1;++j) {
-				pa.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
-				_drawPoly(i,j);		
-				clrIdx = (clrIdx + 1) % 2;
-			}				
-		}	
-		pa.popStyle();pa.popMatrix();
-	}//drawMap_Fill
-	
-	public void drawMap_PolyCircles_Fill() {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.stroke(255,255,255,255);
-		pa.setStrokeWt(1.0f);
-		_drawPolyCircles();
-		pa.popStyle();pa.popMatrix();
-	}
-		
-	public void drawMap_Wf() {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.noFill();
-		pa.setStroke(gridColor, gridColor[3]);
-		pa.setStrokeWt(1.5f);	
-		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals[i].length-1;++j) {_drawPoly(i,j);}}	
-		pa.popStyle();pa.popMatrix();
-	}//drawMap_Wf
-	
-	public void drawMap_PolyCircles_Wf() {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.noFill();
-		pa.setStroke(gridColor, gridColor[3]);
-		pa.setStrokeWt(1.5f);	
-		_drawPolyCircles();
-		pa.popStyle();pa.popMatrix();		
-	}
 	
 	public void drawMap_EdgeLines() {
 		if(null==otrMap) {return;}
@@ -608,25 +499,26 @@ public abstract class baseMap {
 		pa.popStyle();pa.popMatrix();				
 	}//_drawOrthoFrame
 	
+	public static final String strPointDispFrmt8 = "%8.3f";
+	public static final String strPointDispFrmt6 = "%6.3f";
 
-	public void drawHeaderAndLabels(boolean _drawLabels) {
+	public void drawHeaderAndLabels(boolean _drawLabels, int detail) {
 		pa.pushMatrix();pa.pushStyle();
 		pa.fill(0,0,0,255);
 		pa.stroke(0,0,0,255);
 		win._drawLabelAtPt(mapTitleOffset, mapTitle, 0.0f, 0.0f);
 		if(_drawLabels) {
-			for(int i=0; i< cntlPts.length;++i) {	win._drawLabelAtPt(cntlPts[i],cntlPtLbls[i] + "_"+mapIdx + " : " + cntlPts[i].toStrBrf(), 2.5f,-2.5f);}
-			win._drawLabelAtPt(cntlPtCOV,"Center of Cntrl Pts : " + cntlPtCOV.toStrBrf(), 2.5f,-2.5f); 
-			_drawPointLabels_Indiv();
+			for(int i=0; i< cntlPts.length;++i) {	win._drawLabelAtPt(cntlPts[i],cntlPtLbls[i] + "_"+mapIdx + " : (" + cntlPts[i].toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f);}
+			if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {win._drawLabelAtPt(cntlPtCOV,"Center of Cntrl Pts : (" + cntlPtCOV.toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f); }
+			_drawPointLabels_Indiv(detail);
 		}
 		pa.popStyle();pa.popMatrix();
 	}//drawHeaderAndLabels
-	
 
 	/**
 	 * draw right side map description
 	 */
-	public final float drawRightSideBarMenuDescr(float yOff, float sideBarYDisp, boolean showTitle) {
+	public final float drawRightSideBarMenuDescr(float yOff, float sideBarYDisp, boolean showTitle, boolean showCntlPtsAndCentroid) {
 		if(showTitle) {
 			pa.pushMatrix();pa.pushStyle();
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, mapTitle);
@@ -639,44 +531,47 @@ public abstract class baseMap {
 
 			pa.popStyle();pa.popMatrix();
 			yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
-			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Shares branching on edit with other map ? ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 4.5f,  ""+shouldShareBranching);
-			pa.popStyle();pa.popMatrix();
+			drawRightSideBarMenuTitle_Indiv();
 		} else {
 			pa.pushMatrix();pa.pushStyle();
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, "# Cells Per Side : ");
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
 			pa.popStyle();pa.popMatrix();
 		}
-		yOff += sideBarYDisp;		pa.translate(20.0f,sideBarYDisp, 0.0f);
-		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Centroid :  ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 4.5f,  cntlPtCOV.toStrBrf());
-		pa.popStyle();pa.popMatrix();
-		yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
-		for(int i=0;i<cntlPts.length;++i) {
+		yOff += sideBarYDisp;		
+		if(showCntlPtsAndCentroid) {
+			pa.translate(20.0f,sideBarYDisp, 0.0f);
 			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Cntl Pt " + i + " : ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 4.5f, cntlPts[i].toStrBrf());
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Centroid :  ");
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
 			pa.popStyle();pa.popMatrix();
-			yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
-		}		
-		pa.translate(-20.0f,sideBarYDisp, 0.0f);
+			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
+			for(int i=0;i<cntlPts.length;++i) {
+				pa.pushMatrix();pa.pushStyle();
+					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.3f, "Cntl Pt " + i + " : ");
+					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.8f, "("+cntlPts[i].toStrCSV(strPointDispFrmt8)+")");
+					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.0f, "Theta : ");
+					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 4.0f, String.format(strPointDispFrmt8, cntlPtAngles[i]));
+				pa.popStyle();pa.popMatrix();
+				yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
+			}		
+			pa.translate(-20.0f,sideBarYDisp, 0.0f);
+		}
+
 		
 		yOff = drawRightSideBarMenuDescr_Indiv(yOff,sideBarYDisp);
 		yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);	
 		
 		return yOff;
 	}
+	protected abstract void drawRightSideBarMenuTitle_Indiv();
 	protected abstract float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp);
 	
 	/**
 	 * instance-specific point drawing
-	 * @param pa
 	 */
-	protected abstract void _drawCntlPoints_Indiv(boolean isCurMap);
-	protected abstract void _drawPointLabels_Indiv();
+	protected abstract void _drawCntlPoints_Indiv(boolean isCurMap, int detail);
+	protected abstract void _drawPointLabels_Indiv(int detail);
 
 	
 	/**
@@ -689,7 +584,7 @@ public abstract class baseMap {
 		myVectorf dispVec = new myVectorf(otrMap.origCntlPtCOV,origCntlPtCOV);
 		myVectorf _unitDispVec = dispVec._normalized();
 		float cosThet = _rayDir._dot(_unitDispVec);// sinThet = (float) Math.sqrt(1-(cosThet * cosThet));
-		if(cosThet == 0) {System.out.println("zero denom");return new myPointf();}//degenerate - ray is coplanar with plane of map
+		if(cosThet == 0) {win.getMsgObj().dispInfoMessage("baseMap","findPointInMyPlane",this.mapTitle + " : zero denom");return new myPointf();}//degenerate - ray is coplanar with plane of map
 		//parallel component of _rayDir is dispVec, want to calculate perp component
 		float newMag = dispVec.magn/cosThet;		
 		myVectorf rayDirMult = myVectorf._mult(_rayDir, newMag);
@@ -734,7 +629,7 @@ public abstract class baseMap {
 	 * 0 needs to vanish, no negatives, either <1 which shrinks, or >1 which grows
 	 * @param amt
 	 */
-	private final void dilateMap_MseDrag(myVectorf mseDragInWorld_f) {
+	public final void dilateMap_MseDrag(myVectorf mseDragInWorld_f) {
 		myVectorf currMseClkLocVecNorm = currMseClkLocVec._normalized();
 		myVectorf deltaVec = currMseClkLocVecNorm._mult(currMseClkLocVecNorm._dot(mseDragInWorld_f)), dispVec = myVectorf._add(currMseClkLocVec, deltaVec);
 		
@@ -751,13 +646,13 @@ public abstract class baseMap {
 			myVectorf COV_ToCntlPt = new myVectorf(cntlPtCOV, cntlPts[i]);
 			myVectorf dispVec = myVectorf._mult(COV_ToCntlPt, amt);
 			if(dispVec.magn < minDilate) {dispVec._mult(minDilate/dispVec.magn);}
-			cntlPts[i] = myPointf._add(cntlPtCOV, dispVec);
+			cntlPts[i].set(myPointf._add(cntlPtCOV, dispVec));
 		}
 		dilateMap_Indiv(amt);
 	}
 	protected abstract void dilateMap_Indiv(float amt);
 
-	private final void rotateMapInPlane_MseDrag(myPointf clckPt, myVectorf deltaVec) {		
+	public final void rotateMapInPlane_MseDrag(myPointf clckPt, myVectorf deltaVec) {		
 		myVectorf vecToPoint = new myVectorf(cntlPtCOV,clckPt)._normalize();
 		myVectorf rotVec = myVectorf._cross(vecToPoint, deltaVec);		
 		rotateMapInPlane(rotVec._dot(basisVecs[0])*rotScl);
@@ -773,7 +668,7 @@ public abstract class baseMap {
 		for(int i=0;i<cntlPts.length;++i) {
 			myVectorf COV_ToCntlPt = new myVectorf(cntlPtCOV, cntlPts[i]),
 					rotVec = COV_ToCntlPt.rotMeAroundAxis(basisVecs[0], thet);
-			cntlPts[i] = myPointf._add(cntlPtCOV, rotVec);			
+			cntlPts[i].set(myPointf._add(cntlPtCOV, rotVec));			
 		}
 		rotateMapInPlane_Indiv(thet);
 	}//rotateMapInPlane
@@ -786,36 +681,40 @@ public abstract class baseMap {
 	public final void moveMapInPlane(myVectorf defVec) {for(int i=0;i<cntlPts.length;++i) {	cntlPts[i]._add(defVec);}	moveMapInPlane_Indiv(defVec);}
 	protected abstract void moveMapInPlane_Indiv(myVectorf defVec);
 	protected abstract void moveCntlPtInPlane_Indiv(myVectorf defVec);
-		
+	
 	/**
-	 * handle mouse drag on map
+	 * manage mouse dragging closest point to click, whichever that ends up being
+	 * @param defVec
+	 * @return
+	 */
+	public final boolean mseDragPickedCntlPt(myVectorf defVec) {
+		if(currMseModCntlPt==null) {return false;}	
+		currMseModCntlPt._add(defVec);	
+		if(currMseModCntlPt.equals(cntlPtCOV)) {moveMapInPlane(defVec);	}	
+		else {moveCntlPtInPlane_Indiv(defVec);}
+		return true;
+	}
+	/**
+	 * final, instance-specific mouse mod handling
 	 * @param defVec
 	 * @param mseClickIn3D_f
+	 * @param isScale
+	 * @param isRotation
 	 * @param key
 	 * @param keyCode
 	 */
-	public final void mseDragInMap(myVectorf defVec, myPointf mseClickIn3D_f,  char key, int keyCode) {		
-		boolean isScale = (key=='s') || (key=='S'), isRotation = (key=='r') || (key=='R');
-		if(isScale || isRotation) {
-			if(isScale) {				dilateMap_MseDrag(defVec);			} 
-			else {			rotateMapInPlane_MseDrag(mseClickIn3D_f, defVec);		}	//isRotation		
-		} else {							//cntl point movement
-			if(currMseModCntlPt==null) {return;}	
-			currMseModCntlPt._add(defVec);	
-			if(currMseModCntlPt.equals(cntlPtCOV)) {moveMapInPlane(defVec);	}	
-			else {moveCntlPtInPlane_Indiv(defVec);}
-		}
-		mseDragInMap_Indiv(defVec,mseClickIn3D_f,isScale, isRotation, key, keyCode);			
-		updateMapFromCntlPtVals(false);
-	}//mseDragInMap
+	public final void mseDragInMap_Post(myVectorf defVec, myPointf mseClickIn3D_f, boolean isScale, boolean isRotation, boolean isTranslation, char key, int keyCode) {
+		mseDragInMap_Indiv(defVec,mseClickIn3D_f,isScale, isRotation, isTranslation, key, keyCode);			
+		updateMapFromCntlPtVals(regMapUpdateFlags);
+	}
 	
-	protected abstract void mseDragInMap_Indiv(myVectorf defVec, myPointf mseClickIn3D_f,boolean isScale,boolean isRotation,  char key, int keyCode);
+	protected abstract void mseDragInMap_Indiv(myVectorf defVec, myPointf mseClickIn3D_f,boolean isScale,boolean isRotation, boolean isTranslation, char key, int keyCode);
 	
 	/**
 	 * code for whenever mouse release is executed
 	 */
 	public final void mseRelease() {
-		updateMapFromCntlPtVals(false);
+		updateMapFromCntlPtVals(regMapUpdateFlags);
 		currMseModCntlPt = null;
 		currMseClkLocVec = null;
 		mseRelease_Indiv();
@@ -831,30 +730,52 @@ public abstract class baseMap {
 	public final void setOtrMap(baseMap _otr) {		otrMap = _otr;  setOtrMap_Indiv();}
 	protected abstract void setOtrMap_Indiv();
 	
+	public final void setMapTitle(String _mapTitle) {mapTitle = _mapTitle;}
+	
 	public final int getNumCellsPerSide() {			return numCellsPerSide;}
+	
 	public final int[][] getPolyColors() {			return polyColors;}
+	public final void setPolyColors(int[][] _pClrs) {polyColors = _pClrs;}
+	
 	public final int[] getGridColor() {				return gridColor;}	
+	public final void setGridColor(int[] _gClr) {gridColor = _gClr;}	
+	
 	public final myPointf getCOV() {				return cntlPtCOV;}
+	
+	/**
+	 * set instance-specific flags - use this for branching setting
+	 * @param flags
+	 */
+	public abstract void setFlags(boolean[] flags);
 	
 	/**
 	 * if map has center point i.e. spiral, this will return it, otherwise it returns the COV
 	 * @return
 	 */
 	public abstract myPointf getCenterPoint();
-	
-	
-	public final myPointf[] getCntlPts() {			return cntlPts;}
-	public final myPointf[] getCntlPts_Copy() {			
-		myPointf[] cpyPts = new myPointf[cntlPts.length];
-		for(int i=0;i<cpyPts.length;++i) {	cpyPts[i]= new myPointf(cntlPts[i]);}		
-		return cpyPts;}
-	public final myPointf[] getCntlPtDiagonal() {	return new myPointf[] {cntlPts[0],cntlPts[2]};}
+	/**
+	 * points along edges
+	 * @return
+	 */
+	public final myPointf[][] getEdgePts(){			return edgePts;}	
 
-	public final void setPolyColors(int[][] _pClrs) {polyColors = _pClrs;}
-	public final void setGridColor(int[] _gClr) {gridColor = _gClr;}	
+	public final myPointf[] getCntlPts() {			return cntlPts;}
+//	/**
+//	 * copy of control points
+//	 * @return
+//	 */
+//	public final myPointf[] getCntlPts_Copy() {			
+//		myPointf[] cpyPts = new myPointf[cntlPts.length];
+//		for(int i=0;i<cpyPts.length;++i) {	cpyPts[i]= new myPointf(cntlPts[i]);}		
+//		return cpyPts;}
+	public final myPointf[] getCntlPtDiagonal() {	return new myPointf[] {cntlPts[0],cntlPts[2]};}
 	
 	public final void setImageToMap(PImage _img) {	imageToMap=_img;	}	
 	
+	public final mapPairManager getMapManager() {return mgr;}
+	
+	//////////////
+	// utils
 	
 	protected final void printOutAllCntlPts() {
 		String debug = "";
@@ -889,7 +810,7 @@ public abstract class baseMap {
 		//build basis vectors
 		basisVecs[0] = tmpNorm._normalized();
 		if(basisVecs[0]._dot(myVectorf.FORWARD) == 1.0f) {//if planeNorm is in x direction means plane is y-z, so y axis will work as basis
-			basisVecs[1] = new myVectorf(myVectorf.UP);
+			basisVecs[1] = new myVectorf(myVectorf.UP);//myVectorf._mult(myVectorf.UP, -1.0f);
 			basisVecs[1]._normalize();
 			basisVecs[2] = new myVectorf(myVectorf.RIGHT);
 			basisVecs[2]._normalize();		
@@ -898,7 +819,6 @@ public abstract class baseMap {
 		} else {
 			basisVecs[1] = basisVecs[0]._cross(myVectorf.FORWARD);
 			basisVecs[1]._normalize();
-
 			basisVecs[2] = basisVecs[1]._cross(basisVecs[0]);
 			basisVecs[2]._normalize();		
 	

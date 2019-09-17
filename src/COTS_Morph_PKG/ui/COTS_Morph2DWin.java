@@ -3,10 +3,8 @@ package COTS_Morph_PKG.ui;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
-import base_UI_Objects.windowUI.myDispWindow;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVector;
@@ -17,9 +15,13 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	private int _numPrivButtons = numBaseCOTSWinPrivFlags + 0;
 
 	public COTS_Morph2DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);		
+		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, false);		
 		super.initThisWin(false);
 	}
+	@Override
+	public final String getWinName() {return "COTS_Morph2DWin";}
+
+	
 	@Override
 	protected final void initMe_Indiv() {	
 	}//initMe
@@ -42,9 +44,9 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 									new myPointf(minX, maxY,0)};
 		
 		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap-.1f, minY-.2f,0),
-									new myPointf(maxX + widthPerMap, minY,0),
-									new myPointf(maxX + widthPerMap, maxY,0),
-									new myPointf(minX + widthPerMap, maxY,0)};
+									new myPointf(maxX + widthPerMap-.2f, minY+.1f,0),
+									new myPointf(maxX + widthPerMap+.1f, maxY,0),
+									new myPointf(minX + widthPerMap+.2f, maxY,0)};
 			
 		return bndPts;
 	}
@@ -129,13 +131,18 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 * @param mseDragInWorld displacement vector of mouse, in plane of screen normal
 	 * @param mseBtn which button was pressed
 	 */
+	
 	@Override
 	protected final void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
 		//myVectorf mseDragInWorld_f = new myVectorf(mseDragInWorld);
 		myVectorf defVec = new myVectorf(1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY),0.0f);
 		myPointf mseClickIn3D_f = new myPointf(mouseX, mouseY, 0);
-		currMseModMap.mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
+		//mapManagers[currMapTypeIDX].currMseModMap.mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
+		boolean changed = mapManagers[currMapTypeIDX].mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
 		//currMseModMap.mseDrag_2D(mouseX, mouseY, 1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY),mseDragInWorld,keyPressed,keyCodePressed);
+		if(changed) {
+			if(getPrivFlags(showOrientedLineupIDX)) {mapManagers[currMapTypeIDX].buildOrientedLineup();	}
+		}
 	}
 	
 	@Override

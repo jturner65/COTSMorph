@@ -1,6 +1,8 @@
 package COTS_Morph_PKG.similarities;
 
+import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.similarities.base.baseSimilarity;
+import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -10,13 +12,13 @@ public class SpiralSimilarityWithTranslation extends baseSimilarity {
 	
 	protected myVectorf translation;
 
-	public SpiralSimilarityWithTranslation(myVectorf _n, myVectorf _I, myVectorf _J) {
-		super(_n, _I, _J);
+	public SpiralSimilarityWithTranslation(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {
+		super(_name+"_SpiralWithTrans",_n, _I, _J);
 		translation = new myVectorf();
 	}
 
-	public SpiralSimilarityWithTranslation(SpiralSimilarityWithTranslation _otr) {
-		super(_otr);
+	public SpiralSimilarityWithTranslation(String _name, SpiralSimilarityWithTranslation _otr) {
+		super(_name+"_SpiralWithTrans_Cpy",_otr);
 		translation = new myVectorf(_otr.translation);
 	}
 
@@ -36,7 +38,7 @@ public class SpiralSimilarityWithTranslation extends baseSimilarity {
 	 * ara idx 1 : new myPointf(angle,Scale,0.0f)},resetBranching);
 	 */
 	@Override
-	public void deriveSimilarityFromCntlPts(myPointf[] cntlPts, boolean forceResetBranching) {
+	public void deriveSimilarityFromCntlPts(myPointf[] cntlPts,  mapCntlFlags flags) {
 		translation = new myVectorf(cntlPts[0]);
 		//float scale, float angle, myPointf A, myPointf B
 		trans[0].buildTransformation(cntlPts[1].x, cntlPts[1].y, cntlPts[2],cntlPts[3]);		
@@ -49,8 +51,8 @@ public class SpiralSimilarityWithTranslation extends baseSimilarity {
 	 * @return
 	 */	
 	@Override			
-	public final myPointf transformPoint(myPointf A, float t) {	
-		myPointf pt = trans[0].transformPoint(A, t);
+	public final myPointf transformPoint(myPointf A, int transformIDX, float t) {	
+		myPointf pt = trans[transformIDX].transformPoint(A, t);
 		//pt._add(myVectorf._mult(translation, t));
 		return pt;		
 	}
@@ -65,8 +67,8 @@ public class SpiralSimilarityWithTranslation extends baseSimilarity {
 	 * @return
 	 */
 	@Override
-	public final myPointf mapPoint(myPointf A, float tx, float ty) {
-		myPointf pt = trans[0].transformPoint(A, tx);
+	public final myPointf mapPoint(myPointf A, int[] transformIDXs, float tx, float ty) {
+		myPointf pt = trans[transformIDXs[0]].transformPoint(A, tx);
 		//pt._add(myVectorf._mult(translation, ty));
 		return pt;		
 
@@ -76,8 +78,9 @@ public class SpiralSimilarityWithTranslation extends baseSimilarity {
 	protected float drawRightSideBarMenuDescr_Indiv(my_procApplet pa, float yOff, float sideBarYDisp) {	
 		pa.translate(10.0f, 0.0f, 0.0f);
 		pa.pushMatrix();pa.pushStyle();		
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Translation : ");
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, translation.toStrBrf());
+		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Translation : ");
+		myPointf pt = new myPointf((myPointf)translation);
+		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(baseMap.strPointDispFrmt8)+")");
 		pa.popStyle();pa.popMatrix();
 		yOff += sideBarYDisp;
 		pa.translate(-10.0f,sideBarYDisp, 0.0f);
