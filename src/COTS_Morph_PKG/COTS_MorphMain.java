@@ -110,7 +110,6 @@ public class COTS_MorphMain extends my_procApplet {
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,true,true,true}, new int[]{220,244,244,255},new int[]{0,0,0,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
 		dispWinFrames[wIdx] = new COTS_Morph3DWin(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);		
 	
-		
 	}//	initVisOnce_Priv
 	
 	
@@ -121,6 +120,7 @@ public class COTS_MorphMain extends my_procApplet {
 		setVisFlag(showUIMenu, true);					//show input UI menu	
 		//setVisFlag(showSpereAnimRes, true);
 		setVisFlag(showCOTS_3DMorph, true);
+		
 	}//	initOnce
 	
 	@Override

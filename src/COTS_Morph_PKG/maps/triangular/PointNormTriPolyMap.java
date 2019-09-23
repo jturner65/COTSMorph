@@ -82,8 +82,6 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 		}
 	}
 	
-	
-	
 	/**
 	 * Instance-class specific initialization
 	 */	
@@ -137,13 +135,40 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 	
 	@Override
 	protected void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale) {}
+	@Override
+	public final float calcTtlSurfaceArea() {	
+		return mgr.calcAreaOfPolyInPlane(cntlPts, basisVecs[0]);
+	}//calcTtlSurfaceArea	
+	
+	/**
+	 * Return array of all morph-relevant cntl/info points for this map.
+	 * Call if morph map -after-  morph is calced.  
+	 * Include COV and possibly F point, if COTS or other spiral-based map
+	 * @return
+	 */
+	@Override
+	public final void getAllMorphCntlPts_Indiv(myPointf[] res) {
+		res[cntlPts.length]= new myPointf(this.cntlPtCOV);
+	};
+	@Override
+	public final int getNumAllMorphCntlPts() {	return cntlPts.length + 1;};
+	/**
+	 * instance specific values should be added here
+	 * @param map
+	 */
+	@Override
+	public final void getTrajAnalysisKeys_Indiv(TreeMap<String, Integer> map) {
+		int numTtlPts = getNumAllMorphCntlPts();
+		map.put(COV_Label, numTtlPts-1);
+	}
+
 	
 	/////////////////////
 	// draw routines	
 	@Override
 	protected final void _drawCntlPoints_Indiv(boolean isCurMap, int detail) {
 		if(!isKeyFrameMap) {return;}		//don't want to draw normals for non-keyframe
-		if(detail<COTS_MorphWin.drawMapDet_ALL_IDX) {return;}
+		if(detail<COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_IDX) {return;}
 		for(int i=0;i<cntlPtNorms.length;++i) {
 			myPointf p = cntlPts[i];
 			mgr._drawVec(p, cntlPtNormEndPts[i], new int[] {0,0,0,255}, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));
@@ -170,7 +195,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 	
 	@Override
 	protected final void _drawPointLabels_Indiv(int detail) {
-		if(detail<COTS_MorphWin.drawMapDet_ALL_IDX) {return;}
+		if(detail<COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_IDX) {return;}
 			for(int i=0;i<cntlPtNorms.length;++i) {
 				myPointf p = cntlPtNormEndPts[i];
 				win._drawLabelAtPt(p,   cntlPtNormLbls[i]+ "_"+mapIdx + " : " + cntlPtNorms[i].toStrBrf(), 2.5f,-2.5f);
@@ -178,7 +203,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 			win._drawLabelAtPt(Qpt, (mapIdx == 0 ? "P":"Q") + " : [" +String.format("%.3f",qPointNBC[0]) +","+String.format("%.3f",qPointNBC[1])+ "," + String.format("%.3f",qPointNBC[2])+"] : " + Qpt.toStrBrf(),  2.5f,-2.5f);
 	}
 	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	protected float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		return yOff;
 	}
 

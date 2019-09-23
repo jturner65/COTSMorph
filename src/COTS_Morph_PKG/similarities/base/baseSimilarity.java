@@ -7,7 +7,7 @@ import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
- * this class is a struct that describes a proper similarity transformation as contained in a spiral
+ * this class describes a proper similarity transformation driven by one or more spirals
  * @author john
  *
  */
@@ -134,18 +134,25 @@ public abstract class baseSimilarity {
 	}
 	
 	public final float[] getAnglesAndBranching() {
-		float[] transVals = new float[trans.length*2];
+		float[] anglesAndBrVals = new float[trans.length*2];
 		for (int i=0;i<trans.length;++i) {
 			float[] _tmpTVals = trans[i].getAnglesAndBranching();
-			transVals[i]= _tmpTVals[0];
-			transVals[i+trans.length] = _tmpTVals[1];
+			anglesAndBrVals[i]= _tmpTVals[0];
+			anglesAndBrVals[i+trans.length] = _tmpTVals[1];
 		}
-		return transVals;
+		return anglesAndBrVals;
 	}
 	
 
 	public final myPointf getF() {return getF(0);}
 	public final myPointf getF(int idx) {return trans[idx].getCenterPoint();}
+	
+	public final float[] getScales() {
+		float[] scales = new float[trans.length];
+		for (int i=0;i<trans.length;++i) {	scales[i]=trans[i].get_Scale();}
+		return scales;
+	}
+	
 	public final String getDebugStr() {
 		String dbgStr = "";
 		for (int i=0;i<trans.length-1;++i) { dbgStr+= transLbls[i]+ ": " + trans[i].getDebugStr() + " | ";}

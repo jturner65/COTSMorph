@@ -21,8 +21,8 @@ public class BiLinMap extends baseQuadMap {
 	 * Instance-class specific initialization
 	 */	
 	@Override
-	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
-		boolean reset = flags.getResetBranching();
+	protected final void _updateQuadMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+		//boolean reset = flags.getResetBranching();
 	}
 	@Override
 	protected boolean updateMapVals_FromUI_Indiv(mapUpdFromUIData upd) {	boolean hasBeenUpdated = false;		return hasBeenUpdated;}
@@ -35,6 +35,36 @@ public class BiLinMap extends baseQuadMap {
 	public myPointf calcMapPt(float tx, float ty) {	return new myPointf(new myPointf(cntlPts[0],tx,cntlPts[1]), ty, new myPointf(cntlPts[3],tx,cntlPts[2]));}
 	@Override
 	protected void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale) {}
+	
+	@Override
+	public final float calcTtlSurfaceArea() {	
+		return mgr.calcAreaOfPolyInPlane(cntlPts, basisVecs[0]);
+	}//calcTtlSurfaceArea	
+	
+	/**
+	 * Return array of all morph-relevant cntl/info points for this map.
+	 * Call if morph map -after-  morph is calced.  
+	 * Include COV and possibly F point, if COTS or other spiral-based map
+	 * @return
+	 */
+	@Override
+	public final void getAllMorphCntlPts_Indiv(myPointf[] res) {
+		res[cntlPts.length]= new myPointf(this.cntlPtCOV);
+	};
+	@Override
+	public final int getNumAllMorphCntlPts() {	return cntlPts.length + 1;};
+	
+	/**
+	 * instance specific values should be added here
+	 * @param map
+	 */
+	@Override
+	public final void getTrajAnalysisKeys_Indiv(TreeMap<String, Integer> map) {
+		int numTtlPts = getNumAllMorphCntlPts();
+		map.put(COV_Label, numTtlPts-1);
+	}
+
+
 	/////////////////////
 	// draw routines
 	
@@ -48,13 +78,13 @@ public class BiLinMap extends baseQuadMap {
 		
 	}
 	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	protected float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		return yOff;
 	}
 	@Override
 	protected final void _drawPointLabels_Indiv(int detail) {	}
 	@Override
-	protected final void drawRightSideBarMenuTitle_Indiv() {}
+	protected final void drawRtSdMenuTitle_Indiv() {}
 
 	
 	/**
@@ -65,8 +95,6 @@ public class BiLinMap extends baseQuadMap {
 	public final void setFlags(boolean[] flags) {};
 	@Override
 	protected final void setOtrMap_Indiv() {};
-	@Override
-	public myPointf getCenterPoint() {return cntlPtCOV;}
 	
 	/**
 	 * whether this map is ready to execute

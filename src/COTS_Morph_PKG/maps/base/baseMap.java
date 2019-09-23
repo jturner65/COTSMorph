@@ -42,9 +42,11 @@ public abstract class baseMap {
 	 */
 	protected myVectorf currMseClkLocVec;
 	/**
-	 * point at center of cntrl points - "center" of map verts; control point currently being moved/modified by UI interaction
+	 * current (and original) point at center of cntrl points; 
+	 * control point currently being moved/modified by UI interaction;
+	 * center of mass of control points (area-weighted COV)
 	 */
-	protected myPointf cntlPtCOV,origCntlPtCOV, currMseModCntlPt;	
+	protected myPointf cntlPtCOV,origCntlPtCOV, currMseModCntlPt, cntlPtCOM;	
 	/**
 	 * the control point that is furthest from the cntlPtCOV - this will be used to scale the image for the lineup picture
 	 */
@@ -76,8 +78,6 @@ public abstract class baseMap {
 
 		//rotational UI mod scale value
 	private static final float rotScl = .0025f;
-		//# of total points for edge of map
-	protected static final float numTtlPtsPerEdge = 300.0f;
 		//base radius of drawn sphere
 	public static final float sphereRad = 5.0f;
 		//array of 2 poly colors
@@ -94,6 +94,7 @@ public abstract class baseMap {
 	public final float mapTtlXOff;	
 		//array of labels to use for control points
 	protected final String[] cntlPtLbls;	
+	public final String COV_Label = "Map COV";
 		//display ortho frame
 	private myPointf[] orthoFrame;
 		//ref to UI object from map manager
@@ -104,7 +105,7 @@ public abstract class baseMap {
 		//flag control construction for reset updates
 	protected mapCntlFlags resetMapUpdateFlags;// = new boolean[] {false, false};
 
-	
+	protected static final int[] whiteClr = new int[] {255,255,255,255};
 	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
 		win=_win; pa=myDispWindow.pa; mgr = _mapMgr; currUIVals = _currUIVals;
 		mapTypeIDX = _mapTypeIDX;		mapIdx = _mapIdx;		
@@ -118,6 +119,7 @@ public abstract class baseMap {
 		System.arraycopy(polyColors[1], 0, gridColor, 0, gridColor.length);
 
 		cntlPtCOV = new myPointf(0,0,0);
+		cntlPtCOM = new myPointf(0,0,0);
 		currMseModCntlPt = null;
 		currMseClkLocVec = null;
 		isKeyFrameMap = _isKeyFrame;
@@ -167,6 +169,7 @@ public abstract class baseMap {
 		System.arraycopy(polyColors[1], 0, gridColor, 0, gridColor.length);
 
 		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
+		cntlPtCOM = new myPointf(_otr.cntlPtCOM);
 		currMseModCntlPt = null;
 		currMseClkLocVec = null;
 		//keyframes are never copies
@@ -228,11 +231,11 @@ public abstract class baseMap {
 	 * @param angleAndScale
 	 */
 	public void registerMeToVals(myVectorf dispBetweenMaps, float[] angleAndScale) {
-		registerMeToVals_PreIndiv(dispBetweenMaps,angleAndScale);
+		registerMeToVals_PreIndiv(dispBetweenMaps,angleAndScale);	//updateMapFromCntlPtVals(regMapUpdateFlags);
+		rotateMapInPlane(angleAndScale[0]);							//updateMapFromCntlPtVals(regMapUpdateFlags);
+		dilateMap(angleAndScale[1]);								//updateMapFromCntlPtVals(regMapUpdateFlags);
+		moveMapInPlane(dispBetweenMaps);		
 		updateMapFromCntlPtVals(regMapUpdateFlags);
-		moveMapInPlane(dispBetweenMaps);		updateMapFromCntlPtVals(regMapUpdateFlags);
-		rotateMapInPlane(angleAndScale[0]);		updateMapFromCntlPtVals(regMapUpdateFlags);
-		dilateMap(angleAndScale[1]);			updateMapFromCntlPtVals(regMapUpdateFlags);
 	}	
 	protected abstract void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale);	
 	
@@ -309,7 +312,7 @@ public abstract class baseMap {
 	protected abstract boolean updateMapVals_FromUI_Indiv(mapUpdFromUIData upd) ;	
 	
 	/**
-	 * calculate mapped point given offets - tx and ty should be between 0 and 1
+	 * calculate mapped point given offsets/texture coords - tx and ty should be between 0 and 1
 	 * @param tx
 	 * @param ty
 	 * @return
@@ -317,12 +320,28 @@ public abstract class baseMap {
 	public abstract myPointf calcMapPt(float tx, float ty);	
 	
 	/**
+	 * calculate the total surface area of the map
+	 * @return
+	 */
+	public abstract float calcTtlSurfaceArea();
+	/**
+	 * calculate total area of the triangular map
+	 */
+	
+	/**
+	 * calculate the total area of the shapes embedded on the matrix/map TODO
+	 */
+	//public abstract float calcTtlShapeAreaOnMap(float shapeArea);
+	
+	/**
 	 * calc center of area point and map title offset
 	 */
 	protected final void finalizeValsAfterCntlPtsMod() {
-		cntlPtCOV.set(0,0,0);
-		for(int i=0;i<cntlPts.length;++i) {		cntlPtCOV._add(cntlPts[i]);}
-		cntlPtCOV._div(cntlPts.length);
+		//center of vertices
+		myPointf newCOV = myPointf._average(cntlPts);
+		
+		cntlPtCOV.set(newCOV);
+		
 		float maxDist = -1.0f, dist;
 		mostDistCntlPt = null;
 		for(int i=0;i<cntlPts.length;++i) {	
@@ -335,7 +354,8 @@ public abstract class baseMap {
 		edgePts = buildEdgePoints();
 		//find angles at each cntl point
 		cntlPtAngles = buildCntlPtAngles();
-	}
+	}	
+	
 	
 	protected abstract myPointf[][] buildEdgePoints();
 	/**
@@ -352,6 +372,8 @@ public abstract class baseMap {
 		}
 		return angles;
 	}
+	
+	
 	
 	/**
 	 * build all grid verts based on current control corner point positions
@@ -403,7 +425,7 @@ public abstract class baseMap {
 		pa.sphereDetail(5);
 		pa.stroke(0,0,0,255);
 		for(int i=0;i<cntlPts.length;++i) {	myPointf p = cntlPts[i];mgr._drawPt(p, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));}
-		if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {		mgr._drawPt(cntlPtCOV,sphereRad*1.5f);		}
+		if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {		mgr._drawPt(cntlPtCOV,sphereRad*1.5f);	mgr._drawPt(cntlPtCOM, sphereRad*1.5f);	}
 		//instance specific 
 		_drawCntlPoints_Indiv(isCurMap, detail);
 		
@@ -417,6 +439,7 @@ public abstract class baseMap {
 		for(int i=0;i<cntlPts.length;++i) {		pa.vertex(cntlPts[i].x,cntlPts[i].y,cntlPts[i].z);	}
 		pa.endShape(PConstants.CLOSE);	
 	}
+	
 	/**
 	 * this will draw direct lines linking both maps at corresponding edge points
 	 */
@@ -427,9 +450,7 @@ public abstract class baseMap {
 			clrIdx = i % 2;
 			pa.setStroke(polyColors[clrIdx], polyColors[clrIdx][3]);
 			for(int j=0;j<edgePts[i].length;++j) {
-				myPointf a = edgePts[i][j];
-				myPointf b = otrMap.edgePts[i][j];
-				pa.line(a,b);
+				pa.line(edgePts[i][j],otrMap.edgePts[i][j]);
 			}
 		}		
 	}
@@ -489,13 +510,9 @@ public abstract class baseMap {
 			cntlPtCOV.showMeSphere(pa, 5.0f);
 			pa.strokeWeight(3.0f);
 			pa.translate(cntlPtCOV);
-			pa.stroke(255,0,0,255);
-			pa.line(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);
-			pa.stroke(0,255,0,255);
-			pa.line(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);
-			pa.stroke(0,0,255,255);
-			pa.line(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);
-			for(int i=0;i<orthoFrame.length;++i) {	orthoFrame[i].showMeSphere(pa, 6.0f);}
+			pa.stroke(255,0,0,255);	pa.line(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);orthoFrame[0].showMeSphere(pa, 6.0f);
+			pa.stroke(0,255,0,255);	pa.line(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);orthoFrame[1].showMeSphere(pa, 6.0f);
+			pa.stroke(0,0,255,255);	pa.line(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);orthoFrame[2].showMeSphere(pa, 6.0f);
 		pa.popStyle();pa.popMatrix();				
 	}//_drawOrthoFrame
 	
@@ -509,7 +526,7 @@ public abstract class baseMap {
 		win._drawLabelAtPt(mapTitleOffset, mapTitle, 0.0f, 0.0f);
 		if(_drawLabels) {
 			for(int i=0; i< cntlPts.length;++i) {	win._drawLabelAtPt(cntlPts[i],cntlPtLbls[i] + "_"+mapIdx + " : (" + cntlPts[i].toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f);}
-			if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {win._drawLabelAtPt(cntlPtCOV,"Center of Cntrl Pts : (" + cntlPtCOV.toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f); }
+			if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {win._drawLabelAtPt(cntlPtCOV,COV_Label + "_"+mapIdx + " : (" + cntlPtCOV.toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f); }
 			_drawPointLabels_Indiv(detail);
 		}
 		pa.popStyle();pa.popMatrix();
@@ -518,7 +535,7 @@ public abstract class baseMap {
 	/**
 	 * draw right side map description
 	 */
-	public final float drawRightSideBarMenuDescr(float yOff, float sideBarYDisp, boolean showTitle, boolean showCntlPtsAndCentroid) {
+	public final float drawRtSdMenuDescr(float yOff, float sideBarYDisp, boolean showTitle, boolean showCntlPtsAndCentroid) {
 		if(showTitle) {
 			pa.pushMatrix();pa.pushStyle();
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, mapTitle);
@@ -531,7 +548,7 @@ public abstract class baseMap {
 
 			pa.popStyle();pa.popMatrix();
 			yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
-			drawRightSideBarMenuTitle_Indiv();
+			drawRtSdMenuTitle_Indiv();
 		} else {
 			pa.pushMatrix();pa.pushStyle();
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, "# Cells Per Side : ");
@@ -559,13 +576,13 @@ public abstract class baseMap {
 		}
 
 		
-		yOff = drawRightSideBarMenuDescr_Indiv(yOff,sideBarYDisp);
+		yOff = drawRtSdMenuDescr_Indiv(yOff,sideBarYDisp);
 		yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);	
 		
 		return yOff;
 	}
-	protected abstract void drawRightSideBarMenuTitle_Indiv();
-	protected abstract float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp);
+	protected abstract void drawRtSdMenuTitle_Indiv();
+	protected abstract float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp);
 	
 	/**
 	 * instance-specific point drawing
@@ -749,10 +766,37 @@ public abstract class baseMap {
 	public abstract void setFlags(boolean[] flags);
 	
 	/**
-	 * if map has center point i.e. spiral, this will return it, otherwise it returns the COV
+	 * Return array of all morph-relevant cntl/info points for this map.
+	 * Call if morph map -after-  morph is calced.  
+	 * Include COV and possibly F point, if COTS or other spiral-based map
 	 * @return
 	 */
-	public abstract myPointf getCenterPoint();
+	
+	public final myPointf[] getAllMorphCntlPts() {
+		myPointf[] res = new myPointf[getNumAllMorphCntlPts()];
+		for(int i=0;i<cntlPts.length; ++i) {res[i]=new myPointf(cntlPts[i]);}
+		//add instance-specific configurations of points
+		getAllMorphCntlPts_Indiv(res);		
+		return res;
+	};
+	public abstract void getAllMorphCntlPts_Indiv(myPointf[] _res);
+	public abstract int getNumAllMorphCntlPts();
+	/**
+	 * give map with key being descriptive string of traj point, and value being idx of traj point in control point array
+	 * @return
+	 */
+	public final TreeMap<String, Integer> getTrajAnalysisKeys(){
+		TreeMap<String, Integer> res = new TreeMap<String, Integer>();
+		for(int i=0;i<cntlPts.length; ++i) {res.put(this.cntlPtLbls[i], i);}	
+		getTrajAnalysisKeys_Indiv(res);
+		return res;
+	}
+	/**
+	 * instance specific values should be added here
+	 * @param map
+	 */
+	public abstract void getTrajAnalysisKeys_Indiv(TreeMap<String, Integer> map);
+	
 	/**
 	 * points along edges
 	 * @return
@@ -760,6 +804,7 @@ public abstract class baseMap {
 	public final myPointf[][] getEdgePts(){			return edgePts;}	
 
 	public final myPointf[] getCntlPts() {			return cntlPts;}
+	public abstract int getNumCntlPts();
 //	/**
 //	 * copy of control points
 //	 * @return
@@ -769,6 +814,8 @@ public abstract class baseMap {
 //		for(int i=0;i<cpyPts.length;++i) {	cpyPts[i]= new myPointf(cntlPts[i]);}		
 //		return cpyPts;}
 	public final myPointf[] getCntlPtDiagonal() {	return new myPointf[] {cntlPts[0],cntlPts[2]};}
+	public abstract myPointf[] getCntlPtOffDiagonal();
+
 	
 	public final void setImageToMap(PImage _img) {	imageToMap=_img;	}	
 	

@@ -54,7 +54,7 @@ public class LogPolarMorph extends baseMorph {
 	 * @param _calledFrom : string denoting who called this method.  For debugging
 	 */
 	@Override
-	public void mapCalcsAfterCntlPointsSet(String _calledFrom) {
+	protected void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
 		// TODO Auto-generated method stub
 		
 	}

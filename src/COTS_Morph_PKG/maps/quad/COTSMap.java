@@ -1,5 +1,6 @@
 package COTS_Morph_PKG.maps.quad;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
@@ -14,7 +15,7 @@ import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
- * COTS map based on Jarek's paper
+ * COTS map based on Jarek's paper - use bilin for parallelogram
  * @author john
  *
  */
@@ -33,8 +34,9 @@ public class COTSMap extends baseQuadMap {
 	 * whether this map should share branching
 	 */
 	protected boolean shouldShareBranching = false;	
-
-
+	
+	protected final String SpiralCtrLbl = "Spiral Center";
+	
 	public COTSMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {	
 		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame, _mapTitle);
 		cots = new COTS_Similarity(mapTitle,basisVecs[0], basisVecs[2], basisVecs[1]);
@@ -55,7 +57,7 @@ public class COTSMap extends baseQuadMap {
 	 * Instance-class specific initialization
 	 */	
 	@Override
-	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+	protected final void _updateQuadMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
 		//boolean reset = flags[0];
 		//boolean optimizeAlpha = false;	//this is done to force the morphed maps to try to have angles close as possible to other map's angles
 		//if(flags.length > 1) {optimizeAlpha= flags[1];}
@@ -72,6 +74,7 @@ public class COTSMap extends baseQuadMap {
 
 	@Override
 	public void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags) {
+		//copy branching should only be set when this map(being a morph frame) is being copied from mapA in initial morph calculation
 		if ((((COTSMap)otrMap).shouldShareBranching) || (flags.getCopyBranching())){
 			cots.setBranching(((COTSMap)otrMap).cots.getBranching());
 			updateMapFromOtrMapVals(flags);
@@ -88,22 +91,13 @@ public class COTSMap extends baseQuadMap {
 	}
 	
 	@Override
-	protected void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale) {
-		//this function is only called on registration copy map, so this map should never share branching
-		shouldShareBranching = false;		
-	}
-
-	@Override
 	public myPointf calcMapPt(float tx, float ty) {
+		if(!isAbleToExec()) {return new myPointf();}	
 		//tx interpolates between "vertical" edges, scale and angle, ty interpolates between "horizontal" edges, scale and angle
 		return cots.mapPoint(cntlPts[0], tx, ty);
 	}
 	
-	@Override
-	protected final void setOtrMap_Indiv() {};
-	@Override
-	public myPointf getCenterPoint() {	return cots.getF();}
-	
+
 	/**
 	 * update current branch sharing strategy
 	 * @param _currBranchShareStrategy strategy for sharing angle branching, for cots maps.  
@@ -125,7 +119,58 @@ public class COTSMap extends baseQuadMap {
 		return true;
 	}
 	
+	@Override
+	protected void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale) {
+		//this function is only called on registration copy map, so this map should never share branching
+		shouldShareBranching = false;		
+	}
+	/**
+	 * for cots map, the ttl surface area is the area of a single tile * # of tiles scaled by cots scales.
+	 * see section
+	 */
+	@Override
+	public final float calcTtlSurfaceArea() {
+		float res = 0.0f;
+		float[] scales = cots.getScales();
+		double mult = 1.0;
+		for(int i=0;i<scales.length;++i) {
+			mult *= ((scales[i]*scales[i]) - 1.0f) / (Math.pow(scales[i], 2.0f/this.numCellsPerSide) - 1.0f);
+		}
+		// find set of cntl points to use to calc area of tile
+		ArrayList<myPointf> tilePts = buildPolyPointAra(0,0,100);
+		float tileArea = mgr.calcAreaOfPolyInPlane(tilePts.toArray(new myPointf[0]), basisVecs[0]);
+		
+		res = (float) (tileArea * mult);
+//		float smplRes = mgr.calcAreaOfPolyInPlane(cntlPts, basisVecs[0]);
+//		System.out.println("Tile area : " + tileArea +" | ttl map area via tile : " + res + " | area approx from cntl pts :"  +smplRes);
+		return res;
+	}//calcTtlSurfaceArea	
 	
+	/**
+	 * Return array of all morph-relevant cntl/info points for this map.
+	 * Call if morph map -after-  morph is calced.  
+	 * Include COV and possibly F point, if COTS or other spiral-based map
+	 * @return
+	 */
+	@Override
+	public final void getAllMorphCntlPts_Indiv(myPointf[] res) {
+		res[res.length-2]= new myPointf(this.cntlPtCOV);
+		res[res.length-1]= new myPointf(this.cots.getF());		
+	};
+	@Override
+	public final int getNumAllMorphCntlPts() {	return cntlPts.length + 2;};
+	/**
+	 * instance specific values should be added here
+	 * @param map
+	 */
+	@Override
+	public final void getTrajAnalysisKeys_Indiv(TreeMap<String, Integer> map) {
+		int numTtlPts = getNumAllMorphCntlPts();
+		map.put(COV_Label, numTtlPts-2);		
+		map.put(SpiralCtrLbl, numTtlPts-1);
+	}
+
+
 	/////////////////////
 	// draw routines
 	
@@ -135,7 +180,7 @@ public class COTSMap extends baseQuadMap {
 	 */
 	@Override
 	protected void _drawCntlPoints_Indiv(boolean isCurMap, int detail) {
-		if(detail < COTS_MorphWin.drawMapDet_CntlPts_COV_F_IDX) {return;}
+		if(detail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX) {return;}
 		pa.sphereDetail(5);
 		pa.setStroke(polyColors[1], 255);
 		mgr._drawPt(cots.getF(), sphereRad*1.5f);		
@@ -143,12 +188,12 @@ public class COTSMap extends baseQuadMap {
 	
 	@Override
 	protected final void _drawPointLabels_Indiv(int detail) {
-		if(detail < COTS_MorphWin.drawMapDet_CntlPts_COV_F_IDX) {return;}
-		win._drawLabelAtPt(cots.getF(),"Spiral Center : "+ cots.getF().toStrBrf(), 2.5f,-2.5f);		
+		if(detail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX) {return;}
+		win._drawLabelAtPt(cots.getF(),SpiralCtrLbl +  "_"+mapIdx + " : (" + cots.getF().toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f); //"+ cots.getF().toStrBrf(), 2.5f,-2.5f);		
 	}
 	
 	@Override
-	protected final void drawRightSideBarMenuTitle_Indiv() {
+	protected final void drawRtSdMenuTitle_Indiv() {
 		if(null == otrMap) {return;}
 		pa.pushMatrix();pa.pushStyle();
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Shares branching on edit with other map ? ");
@@ -157,7 +202,7 @@ public class COTSMap extends baseQuadMap {
 	}
 
 	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	protected float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		yOff = cots.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
 		return yOff;
 	}
@@ -173,6 +218,8 @@ public class COTSMap extends baseQuadMap {
 	@Override
 	public final void setFlags(boolean[] flags) {	 if(flags[0]) {	cots.setAllBranchingZero();}}
 
+	@Override
+	protected final void setOtrMap_Indiv() {};
 
 	/**
 	 * manage mouse/map movement for child-class specific fields

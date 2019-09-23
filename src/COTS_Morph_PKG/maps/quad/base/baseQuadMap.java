@@ -1,5 +1,6 @@
 package COTS_Morph_PKG.maps.quad.base;
 
+import java.util.ArrayList;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
@@ -9,6 +10,7 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPointf;
 import processing.core.PConstants;
+import processing.core.PImage;
 
 public abstract class baseQuadMap extends baseMap {
 	/**
@@ -16,7 +18,17 @@ public abstract class baseQuadMap extends baseMap {
 	 */
 	private float[][][] polyPointTVals;	
 		//# of subdivisions per poly for checkerboard
-	private float subDivPerPoly;
+	private float subDivLenPerPoly;
+		//# of total points for edge of map
+	protected static final float numTtlPtsPerEdge = 300.0f;
+
+//	private PShape[] checkerBoard;
+//	private PShape[] circleGrid;
+//	
+//	public static final int 
+//		shapeFile_IDX = 0,
+//		shapeWF_IDX = 1;
+//	private static final int numShapes = 2;
 
 	public baseQuadMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs,mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {
 		super(_win, _mapMgr,  _cntlPts, _mapIdx, _mapTypeIDX, _pClrs, _currUIVals, _isKeyFrame, _mapTitle);	
@@ -42,17 +54,34 @@ public abstract class baseQuadMap extends baseMap {
 	}
 	
 	/**
+	 * Instance-class specific initialization
+	 */	
+	@Override
+	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+		_updateQuadMapFromCntlPtVals_Indiv(flags);
+		//rebuildCBandCircleGrid();
+	}
+	
+	protected abstract void _updateQuadMapFromCntlPtVals_Indiv(mapCntlFlags flags);
+	
+	/**
 	 * whether this map is ready to execute
 	 * @return
 	 */
 	public abstract boolean isAbleToExec();
+	
+	@Override
+	public final int getNumCntlPts() {return 4;}
+	@Override
+	public final myPointf[] getCntlPtOffDiagonal() {	return new myPointf[] {cntlPts[1],cntlPts[3]};}
+	
 	/**
 	 * precalculate the tx,ty values for the grid poly bounds - only necessary when numCellsPerSide changes
 	 */
 	@Override
 	protected final void buildPolyPointTVals() {
-		//subDivPerPoly = (int) ((numCellsPerSide -1)/(1.0*numTtlPtsPerEdge)) + 1;
-		subDivPerPoly = numCellsPerSide/numTtlPtsPerEdge;
+		
+		subDivLenPerPoly = numCellsPerSide/numTtlPtsPerEdge;
 
 		polyPointTVals = new float[numCellsPerSide+1][numCellsPerSide+1][2];			
 		float tx;		
@@ -62,37 +91,40 @@ public abstract class baseQuadMap extends baseMap {
 				polyPointTVals[i][j][0]=tx;
 				polyPointTVals[i][j][1]=j/(1.0f*numCellsPerSide);	//ty			
 			}
-		}	
-		
+		}			
 	}//buildPolyPointTVals
-
 	
 	/**
-	 * draw deformed circles within cells
-	 */	
-	protected void _drawPolyCircles() {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.setStrokeWt(2.0f);
-		pa.noFill();
-		float r = 1.f/(1.0f*numCellsPerSide), tx, ty, halfR = r/2.0f;
-		float circInterp = .12f;
-		myPointf pt;
-		for(int i=0;i<polyPointTVals.length-1;++i) {
-			float ri = r*i;
-			for(int j=0;j<polyPointTVals[i].length-1;++j) {
-				float rj = r * j;
-				pa.beginShape();
-			    for(float u=0; u<MyMathUtils.twoPi_f; u+=circInterp) {
-			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
-			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
-					pt = calcMapPt(tx, ty);
-					pa.vertex(pt.x,pt.y,pt.z);			    
-			    }
-				pa.endShape(PConstants.CLOSE);	
-			}	
+	 * build single tile points
+	 * @param i
+	 * @param j
+	 * @param numPtsPerEdge # of points to interpolate between adjacent t values
+	 * @return
+	 */
+	protected ArrayList<myPointf> buildPolyPointAra(int i, int j, int numPtsPerEdge) {
+		float subDivPerPoly = 1.0f/numPtsPerEdge;
+		ArrayList<myPointf> resList = new ArrayList<myPointf>();
+		float tx, ty = polyPointTVals[i][j][1];
+		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivPerPoly) {
+			resList.add(calcMapPt(tx, ty));		
 		}
-		pa.popStyle();pa.popMatrix();
-	}//_drawMapCircles
+		tx = polyPointTVals[i+1][j][0];					
+		for (ty = polyPointTVals[i+1][j][1]; ty<polyPointTVals[i+1][j+1][1];ty+=subDivPerPoly) {
+			resList.add(calcMapPt(tx, ty));			
+		}
+		
+		ty = polyPointTVals[i+1][j+1][1];
+		for (tx = polyPointTVals[i+1][j+1][0]; tx>polyPointTVals[i][j+1][0];tx-=subDivPerPoly) {
+			resList.add(calcMapPt(tx, ty));		
+		}
+		tx = polyPointTVals[i][j+1][0];	
+		for (ty = polyPointTVals[i][j+1][1]; ty>polyPointTVals[i][j][1];ty-=subDivPerPoly) {
+			resList.add(calcMapPt(tx, ty));			
+		}		
+		return resList;
+	}
+	
+
 	
 	protected final void _drawPoly(int i, int j) {
 		myPointf pt;
@@ -100,53 +132,53 @@ public abstract class baseQuadMap extends baseMap {
 		pa.beginShape();
 		
 		pa.normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
-		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivPerPoly) {
+		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z);
 		}
 		tx = polyPointTVals[i+1][j][0];					
-		for (ty = polyPointTVals[i+1][j][1]; ty<polyPointTVals[i+1][j+1][1];ty+=subDivPerPoly) {
+		for (ty = polyPointTVals[i+1][j][1]; ty<polyPointTVals[i+1][j+1][1];ty+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z);
 		}
 		
 		ty = polyPointTVals[i+1][j+1][1];
-		for (tx = polyPointTVals[i+1][j+1][0]; tx>polyPointTVals[i][j+1][0];tx-=subDivPerPoly) {
+		for (tx = polyPointTVals[i+1][j+1][0]; tx>polyPointTVals[i][j+1][0];tx-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z);
 		}
 		tx = polyPointTVals[i][j+1][0];	
-		for (ty = polyPointTVals[i][j+1][1]; ty>polyPointTVals[i][j][1];ty-=subDivPerPoly) {
+		for (ty = polyPointTVals[i][j+1][1]; ty>polyPointTVals[i][j][1];ty-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z);
 		}
 		pa.endShape(PConstants.CLOSE);	
 	}
 	
-	protected final void _drawPolyTexture(int i, int j) {
+	protected final void _drawPolyTexture(PImage _img, int i, int j) {
 		myPointf pt;
 		float tx, ty = polyPointTVals[i][j][1];
 		
 		pa.beginShape();
-		pa.texture(imageToMap);
+		pa.texture(_img);
 		pa.normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
-		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivPerPoly) {
+		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
 		}
 		tx = polyPointTVals[i+1][j][0];					
-		for (ty = polyPointTVals[i+1][j][1]; ty<polyPointTVals[i+1][j+1][1];ty+=subDivPerPoly) {
+		for (ty = polyPointTVals[i+1][j][1]; ty<polyPointTVals[i+1][j+1][1];ty+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
 		}
 		
 		ty = polyPointTVals[i+1][j+1][1];
-		for (tx = polyPointTVals[i+1][j+1][0]; tx>polyPointTVals[i][j+1][0];tx-=subDivPerPoly) {
+		for (tx = polyPointTVals[i+1][j+1][0]; tx>polyPointTVals[i][j+1][0];tx-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
 		}
 		tx = polyPointTVals[i][j+1][0];	
-		for (ty = polyPointTVals[i][j+1][1]; ty>polyPointTVals[i][j][1];ty-=subDivPerPoly) {
+		for (ty = polyPointTVals[i][j+1][1]; ty>polyPointTVals[i][j][1];ty-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
 			pa.vertex(pt.x,pt.y,pt.z, tx, ty);
 		}
@@ -171,7 +203,7 @@ public abstract class baseQuadMap extends baseMap {
 		pa.pushMatrix();pa.pushStyle();	
 		pa.noFill();
 		pa.noStroke();
-		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals[i].length-1;++j) {		_drawPolyTexture(i,j);		}}			
+		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals[i].length-1;++j) {		_drawPolyTexture(imageToMap, i,j);		}}			
 		pa.popStyle();pa.popMatrix();
 	}
 
@@ -196,8 +228,30 @@ public abstract class baseQuadMap extends baseMap {
 	public final void drawMap_PolyCircles_Fill() {
 		pa.pushMatrix();pa.pushStyle();	
 		pa.stroke(255,255,255,255);
-		pa.setStrokeWt(1.0f);
-		_drawPolyCircles();
+		pa.setStrokeWt(2.0f);		
+		int clrIdx = 1;		
+		float r = 1.f/(1.0f*numCellsPerSide), tx, ty, halfR = r/2.0f;
+		float circInterp = .12f;
+		myPointf pt;
+		for(int i=0;i<polyPointTVals.length-1;++i) {
+			float ri = r*i;
+			clrIdx = 1-(i % 2);
+			for(int j=0;j<polyPointTVals[i].length-1;++j) {
+				float rj = r * j;
+				pa.beginShape();
+			    for(float u=0; u<MyMathUtils.twoPi_f; u+=circInterp) {
+			    	pa.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
+			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
+			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
+					pt = calcMapPt(tx, ty);
+					pa.vertex(pt.x,pt.y,pt.z);
+					
+			    }
+				pa.endShape(PConstants.CLOSE);	
+				clrIdx = (clrIdx + 1) % 2;
+			}	
+		}
+		
 		pa.popStyle();pa.popMatrix();
 	}
 	@Override	
@@ -205,7 +259,7 @@ public abstract class baseQuadMap extends baseMap {
 		pa.pushMatrix();pa.pushStyle();	
 		pa.noFill();
 		pa.setStroke(gridColor, gridColor[3]);
-		pa.setStrokeWt(1.5f);	
+		pa.setStrokeWt(2.0f);	
 		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals[i].length-1;++j) {_drawPoly(i,j);}}	
 		pa.popStyle();pa.popMatrix();
 	}//drawMap_Wf
@@ -214,8 +268,26 @@ public abstract class baseQuadMap extends baseMap {
 		pa.pushMatrix();pa.pushStyle();	
 		pa.noFill();
 		pa.setStroke(gridColor, gridColor[3]);
-		pa.setStrokeWt(1.5f);	
-		_drawPolyCircles();
+		pa.setStrokeWt(2.0f);	
+		
+		float r = 1.0f/(1.0f*numCellsPerSide), tx, ty, halfR = r/2.0f;
+		float circInterp = .12f;
+		myPointf pt;
+		for(int i=0;i<polyPointTVals.length-1;++i) {
+			float ri = r*i;
+			for(int j=0;j<polyPointTVals[i].length-1;++j) {
+				float rj = r * j;
+				pa.beginShape();
+			    for(float u=0; u<MyMathUtils.twoPi_f; u+=circInterp) {
+			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
+			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
+					pt = calcMapPt(tx, ty);
+					pa.vertex(pt.x,pt.y,pt.z);			    
+			    }
+				pa.endShape(PConstants.CLOSE);	
+			}	
+		}
+	
 		pa.popStyle();pa.popMatrix();		
 	}
 }

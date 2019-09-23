@@ -3,7 +3,6 @@ package COTS_Morph_PKG.maps.triangular.base;
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
@@ -86,8 +85,10 @@ public abstract class baseTriangleMap extends baseMap {
 	public final void drawMap_Texture() {				drawMap_Wf();}
 	
 	@Override
-	protected final void drawRightSideBarMenuTitle_Indiv() {}
+	protected final void drawRtSdMenuTitle_Indiv() {}
 	@Override
-	public final myPointf getCenterPoint() {return cntlPtCOV;}
+	public final int getNumCntlPts() {return 3;}
+	public final myPointf[] getCntlPtOffDiagonal() {	return new myPointf[] {cntlPts[1],cntlPts[2]};}
+	
 
 }

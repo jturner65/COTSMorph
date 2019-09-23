@@ -65,7 +65,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 	 * @param _calledFrom : string denoting who called this method.  For debugging
 	 */
 	@Override
-	public void mapCalcsAfterCntlPointsSet(String _calledFrom) {
+	protected void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
 		if(edgeTransforms == null) {return;}		
 		for(int i=0;i<edgeTransforms.length;++i) {
 			edgeTransforms[i].buildTransformation(edgesA[i], edgesB[i], mapFlags[mapUpdateNoResetIDX]);
@@ -96,7 +96,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 		     edgeEndPts[i].set(myPointf._add(edgeTransforms[i].transformPoint(edgesA[i][1], tB),myVectorf._mult(normDispTimeVec, tB)));		     
 		}  		
 		for(int i=0;i<edgeStPts.length;++i) {
-			destPts[i]= new myPointf(edgeStPts[i],tA, edgeEndPts[((i-1)+edgeEndPts.length)%edgeEndPts.length]);
+			destPts[i]= new myPointf(edgeStPts[i],.5f, edgeEndPts[((i-1)+edgeEndPts.length)%edgeEndPts.length]);
 		}
 		//now set morph
 		
@@ -173,7 +173,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 			for(int i=0;i<edgeTransforms.length;++i) {			
 				myPointf F = new myPointf(edgeTransforms[i].getCenterPoint()); 				
 				F.set(myPointf._add(F, myVectorf._mult(normDispTimeVec, morphT)));
-				_drawPt(F, baseMap.sphereRad*1.5f);	
+				mapMgr._drawPt(F, baseMap.sphereRad*1.5f);	
 			}
 			pa.popStyle();pa.popMatrix();	
 		}
@@ -182,7 +182,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 	@Override
 	public void resetAllBranching() {
 		for(int i=0;i<edgeTransforms.length;++i) {			edgeTransforms[i].setBranching(0.0f);	}		
-		mapCalcsAfterCntlPointsSet("self::resetAllBranching");
+		mapCalcsAfterCntlPointsSet("self::resetAllBranching", true);
 	}
 
 }//class QuadKeyEdgeSpiralMorph

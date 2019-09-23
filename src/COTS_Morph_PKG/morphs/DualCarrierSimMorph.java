@@ -9,20 +9,57 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class DualCarrierSimMorph extends CarrierSimDiagMorph {
+public class DualCarrierSimMorph extends baseMorph {
+	/**
+	 * similarity that will act as carrier
+	 */
+	protected CarrierSimilarity[] carriers;
+	
+	/**
+	 * per side cntl point edges, in order, of each poly
+	 */	
+	protected myPointf[][] diagPtAras;
 
 	public DualCarrierSimMorph(COTS_MorphWin _win, baseMorphManager _morphMgr, mapPairManager _mapMgr, String _morphTitle) {super(_win, _morphMgr, _mapMgr, _morphTitle);}
+	
+	@Override
+	protected void initCalcMorph_Indiv(float tA, float tB) {
+		if(null==carriers) {return;}
+		//myPointf[] mapADiag = mapA.getCntlPtDiagonal(),mapBDiag = mapB.getCntlPtDiagonal();		
+		//carrier.deriveSimilarityFromCntlPts(new myPointf[] {mapADiag[0],mapADiag[1],mapBDiag[0],mapBDiag[1]}, true);	
+		for(int i=0;i<carriers.length;++i) {
+			carriers[i].deriveSimilarityFromCntlPts(diagPtAras[1], mapFlags[mapUpdateNoResetIDX]);
+		}			
+	}
+
+
+	
 	/**
 	 * this function will conduct calculations between the two keyframe maps, if such calcs are used, whenever either is modified.  this is morph dependent
 	 * @param _calledFrom : string denoting who called this method.  For debugging
 	 */
 	@Override
-	public void mapCalcsAfterCntlPointsSet(String _calledFrom) {
-		// TODO Auto-generated method stub
+	protected void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
 		
 	}
 
-	
+	/**
+	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
+	 */	
+	@Override
+	protected final void _endCtorInit() {	
+		myPointf[] mapADiag = mapA.getCntlPtDiagonal(), mapAOffDiag =  mapA.getCntlPtOffDiagonal();
+		myPointf[] mapBDiag = mapB.getCntlPtDiagonal(), mapBOffDiag =  mapB.getCntlPtOffDiagonal();
+		diagPtAras = new myPointf[2][];
+		diagPtAras[0] = new myPointf[] {mapADiag[0],mapADiag[1],mapBDiag[0],mapBDiag[1]};
+		diagPtAras[1] = new myPointf[] {mapAOffDiag[0],mapAOffDiag[1],mapBOffDiag[0],mapBOffDiag[1]};
+		carriers = new CarrierSimilarity[2];
+		for(int i=0;i<carriers.length;++i) {
+			carriers[i] = new CarrierSimilarity(morphTitle+"_"+i, mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);
+		}
+		
+	}
+
 	@Override
 	protected final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));}
 	@Override
@@ -41,8 +78,13 @@ public class DualCarrierSimMorph extends CarrierSimDiagMorph {
 	@Override
 	protected final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
 		for(int i=0;i<Apts.length;++i) {		
-			destPts[i]= (null==carrier) ? myPointf._add(new myPointf(Apts[i]),myVectorf._mult(normDispTimeVec, tB)) : myPointf._add(myPointf._mult(carrier.transformPoint(Apts[i],tB), tA),myPointf._mult(carrier.transformPoint(Bpts[i],tA), tB));
+			destPts[i]= (null==carriers) ? 
+					myPointf._add(new myPointf(Apts[i]),myVectorf._mult(normDispTimeVec, tB)) : 
+					myPointf._add(myPointf._mult(carriers[i%2].transformPoint(Apts[i], tB), tA),myPointf._mult(carriers[i%2].transformPoint(Bpts[i], tA), tB));
 			//destPts[i]= myPointf._add(res, myVectorf._mult(normDispTimeVec, tB));//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);	
+//			destPts[i]= (null==carrier) ? 
+//					myPointf._add(new myPointf(Apts[i]),myVectorf._mult(normDispTimeVec, tB)) : 
+//					myPointf._add(myPointf._mult(carrier.transformPoint(Apts[i],tB), tA),myPointf._mult(carrier.transformPoint(Bpts[i],tA), tB));
 		}
 	}
 //	@Override
@@ -56,7 +98,9 @@ public class DualCarrierSimMorph extends CarrierSimDiagMorph {
 
 	@Override
 	protected float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
-		carrier.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
+		for(int i=0;i<carriers.length;++i) {
+			yOff+= carriers[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
+		}
 		yOff += sideBarYDisp;
 		pa.translate(0.0f,sideBarYDisp, 0.0f);	
 		
@@ -77,7 +121,9 @@ public class DualCarrierSimMorph extends CarrierSimDiagMorph {
 	
 	@Override
 	public void resetAllBranching() {
-		carrier.setAllBranchingZero();
+		for(int i=0;i<carriers.length;++i) {
+			carriers[i].setAllBranchingZero();
+		}
 		
 	}
 

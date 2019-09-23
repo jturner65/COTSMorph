@@ -82,7 +82,7 @@ public class SpiralTransform extends baseTransform {
 	private void calcOptimalAlpha(float alphaNew, mapCntlFlags flags) {	
 		//if((old_old_alpha != old_alpha) || (a != old_alpha)) {
 		if(flags.getDebug()) {// && ((old_old_alpha != old_alpha) || (a != old_alpha))) {
-			System.out.println(name+" : Old Old alpha : " + old_old_alpha +" | Old alpha : " + old_alpha + " alphaNew : " + alphaNew + " | a : " + a + " | a_BranchDisp : " + a_BranchDisp);
+			//System.out.println(name+" : Old Old alpha : " + old_old_alpha +" | Old alpha : " + old_alpha + " alphaNew : " + alphaNew + " | a : " + a + " | a_BranchDisp : " + a_BranchDisp);
 		}
 		
 	}

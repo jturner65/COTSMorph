@@ -42,9 +42,9 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		
 		
 		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY+1.0f, maxZ-1.0f),
-									new myPointf(minX, minY+1.0f, maxZ-2.0f),
+									new myPointf(minX, minY-1.0f, maxZ-2.0f),
 									new myPointf(minX, minY+2.0f, minZ-1.0f),
-									new myPointf(minX, maxY+2.0f, minZ-2.0f)};
+									new myPointf(minX, maxY-2.0f, minZ-2.0f)};
 		
 		bndPts[1] = new myPointf[]{ new myPointf(maxX, maxY-1.0f, maxZ-1.0f),
 									new myPointf(maxX, minY-1.0f, maxZ+1.0f),

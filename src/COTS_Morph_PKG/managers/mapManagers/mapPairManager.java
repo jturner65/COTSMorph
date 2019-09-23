@@ -106,6 +106,12 @@ public class mapPairManager {
 	protected TreeMap<Float, baseMap> lineUpMorphMaps;
 	
 	/**
+	 * array holding upper left corner x,y, width, height of rectangle to use for displaying graphs of trajectory analysis
+	 */
+	protected float[] trajAnalysisRectDims;
+	protected float perTragAnalysisImageWidth;
+	
+	/**
 	 * morph animation variables
 	 */
 	private float morphProgress = 0.5f, morphSpeed = 1.0f;
@@ -125,7 +131,7 @@ public class mapPairManager {
 		bndPts = new myPointf[_bndPts.length][];
 		for(int i=0;i<bndPts.length;++i) {bndPts[i]=new myPointf[_bndPts[i].length];	for(int j=0;j<bndPts[i].length;++j) {		bndPts[i][j]=new myPointf(_bndPts[i][j]);	}}
 		currUIVals = new mapUpdFromUIData(_currUIVals);
-		setLineupRectDims();
+		
 		//build maps
 		maps = new baseMap[2];
 		for(int j=0;j<maps.length;++j) {	maps[j] = buildKeyFrameMapOfPassedType(_mapType,j, "");}		
@@ -141,6 +147,7 @@ public class mapPairManager {
 		lineUpMorphMaps = new TreeMap<Float, baseMap>();
 		mapType=_mapType;
 		_initMorphs();
+		setPopUpWins_RectDims();
 	}//ctor
 	/**
 	 * initialize all morphs - only call once
@@ -192,6 +199,67 @@ public class mapPairManager {
 	
 	//////////////
 	// map comparison and map/morph processing
+	
+	/**
+	 * find and display areas of both key frame maps
+	 */
+	
+	public final void calcAndShowAreas() {
+		for(int j=0;j<maps.length;++j) {
+			float mapArea = maps[j].calcTtlSurfaceArea();
+			System.out.println("For Map : " + maps[j].mapTitle + " : " + mapArea);
+			
+		}
+	}//calcAndShowAreas
+	/**
+	 * takes array of points and calculates the area of the poly described by them in the plane described by the normal n
+	 * @param pts array of points making up poly
+	 * @param n unit normal of plane points live in
+	 * @return
+	 */
+	public final float calcAreaOfPolyInPlane(myPointf[] pts, myVectorf n) {
+		float res = 0.0f;
+		myVectorf U = new myVectorf(),V= new myVectorf();
+		for(int i=1;i<pts.length;++i) {
+			U.set(pts[i-1]);
+			V.set(pts[i]);
+			res +=  myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
+		}
+		U.set(pts[pts.length-1]);
+		V.set(pts[0]);
+		res +=  myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
+		res/=2.0f;
+		return res;
+		
+	}
+
+	/**
+	 * calculate center of mass of poly desribed by passed point array
+	 * center of mass is not necessarily centroid of array of passed points
+	 * each area weights COM Calc  : (individual triangle coms * triangle areas)/total area
+	 * @param pts
+	 * @return
+	 */
+	public final myPointf calcCOM(myPointf[] pts, myVectorf n){
+		myPointf COM = new myPointf(), triCOM;
+		float ttlArea = 0.0f, triArea = 0.0f;
+		myVectorf U = new myVectorf(),V= new myVectorf();
+		for(int i = 1; i< pts.length;++i) {
+			triCOM = myPointf._average(myPointf.ZEROPT, pts[i-1],pts[i]);
+			triArea = myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
+			COM._add(myPointf._mult(triCOM, triArea));
+			ttlArea += triArea;			
+		}
+		triCOM = myPointf._average(myPointf.ZEROPT, pts[pts.length-1],pts[0]);
+		triArea = myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
+		COM._add(myPointf._mult(triCOM, triArea));
+		ttlArea += triArea;
+		myPointf Ct = myPointf._mult(COM, 1.0f/ttlArea);
+		return Ct;
+	}
+
+	
+	
 	/**
 	 * register "from" map to "to" map, and build a copy
 	 * @param setCopyMap
@@ -268,7 +336,7 @@ public class mapPairManager {
 			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Wf();}}
 		}
 		if(drawCircles) {
-			if(fillOrWf) {		for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Fill();}}		
+			if((!drawMap)&& (fillOrWf)) {		for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Fill();}}		
 			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Wf();}}					
 		}
 		if(drawCopy) {			if(fillOrWf) {copyMap.drawMap_Fill();	} else {copyMap.drawMap_Wf();}}
@@ -297,7 +365,7 @@ public class mapPairManager {
 	 */
 	protected float morphSign = 1.0f;
 
-	public final void drawAndAnimMorph(boolean debug, float animTimeMod,boolean drawMorphMap, boolean morphMapFillOrWf,  boolean drawSlices, boolean morphSlicesFillOrWf,boolean drawCircles, boolean drawCntlPts, boolean sweepMaps, boolean showLbls, int _detail) {
+	public final void drawAndAnimMorph(boolean debug, float animTimeMod, boolean drawMap, boolean drawMorphMap, boolean morphMapFillOrWf,  boolean drawSlices, boolean morphSlicesFillOrWf,boolean drawCircles, boolean drawCntlPts, boolean sweepMaps, boolean showLbls, int _detail) {
 		morphs[currMorphTypeIDX].setMorphT(morphProgress);//sets t value and calcs morph
 		pa.pushMatrix();pa.pushStyle();	
 			pa.fill(0,0,0,255);
@@ -308,10 +376,10 @@ public class mapPairManager {
 		pa.popStyle();pa.popMatrix();	
 		
 		if(drawSlices) {
-			morphs[currMorphTypeIDX].drawMorphSlices(morphSlicesFillOrWf, drawCircles, drawCntlPts, showLbls, _detail);			
+			morphs[currMorphTypeIDX].drawMorphSlices(morphSlicesFillOrWf, drawMap, drawCircles, drawCntlPts, showLbls, _detail);			
 		}
 		if(drawMorphMap) {
-			morphs[currMorphTypeIDX].drawMorphedMap(morphMapFillOrWf, drawCircles);	
+			morphs[currMorphTypeIDX].drawMorphedMap(morphMapFillOrWf, drawMap, drawCircles);	
 			if(drawCntlPts){morphs[currMorphTypeIDX].drawMorphedMap_CntlPts(_detail);}
 			morphs[currMorphTypeIDX].drawHeaderAndLabels(showLbls,_detail);
 		}
@@ -320,6 +388,45 @@ public class mapPairManager {
 			if(morphProgress > 1.0f) {morphProgress = 1.0f;morphSign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	morphSign = 1.0f;}		
 			currUIVals.setMorphProgress(morphProgress);
 		}
+	}
+	
+	public final void drawMaps_AnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, float sideBarYDisp) {
+		int alpha = 120;
+		pa.pushMatrix();pa.pushStyle();	
+		pa.setStroke(new int[] {0, 0,0}, 255);
+		pa.setStrokeWt(2.0f);
+		int numWinBarsToDraw = 1;
+		pa.translate(0.0f,win.rectDim[3],0.0f);//perTragAnalysisImageWidth up from bottom
+		if(drawAnalysisGraphs) {
+			pa.pushMatrix();pa.pushStyle();	
+			pa.setFill(new int[] {255, 235,255},alpha);
+			pa.translate(0.0f,-perTragAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTragAnalysisImageWidth up from bottom
+			pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
+			
+			++numWinBarsToDraw;
+			pa.popStyle();pa.popMatrix();
+		}
+		if(drawTrajAnalysis) {
+			pa.pushMatrix();pa.pushStyle();	
+			pa.setFill(new int[] {235, 252,255},alpha);
+			pa.translate(0.0f,-perTragAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTragAnalysisImageWidth up from bottom
+			pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
+			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
+			
+			pa.popStyle();pa.popMatrix();
+			
+		}
+		pa.popStyle();pa.popMatrix();
+	}
+	protected final void drawMaps_TrajAnalysisWindow(String[] mmntDispLabels, float sideBarYDisp) {
+		pa.pushMatrix();pa.pushStyle();	
+		pa.setStroke(new int[] {0, 0,0}, 255);
+		pa.setStrokeWt(2.0f);
+		pa.setFill(new int[] {235, 252,255},120);
+		pa.translate(0.0f,win.rectDim[3]-perTragAnalysisImageWidth,0.0f);//perTragAnalysisImageWidth up from bottom
+		pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
+		morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});		
+		pa.popStyle();pa.popMatrix();
 	}
 
 	/**
@@ -334,7 +441,7 @@ public class mapPairManager {
 		pa.translate(0.0f,win.rectDim[3]-perLineupImageWidth,0.0f);
 		pa.rect(lineupRectDims[0],lineupRectDims[1],lineupRectDims[2],lineupRectDims[3]);		
 		
-		pa.setFill(new int[] {0, 222,232},255);
+		//pa.setFill(new int[] {0, 222,232},255);
 		for(Float t : lineUpMorphMaps.keySet()) {
 			pa.pushMatrix();pa.pushStyle();
 				pa.translate(10.0f, 10.0f, 0.0f);
@@ -374,14 +481,13 @@ public class mapPairManager {
 		pa.translate(-10.0f, 0.0f, 0.0f);
 		return _yOff;
 	}
-
 	
 	public final float drawRightSideMaps(float _yOff, float sideBarYDisp, boolean drawRegCopy, boolean drawMorph,  boolean drawMorphSlicesRtSideInfo) {
 		pa.showOffsetText(0,IRenderInterface.gui_Cyan,  "Current Maps : " + mapTypes[mapType] + " Maps : ");
 		
 		pa.translate(10.0f, sideBarYDisp, 0.0f);		
-		for(int i=0; i<maps.length;++i) {			_yOff = maps[i].drawRightSideBarMenuDescr(_yOff, sideBarYDisp, true, true);		}
-		if(drawRegCopy) {_yOff = copyMap.drawRightSideBarMenuDescr(_yOff, sideBarYDisp, true, true);}
+		for(int i=0; i<maps.length;++i) {			_yOff = maps[i].drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);		}
+		if(drawRegCopy) {_yOff = copyMap.drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);}
 		if(drawMorph) {			_yOff = _drawRightSideMorphMap(_yOff, sideBarYDisp);	}		
 		pa.translate(-10.0f, sideBarYDisp, 0.0f);	
 		pa.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Morph : ");
@@ -413,11 +519,23 @@ public class mapPairManager {
 	
 	///////////////
 	// setters/getters
-	
-	public final void setLineupRectDims() {
+	/**
+	 * set up dimensions for lineup window and traj analysis window
+	 */
+	public final void setPopUpWins_RectDims() {
+		//
 		lineupRectDims = win.getOrientedDims();
 		perLineupImageWidth = lineupRectDims[2]/(1.0f*currUIVals.getNumLineupFrames());
 		lineupRectDims[3] = perLineupImageWidth;
+		//traj analysis window
+		recalcTrajAnalysisDims();
+	}
+	
+	private final void recalcTrajAnalysisDims() {
+		//traj analysis window
+		trajAnalysisRectDims = win.getOrientedDims();
+		perTragAnalysisImageWidth = trajAnalysisRectDims[2]/(1.0f* morphs[currMorphTypeIDX].getNumAnalysisBoxes());
+		trajAnalysisRectDims[3] = perTragAnalysisImageWidth;
 	}
 	
 	public final void setFromAndToCopyIDXs(int _fromIdx, int _toIdx) {
@@ -441,7 +559,7 @@ public class mapPairManager {
 	 * this will reset branching on all maps that use branching
 	 */
 	public final void resetAllBranching() {
-		boolean[] flags = new boolean[] {true};			//idx 0 is branching
+		//boolean[] flags = new boolean[] {true};			//idx 0 is branching
 		for (int i=0;i<maps.length;++i) {	maps[i].setFlags(new boolean[] {true});}
 		for (int i=0;i<morphs.length;++i) {morphs[i].resetAllBranching();}		
 	}
@@ -458,11 +576,11 @@ public class mapPairManager {
         
 		morphSpeed = currUIVals.getMorphSpeed(); 
 		
-		setLineupRectDims();
+		setPopUpWins_RectDims();
 		for(int i=0;i<this.morphs.length;++i) {	morphs[i].setMorphSlices(currUIVals.getNumMorphSlices());}
 		morphMap.updateMapVals_FromUI(currUIVals);
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI");
+		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true);
 	}
 	
 	/**
@@ -482,14 +600,14 @@ public class mapPairManager {
 	public final void resetAllMapCorners() {
 		morphMap.resetCntlPts(bndPts[0]);
 		for(int j=0;j<maps.length;++j) {		maps[j].resetCntlPts(bndPts[j]);	}	
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetAllMapCorners");
+		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetAllMapCorners", true);
 		
 	}	
 	/**
 	 * reset all instances of either "floor"/A or "ceiling"/B map
 	 * @param mapIDX
 	 */
-	public final void resetMapCorners(int mapIDX) {	maps[mapIDX].resetCntlPts(bndPts[mapIDX]);morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetMapCorners");}
+	public final void resetMapCorners(int mapIDX) {	maps[mapIDX].resetCntlPts(bndPts[mapIDX]);morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetMapCorners", true);}
 	/**
 	 * match map destIDX corners to map srcIDX's corners
 	 */
@@ -497,7 +615,7 @@ public class mapPairManager {
 		myPointf[] rawPts0 = maps[srcIDX].getCntlPts(), newPts = new myPointf[rawPts0.length];
 		for(int j=0;j<rawPts0.length;++j) {	newPts[j] = myPointf._add(myPointf._sub(rawPts0[j], bndPts[srcIDX][j]), bndPts[destIDX][j]);}			
 		maps[destIDX].resetCntlPts(newPts);	
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::matchAllMapCorners");
+		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::matchAllMapCorners", true);
 				
 	}//matchAllMapCorners	
 
@@ -555,7 +673,7 @@ public class mapPairManager {
 		}
 		if(performFinalIndiv) {		//some editing happened, so finalize
 			currMseModMap.mseDragInMap_Post(defVec,mseClickIn3D_f,isScale, isRotation, isTranslation, key, keyCode);	
-			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap");
+			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap", false);
 		}
 		return performFinalIndiv;
 	}//mseDragInMap
@@ -564,7 +682,7 @@ public class mapPairManager {
 	public final void hndlMouseRelIndiv() {
 		morphMap.mseRelease();
 		for(int i=0;i<maps.length;++i) {	maps[i].mseRelease();}
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::hndlMouseRelIndiv");
+		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::hndlMouseRelIndiv", true);
 		currMseModMap = null;
 	}	
 	

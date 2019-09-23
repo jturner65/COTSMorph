@@ -1,10 +1,14 @@
 package COTS_Morph_PKG.morphs.base;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
 import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.maps.base.baseMap;
+import COTS_Morph_PKG.morphs.analysis.morphAreaTrajAnalyzer;
+import COTS_Morph_PKG.morphs.analysis.morphCntlPtTrajAnalyzer;
+import COTS_Morph_PKG.morphs.analysis.base.baseMorphAnalyzer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.IRenderInterface;
@@ -47,8 +51,8 @@ public abstract class baseMorph {
 	protected TreeMap<Float, baseMap> morphSliceAra;
 	protected int numMorphSlices = 8;
 	
-	protected my_procApplet pa;
-	protected COTS_MorphWin win;
+	public my_procApplet pa;
+	public COTS_MorphWin win;
 	public final String morphTitle;
 	/**
 	 * vector to add to displacement to manage morphing between frames in 3D
@@ -61,15 +65,30 @@ public abstract class baseMorph {
 	protected static final int numMapFlags = 1;
 	
 	/**
-	 * set of all control points for each time slice
+	 * set of all control points for each time slice, including COV and center/F, if present
 	 */
 	protected TreeMap<Float, myPointf[][]> cntlPtTrajs;
+	/**
+	 * keyed by time, value is area of morph map
+	 */
+	//protected TreeMap<Float, Float> areaTrajMaps;
+	protected ArrayList<Float> areaTrajs;
 	
 	/**
 	 * set of all edge points for each time slice
 	 */
 	protected TreeMap<Float, myPointf[][][]> edgePtTrajs;
+	/**
+	 * analyzers for each morph trajectory - keyed by traj name
+	 */
+	protected TreeMap<String, morphCntlPtTrajAnalyzer> trajAnalyzers;
+	protected morphAreaTrajAnalyzer areaTrajAnalyzer;
+	/**
+	 * map holding name of traj component and index in cntl point ara
+	 */
+	protected final TreeMap<String, Integer> trajAnalyzeKeys;
 	
+	protected boolean reCalcTrajsAndAnalysis;
 
 	public baseMorph(COTS_MorphWin _win, baseMorphManager _morphMgr, mapPairManager _mapMgr, String _morphTitle) {
 		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;//morphMgr=_morphMgr;
@@ -79,9 +98,15 @@ public abstract class baseMorph {
 		curMorphMap = mapMgr.morphMap;	
 		normDispTimeVec = new myVectorf(mapA.getCOV(), mapB.getCOV());
 		normDispTimeVec = myVectorf._mult(mapA.basisVecs[0], normDispTimeVec._dot(mapA.basisVecs[0]));	
+		//areaTrajMaps = new TreeMap<Float, Float>();
+		areaTrajs = new ArrayList<Float>();
 		cntlPtTrajs = new TreeMap<Float, myPointf[][]>();
 		edgePtTrajs = new TreeMap<Float, myPointf[][][]>();
 		mapFlags = new mapCntlFlags[numMapFlags];
+		trajAnalyzers = new TreeMap<String, morphCntlPtTrajAnalyzer>();
+		trajAnalyzeKeys = mapA.getTrajAnalysisKeys();
+		reCalcTrajsAndAnalysis = true;
+		initTrajAnalyzers();
 		for(int i=0;i<mapFlags.length;++i) {
 			mapFlags[i] = new mapCntlFlags();
 			mapFlags[i].setOptimizeAlpha(true);
@@ -90,7 +115,7 @@ public abstract class baseMorph {
 
 		//initialize essential data before calcMorph is called
 		_endCtorInit();
-		mapCalcsAfterCntlPointsSet(morphTitle + "::ctor");	
+		mapCalcsAfterCntlPointsSet(morphTitle + "::ctor",false);	
 
 		setMorphSliceAra();
 		calcMorph();		
@@ -117,15 +142,13 @@ public abstract class baseMorph {
 		//update morph map with map a's vals, 
 		curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
 		//manage slices
-		setMorphSliceAra();
-		float tA = 1.0f-morphT, tB = morphT;
-		
-		_calcMorphOnMap(curMorphMap, true, tA, tB);
+		setMorphSliceAra();		
+		_calcMorphOnMap(curMorphMap, true, morphT);
 		buildCntlPointTrajs();
-	}
+	}	
 	
-	
-	protected final void _calcMorphOnMap(baseMap _curMorphMap, boolean _calcColors, float tA, float tB) {
+	protected final void _calcMorphOnMap(baseMap _curMorphMap, boolean _calcColors, float t) {
+		float tA = 1.0f-t, tB = t;
 		//initial code for morph, if necessary
 		initCalcMorph_Indiv(tA, tB);
 		//morph colors
@@ -145,14 +168,31 @@ public abstract class baseMorph {
 		return buildArrayOfMorphMaps(_numFrames, "_Lineup_Frames");
 	}
 	
+	/**
+	 * return relevant control/info points for trajectory based on current time, from passed morph map
+	 * @param _curMorphMap = current map to morph and get contrl point locs from
+	 * @param tA
+	 * @param tB
+	 * @return
+	 */
+	protected final myPointf[] getMorphMapTrajPts(baseMap _curMorphMap, float tA, float tB) {
+		//update map with current morph calc
+		calcMorphDeltaOfCntlPts(_curMorphMap, tA, tB);
+		//get relevant points from map, based on what kind of map, to build trajectories from
+		myPointf[] newPts = _curMorphMap.getAllMorphCntlPts();
+		
+		return newPts;
+	}
+	
 	
 	/**
 	 * use currently set t value to calculate morph
 	 */
-	protected final myPointf[] calcMorphDeltaOfCntlPts(baseMap _curMorphMap, float tA, float tB) {
-		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(), morphCntlPts = _curMorphMap.getCntlPts(),delPts = new myPointf[aCntlPts.length];
-		myPointf[] newPts = new myPointf[aCntlPts.length+2];
-
+	protected final void calcMorphDeltaOfCntlPts(baseMap _curMorphMap, float tA, float tB) {
+		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(); 
+		//myPointf[] morphCntlPts = _curMorphMap.getCntlPts(),delPts = new myPointf[aCntlPts.length];
+		myPointf[] newPts = new myPointf[aCntlPts.length];
+		
 		//put morph results into newPts
 		calcMorphBetweenTwoSetsOfCntlPoints(aCntlPts, bCntlPts, newPts, tA, tB);
 		_curMorphMap.setCntlPts(newPts, mapFlags[mapUpdateNoResetIDX]);
@@ -160,9 +200,12 @@ public abstract class baseMorph {
 //			delPts[i] = myPointf._sub(newPts[i], morphCntlPts[i]);	//performing this to make sure we have COV properly calculated
 //		}
 //		_curMorphMap.updateCntlPts(delPts);
-		newPts[newPts.length-2] = _curMorphMap.getCOV();
-		newPts[newPts.length-1] = _curMorphMap.getCenterPoint();		
-		return newPts;
+		
+//		//rebuild pts array to include other points
+//		if(retPts) {			newPts = _curMorphMap.getAllMorphCntlPts();		}
+//		newPts[newPts.length-2] = _curMorphMap.getCOV();
+//		newPts[newPts.length-1] = _curMorphMap.getCenterPoint();	//F point for COTS, otherwise re-maps COV	
+//		return newPts;
 	}//calcMorphOfDeltaCntlPts	
 	
 	/**
@@ -187,11 +230,161 @@ public abstract class baseMorph {
 	/**
 	 * this function will conduct calculations between the two keyframe maps, if such calcs are used, whenever either is modified.  this is morph dependent
 	 */
-	public abstract void mapCalcsAfterCntlPointsSet(String _calledFrom);
+	//public final void mapCalcsAfterCntlPointsSet(String _calledFrom) {
+	public final void mapCalcsAfterCntlPointsSet(String _calledFrom, boolean reBuildNow) {
+		reCalcTrajsAndAnalysis = true;
+		if(reBuildNow) {buildCntlPointTrajs();}
+		mapCalcsAfterCntlPointsSet_Indiv(_calledFrom);
+	};
+	protected abstract void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom);
 	
+	/**
+	 * call only once
+	 */
+	protected final void initTrajAnalyzers() {
+		trajAnalyzers.clear();
+		for(String key : trajAnalyzeKeys.keySet()) {
+			trajAnalyzers.put(key, new morphCntlPtTrajAnalyzer(this));
+		}
+		//analyzer for areas
+		areaTrajAnalyzer = new morphAreaTrajAnalyzer(this);
+	}
+	
+	/**
+	 * build analysis component for per-control point trajectory analysis
+	 */
+	public final void analyzeMorph() {
+		//analyze cntlPtTrajs
 
-	//////////////////////////////
+		TreeMap<String, ArrayList<myPointf>> morphTrajCntlPtArrays = buildMapOfMorphTrajCntlPtsToAnalyze();
+		
+		//for(int i=0;i<trajCntlPtArrays.length;++i) {
+		for(String keyType : morphTrajCntlPtArrays.keySet()) {
+			//System.out.println("analyzeMorphTrajs  map name : " + mapA.mapTitle+ " name : " + keyType+ " for : " + this.morphTitle + " # Pts : " +trajCntlPtArrays.get(keyType).size() +" morphTrajAnalyzer::analyzeTrajectory : ");
+			trajAnalyzers.get(keyType).analyzeTrajectory(morphTrajCntlPtArrays.get(keyType),keyType);
+		}			
+		//ArrayList<Float> areaTrajs = buildMapOfMorphAreasToAnalyze();
+		areaTrajAnalyzer.analyzeTrajectory(areaTrajs,"Areas");
+	}//analyzeMorphTrajs()
+	
+	public final int getNumAnalysisBoxes() {
+		int numCntlPts = mapA.getNumAllMorphCntlPts();
+		//add 1 for area
+		numCntlPts++;
+		
+		return numCntlPts;//all control points + COV and F point, if exists. if no F point then duplicates COV. TODO make this not occur if map doesn't have F point
+	}
+	/**
+	 * build cntl point trajs
+	 */
+	protected final void buildCntlPointTrajs() {
+		if(reCalcTrajsAndAnalysis) {
+			cntlPtTrajs.clear();
+			edgePtTrajs.clear();
+			//areaTrajMaps.clear();
+			areaTrajs.clear();
+			baseMap tmpMap = getCopyOfMap(null,mapA.mapTitle +"_MorphCntlPtTraj");
+			myPointf[] cntlPtsOld = getMorphMapTrajPts(tmpMap,1.0f, 0.0f);//includes cov and possibly center/f
+			//areaTrajMaps.put(0.0f, tmpMap.calcTtlSurfaceArea());
+			areaTrajs.add(tmpMap.calcTtlSurfaceArea());
+			myPointf[][] tmpCntlPtAra;
+			myPointf[][][] tmpEdgePtAra;
+			myPointf[][] edgePtsOld = mapA.getEdgePts();
+			
+			pa.strokeWeight(1.0f);
+			for(float t = 0.01f;t<=1.0f;t+=.01f) {
+				float tA = 1.0f-t, tB = t;
+				initCalcMorph_Indiv(tA, tB);
+				myPointf[] cntlPts = getMorphMapTrajPts(tmpMap,tA, tB);
+				myPointf[][] edgePts = tmpMap.getEdgePts();
+				//areaTrajMaps.put(t, tmpMap.calcTtlSurfaceArea());
+				areaTrajs.add(tmpMap.calcTtlSurfaceArea());
+				//idx 5 is cov, idx 6 is ctr pt
+				if(null != cntlPts) {	
+					tmpCntlPtAra = new myPointf[2][];
+					tmpCntlPtAra[0]=new myPointf[cntlPts.length];
+					tmpCntlPtAra[1]=new myPointf[cntlPts.length];
+					for(int i =0;i<cntlPts.length;++i) {
+						tmpCntlPtAra[0][i] = new myPointf(cntlPtsOld[i]);
+						tmpCntlPtAra[1][i] = new myPointf(cntlPts[i]);						
+					}
+					cntlPtTrajs.put(t, tmpCntlPtAra);
+				}
+				tmpEdgePtAra = new myPointf[2][][];
+				tmpEdgePtAra[0]=new myPointf[edgePts.length][];
+				tmpEdgePtAra[1]=new myPointf[edgePts.length][];
+				for(int i=0;i<edgePts.length;++i) {
+					tmpEdgePtAra[0][i]=new myPointf[edgePts[i].length];
+					tmpEdgePtAra[1][i]=new myPointf[edgePts[i].length];
+					for(int j=0;j<edgePts[i].length;++j) {
+						tmpEdgePtAra[0][i][j]=new myPointf(edgePtsOld[i][j]);
+						tmpEdgePtAra[1][i][j]=new myPointf(edgePts[i][j]);
+					}
+				}
+				edgePtTrajs.put(t, tmpEdgePtAra);
+				cntlPtsOld = cntlPts;
+				edgePtsOld = edgePts;
+			}		
+			analyzeMorph();
+			reCalcTrajsAndAnalysis = false;
+		}
+
+	}//buildCntlPointTrajs()
+	
+		
+	/**
+	 * take map of cntl point trajs and build map of type-keyed cntl point arrays
+	 * @param cntlPtTrajs
+	 * @return
+	 */
+	private TreeMap<String, ArrayList<myPointf>> buildMapOfMorphTrajCntlPtsToAnalyze(){
+		TreeMap<String, ArrayList<myPointf>> res = new TreeMap<String, ArrayList<myPointf>>();//first idx is # of cntl point types, 2nd is # of points in traj
+		if(cntlPtTrajs.size() == 0) { return res;}
+		for(String key : trajAnalyzers.keySet()) {		res.put(key, new ArrayList<myPointf>());	}
+		
+		myPointf[][] tmpCnltPtAra;
+		//int idx = 0;
+		for(Float t : cntlPtTrajs.keySet()) {
+			tmpCnltPtAra = cntlPtTrajs.get(t);	//this is all cntl points at this time	
+			for(String key : trajAnalyzeKeys.keySet()) {
+				//trajAnalyzers.put(key, new morphTrajAnalyzer(this));
+				res.get(key).add(new myPointf(tmpCnltPtAra[0][trajAnalyzeKeys.get(key)]));
+			}
+		}		
+		return res;
+	}
+
+	////////////////////////////// String[] mmntDispLabels
 	// draw routines	
+	/**
+	 * draw all traj analysis data
+	 * @param trajWinDims array of float dims - width,height of window, y value where window starts, y value to displace every line
+	 */
+	public final void drawTrajAnalyzerData(String[] mmntDispLabels, float[] trajWinDims) {
+		//float yDisp = trajWinDims[3];
+		pa.pushMatrix();pa.pushStyle();		
+		for(String key : trajAnalyzers.keySet()) {//per control point	
+			_drawAnalyzerData( mmntDispLabels,trajWinDims, "Cntl Pt Traj : " + key, trajAnalyzers.get(key));
+		}
+		_drawAnalyzerData( mmntDispLabels,trajWinDims, "Area :",areaTrajAnalyzer);
+		pa.popStyle();pa.popMatrix();
+		
+	}
+	
+	private void _drawAnalyzerData(String[] mmntDispLabels, float[] trajWinDims, String name, baseMorphAnalyzer analyzer) {
+		float yDisp = trajWinDims[3];
+		pa.pushMatrix();pa.pushStyle();		
+		pa.translate(5.0f, yDisp, 0.0f);
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, name);
+		pa.popStyle();pa.popMatrix();
+		pa.pushMatrix();pa.pushStyle();
+			pa.translate(5.0f, 2*yDisp, 0.0f);			
+			analyzer.drawAllSummaryInfo(mmntDispLabels, yDisp, trajWinDims[0]);
+		pa.popStyle();pa.popMatrix();
+		
+		pa.translate(trajWinDims[0], 0.0f, 0.0f);
+		pa.line(0.0f,trajWinDims[2], 0.0f, 0.0f, trajWinDims[0]+ trajWinDims[2], 0.0f );
+	}//_drawAnalyzerData
 	
 	public final float drawMapRtSdMenuDescr(float yOff, float sideBarYDisp) {
 		if(null == curMorphMap) {return yOff;}	
@@ -204,7 +397,7 @@ public abstract class baseMorph {
 	
 		yOff += sideBarYDisp;
 		pa.translate(10.0f,sideBarYDisp, 0.0f);		
-		yOff = curMorphMap.drawRightSideBarMenuDescr(yOff, sideBarYDisp, false, true);
+		yOff = curMorphMap.drawRtSdMenuDescr(yOff, sideBarYDisp, false, true);
 		return yOff;
 	}
 	public final float drawMorphSliceRtSdMenuDescr(float yOff, float sideBarYDisp) {
@@ -213,7 +406,7 @@ public abstract class baseMorph {
 			yOff += modYAmt;
 			pa.translate(10.0f,modYAmt, 0.0f);		
 			for(float key : morphSliceAra.keySet()) {
-				yOff = morphSliceAra.get(key).drawRightSideBarMenuDescr(yOff, modYAmt, true, false);
+				yOff = morphSliceAra.get(key).drawRtSdMenuDescr(yOff, modYAmt, true, false);
 			}
 		}
 		return yOff;
@@ -244,18 +437,6 @@ public abstract class baseMorph {
 	protected abstract float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp);	
 	public final void drawMorphedMap_CntlPts(int _detail) {		curMorphMap.drawMap_CntlPts(false, _detail);	}
 	
-	/**
-	 * draw a point of a particular radius
-	 * @param p point to draw
-	 * @param rad radius of point
-	 */
-	protected void _drawPt(myPointf p, float rad) {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.translate(p);
-		pa.sphere(rad);
-		pa.popStyle();pa.popMatrix();	
-	}
-	
 	protected baseMap getCopyOfMap(baseMap cpyMap, String fullCpyName) {
 		if(null==cpyMap) {cpyMap = mapA;}
 		baseMap resMap = mapMgr.buildCopyMapOfPassedMapType(cpyMap, fullCpyName);
@@ -263,49 +444,7 @@ public abstract class baseMorph {
 		return resMap;
 	}
 	
-	protected final void buildCntlPointTrajs() {
-		cntlPtTrajs.clear();
-		edgePtTrajs.clear();
-		baseMap tmpMap = getCopyOfMap(null,mapA.mapTitle +"_MorphCntlPtTraj");
-		myPointf[] cntlPtsOld = calcMorphDeltaOfCntlPts(tmpMap,1.0f, 0.0f);
-		myPointf[][] tmpCntlPtAra;
-		myPointf[][][] tmpEdgePtAra;
-		myPointf[][] edgePtsOld = mapA.getEdgePts();
-		
-		pa.strokeWeight(1.0f);
-		for(float t = 0.01f;t<=1.0f;t+=.01f) {
-			float tA = 1.0f-t, tB = t;
-			initCalcMorph_Indiv(tA, tB);
-			myPointf[] cntlPts = calcMorphDeltaOfCntlPts(tmpMap,tA, tB);
-			myPointf[][] edgePts = tmpMap.getEdgePts();
-			//idx 5 is cov, idx 6 is ctr pt
-			if(null != cntlPts) {	
-				tmpCntlPtAra = new myPointf[2][];
-				tmpCntlPtAra[0]=new myPointf[cntlPts.length];
-				tmpCntlPtAra[1]=new myPointf[cntlPts.length];
-				for(int i =0;i<cntlPts.length;++i) {
-					tmpCntlPtAra[0][i] = new myPointf(cntlPtsOld[i]);
-					tmpCntlPtAra[1][i] = new myPointf(cntlPts[i]);						
-				}
-				cntlPtTrajs.put(t, tmpCntlPtAra);
-			}
-			tmpEdgePtAra = new myPointf[2][][];
-			tmpEdgePtAra[0]=new myPointf[edgePts.length][];
-			tmpEdgePtAra[1]=new myPointf[edgePts.length][];
-			for(int i=0;i<edgePts.length;++i) {
-				tmpEdgePtAra[0][i]=new myPointf[edgePts[i].length];
-				tmpEdgePtAra[1][i]=new myPointf[edgePts[i].length];
-				for(int j=0;j<edgePts[i].length;++j) {
-					tmpEdgePtAra[0][i][j]=new myPointf(edgePtsOld[i][j]);
-					tmpEdgePtAra[1][i][j]=new myPointf(edgePts[i][j]);
-				}
-			}
-			edgePtTrajs.put(t, tmpEdgePtAra);
-			cntlPtsOld = cntlPts;
-			edgePtsOld = edgePts;
-		}		
-	}
-	
+
 	/**
 	 * builds cntl point trajectories using current morph
 	 */
@@ -322,46 +461,54 @@ public abstract class baseMorph {
 			myPointf[][][] edgePts = edgePtTrajs.get(t);
 			//idx 5 is cov, idx 6 is ctr pt
 			if(null != cntlPts) {
-				for(int i = 0;i<cntlPts[0].length-2;++i) {		_drawPt(cntlPts[1][i], 2.0f); pa.line(cntlPts[0][i], cntlPts[1][i]);}
+				for(int i = 0;i<cntlPts[0].length-2;++i) {		mapMgr._drawPt(cntlPts[1][i], 2.0f); pa.line(cntlPts[0][i], cntlPts[1][i]);}
 			}
 			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {
 				int k=cntlPts[0].length-2;
-				_drawPt(cntlPts[1][k], 2.0f); pa.line(cntlPts[0][k], cntlPts[1][k]);				
+				mapMgr._drawPt(cntlPts[1][k], 2.0f); pa.line(cntlPts[0][k], cntlPts[1][k]);				
 			}
-			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_F_IDX) {
-				int k=cntlPts[0].length-1;
-				_drawPt(cntlPts[1][k], 2.0f); pa.line(cntlPts[0][k], cntlPts[1][k]);
-			}
-			if(_detail >= COTS_MorphWin.drawMapDet_ALL_IDX) {
+			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_IDX) {
 				for(int i=0;i<edgePts[0].length;++i) {	for(int j=0;j<edgePts[0][i].length;++j) {	pa.line(edgePts[0][i][j], edgePts[1][i][j]);}}
+			}
+			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX) {
+				int k=cntlPts[0].length-1;
+				mapMgr._drawPt(cntlPts[1][k], 2.0f); pa.line(cntlPts[0][k], cntlPts[1][k]);
 			}
 		}		
 		pa.popStyle();pa.popMatrix();	
 	}
 	
-	public final void drawMorphedMap(boolean _isFill, boolean _drawCircles) {
-		_drawMorphMap(curMorphMap, _isFill, _drawCircles);
+	public final void drawMorphedMap(boolean _isFill, boolean _drawMap, boolean _drawCircles) {
+		_drawMorphMap(curMorphMap, _isFill, _drawMap, _drawCircles);
 	}
 	
-	public final void drawMorphSlices(boolean _isFill, boolean _drawCircles, boolean _drawCntlPts, boolean _showLabels, int _detail) {
-		for(Float t : morphSliceAra.keySet()) {
-			_drawMorphMap(morphSliceAra.get(t), _isFill, _drawCircles);
-		}	
+	public final void drawMorphSlices(boolean _isFill, boolean _drawMorphSliceMap, boolean _drawCircles, boolean _drawCntlPts, boolean _showLabels, int _detail) {
+		if(_drawMorphSliceMap) {
+			if(_isFill) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Fill();}} 
+			else {			for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Wf();}}
+		}
+		if(_drawCircles) {
+			if((!_drawMorphSliceMap) &&_isFill) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_PolyCircles_Fill();}} 
+			else {			for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_PolyCircles_Wf();}}
+		
+		}
+
 		if(_drawCntlPts) {
 			for(Float t : morphSliceAra.keySet()) {
 				baseMap map = morphSliceAra.get(t);
 				map.drawMap_CntlPts(false, _detail);
 				map.drawHeaderAndLabels(_showLabels, _detail);
 			}
-		}
-	
+		}	
 	}
 	
-	protected final void _drawMorphMap(baseMap _map, boolean _isFill, boolean _drawCircles) {
-		if(_isFill) {	_map.drawMap_Fill();}
-		else {			_map.drawMap_Wf();}	
+	protected final void _drawMorphMap(baseMap _map, boolean _isFill, boolean _drawMap, boolean _drawCircles) {
+		if(_drawMap) {
+			if(_isFill) {	_map.drawMap_Fill();}
+			else {			_map.drawMap_Wf();}	
+		}
 		if(_drawCircles) {
-			if(_isFill) {	_map.drawMap_PolyCircles_Fill();}	
+			if((!_drawMap) && _isFill) {	_map.drawMap_PolyCircles_Fill();}	
 			else {			_map.drawMap_PolyCircles_Wf();}		
 		}
 	}
@@ -397,9 +544,8 @@ public abstract class baseMorph {
 		Float tIncr = 1.0f/(numMaps-1.0f);
 		Float t = 0.0f;
 		for (int i=0;i<numMaps-1;++i) {		
-			tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));			
-			float tA = 1.0f-t, tB = t;
-			_calcMorphOnMap(tmpMap, true, tA, tB);
+			tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
+			_calcMorphOnMap(tmpMap, true, t);
 			morphMaps.put(t, tmpMap);		
 			t+=tIncr;
 		}
@@ -407,7 +553,7 @@ public abstract class baseMorph {
 		//tmpMap = mapMgr.buildCopyMapOfPassedMapType(mapA, "Morph @ t="+String.format("%2.3f", t));
 		tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
 		//
-		_calcMorphOnMap(tmpMap, true, 0.0f, 1.0f);	
+		_calcMorphOnMap(tmpMap, true,t);	
 		morphMaps.put(t, tmpMap);				
 		return morphMaps;
 	}

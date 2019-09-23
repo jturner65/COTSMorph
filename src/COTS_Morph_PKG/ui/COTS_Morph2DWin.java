@@ -45,7 +45,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 		
 		bndPts[1] = new myPointf[]{ new myPointf(minX + widthPerMap-.1f, minY-.2f,0),
 									new myPointf(maxX + widthPerMap-.2f, minY+.1f,0),
-									new myPointf(maxX + widthPerMap+.1f, maxY,0),
+									new myPointf(maxX + widthPerMap, maxY,0),
 									new myPointf(minX + widthPerMap+.2f, maxY,0)};
 			
 		return bndPts;

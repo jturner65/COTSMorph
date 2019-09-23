@@ -38,11 +38,39 @@ public class BiLinTriPolyMap extends baseTriangleMap {
 	}
 	@Override
 	protected void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale) {}
+	
+	@Override
+	public final float calcTtlSurfaceArea() {	
+		return mgr.calcAreaOfPolyInPlane(cntlPts, basisVecs[0]);
+	}//calcTtlSurfaceArea	
+	
+	/**
+	 * Return array of all morph-relevant cntl/info points for this map.
+	 * Call if morph map -after-  morph is calced.  
+	 * Include COV and possibly F point, if COTS or other spiral-based map
+	 * @return
+	 */
+	@Override
+	public final void getAllMorphCntlPts_Indiv(myPointf[] res) {
+		res[cntlPts.length]= new myPointf(this.cntlPtCOV);
+	};
+	@Override
+	public final int getNumAllMorphCntlPts() {	return cntlPts.length + 1;};
+	/**
+	 * instance specific values should be added here
+	 * @param map
+	 */
+	@Override
+	public final void getTrajAnalysisKeys_Indiv(TreeMap<String, Integer> map) {
+		int numTtlPts = getNumAllMorphCntlPts();
+		map.put(COV_Label, numTtlPts-1);
+	}
 
+		
 	/////////////////////
 	// draw routines
 	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	protected float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
