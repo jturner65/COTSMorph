@@ -38,7 +38,19 @@ public abstract class baseMorphManager {
 		"Carrier Sim w/Transformation",
 		"Dual Carrier Similarity",
 		"Key edge->Key edge Spiral",
-		"Log Polar"			
+		"Log Polar",
+		"Compound Morph"
+	};
+	/**
+	 * morph types available to compound morph - CompoundMorphIDX should not be available
+	 */
+	public static final String[] cmpndMorphTypes = new String[] {
+		"LERP",						//linearly interpolate control points
+		"Carrier Sim using Diagonal",
+		"Carrier Sim w/Transformation",
+		"Dual Carrier Similarity",
+		"Key edge->Key edge Spiral",
+		"Log Polar",			
 	};
 	
 	//need an index per morph type
@@ -47,8 +59,10 @@ public abstract class baseMorphManager {
 		CarrierSimDiagIDX		= 1,
 		CarrierSimRegTransIDX	= 2,
 		DualCarrierSimIDX		= 3,
-		QuadSpiralEdgeIDS		= 4,
-		LogPolarMorphIDX 		= 5;
+		QuadSpiralEdgeIDX		= 4,
+		LogPolarMorphIDX 		= 5,
+		CompoundMorphIDX		= 6;
+	
 	
 	/**
 	 * array holding morphs
@@ -92,7 +106,7 @@ public abstract class baseMorphManager {
 		tmpMorphs[CarrierSimDiagIDX] = new CarrierSimDiagMorph(win,this,mapMgr, morphTypes[CarrierSimDiagIDX]); 		
 		tmpMorphs[CarrierSimRegTransIDX] = new CarrierSimTransformMorph(win,this,mapMgr, morphTypes[CarrierSimRegTransIDX]); 
 		tmpMorphs[DualCarrierSimIDX] = new DualCarrierSimMorph(win,this,mapMgr, morphTypes[DualCarrierSimIDX]); 
-		tmpMorphs[QuadSpiralEdgeIDS] = new QuadKeyEdgeSpiralMorph(win,this,mapMgr,morphTypes[DualCarrierSimIDX]); 
+		tmpMorphs[QuadSpiralEdgeIDX] = new QuadKeyEdgeSpiralMorph(win,this,mapMgr,morphTypes[DualCarrierSimIDX]); 
 		tmpMorphs[LogPolarMorphIDX] = new LogPolarMorph(win,this, mapMgr, morphTypes[LogPolarMorphIDX]);	
 		return tmpMorphs;
 	}

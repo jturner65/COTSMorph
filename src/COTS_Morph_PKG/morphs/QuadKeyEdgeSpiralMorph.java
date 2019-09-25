@@ -3,13 +3,14 @@ package COTS_Morph_PKG.morphs;
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
 import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.morphs.base.baseMorph;
+import COTS_Morph_PKG.morphs.base.baseSimpleMorph;
 import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class QuadKeyEdgeSpiralMorph extends baseMorph {
+public class QuadKeyEdgeSpiralMorph extends baseSimpleMorph {
 	
 	/**
 	 * manage a transformation for each edge, between each key frame, for morphs which require this information
@@ -32,7 +33,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */	
 	@Override
-	protected void _endCtorInit() {//build edge transforms here
+	public void _endCtorInit() {//build edge transforms here
 		//init edge transformations, for morphs that use them
 		int size = mapA.getCntlPts().length;
 		edgeTransforms = new SpiralTransform[size];
@@ -55,17 +56,22 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 	}
 
 	@Override
-	protected void initCalcMorph_Indiv(float tA, float tB) {
+	public void initCalcMorph_Indiv(float tA, float tB) {
 		
 		
 	}//initCalcMorph_Indiv
 	
+
+	@Override
+	protected void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd) {
+	}
+
 	/**
 	 * this function will conduct calculations between the two keyframe maps, if such calcs are used, whenever either is modified.  this is morph dependent
 	 * @param _calledFrom : string denoting who called this method.  For debugging
 	 */
 	@Override
-	protected void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
+	public void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
 		if(edgeTransforms == null) {return;}		
 		for(int i=0;i<edgeTransforms.length;++i) {
 			edgeTransforms[i].buildTransformation(edgesA[i], edgesB[i], mapFlags[mapUpdateNoResetIDX]);
@@ -74,11 +80,11 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 	}
 
 	@Override
-	protected final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));};
+	public final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));};
 	@Override
-	protected float calcMorph_Float(float tA, float AVal, float tB, float BVal) {		return (tA*AVal) + (tB*BVal);}
+	public float calcMorph_Float(float tA, float AVal, float tB, float BVal) {		return (tA*AVal) + (tB*BVal);}
 	@Override
-	protected double calcMorph_Double(float tA, double AVal, float tB, double BVal) {		return (tA*AVal) + (tB*BVal);}
+	public double calcMorph_Double(float tA, double AVal, float tB, double BVal) {		return (tA*AVal) + (tB*BVal);}
 	
 	/**
 	 * calcluate this morph algorithm between Apts and Bpts, putting result in destPts
@@ -89,7 +95,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 	 * @param tB
 	 */
 	@Override
-	protected final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
+	public final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
 		//build points based on averages of endpoints from transformations				
 		for(int i=0;i<edgeTransforms.length; ++i) {
 		     edgeStPts[i].set(myPointf._add(edgeTransforms[i].transformPoint(edgesA[i][0], tB), myVectorf._mult(normDispTimeVec,tB)));
@@ -124,7 +130,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMorph {
 	private static final String[] transLbls = {"AB","BC","CD","DA"};
 
 	@Override
-	protected float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		for(int i=0;i<edgeTransforms.length; ++i) {
 			yOff += edgeTransforms[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, transLbls[i]);
 			pa.translate(0.0f,sideBarYDisp, 0.0f);	

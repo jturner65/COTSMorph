@@ -5,6 +5,7 @@ import java.util.*;
 import COTS_Morph_PKG.morphs.analysis.base.baseProbSummary;
 
 
+
 /**
  * instances of this class will analyze and display statistical results relating to a data set;  this will also provide an easy-access container to manage moments
  * @author john
@@ -255,7 +256,7 @@ public class myProbSummary_Flts extends baseProbSummary{
 	//transform the give value, assumed to be from the distribution described by this object, to a normal ~N(0,1) 
 	public float gaussToNormTransform(float val) {return (val - mmnts[meanIDX])/ mmnts[stdIDX];}
 	
-	private final String frmtStr = "% 10.2f";
+	@Override
 	public TreeMap<String,String> summaryStringAra(String smryName) {
 		TreeMap<String,String> resMap = new TreeMap<String,String>();
 		resMap.put("summaryName",smryName);

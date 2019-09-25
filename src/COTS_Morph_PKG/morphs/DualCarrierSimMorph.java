@@ -2,14 +2,14 @@ package COTS_Morph_PKG.morphs;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
 import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
-import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.morphs.base.baseMorph;
+import COTS_Morph_PKG.morphs.base.baseSimpleMorph;
 import COTS_Morph_PKG.similarities.CarrierSimilarity;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class DualCarrierSimMorph extends baseMorph {
+public class DualCarrierSimMorph extends baseSimpleMorph {
 	/**
 	 * similarity that will act as carrier
 	 */
@@ -23,15 +23,16 @@ public class DualCarrierSimMorph extends baseMorph {
 	public DualCarrierSimMorph(COTS_MorphWin _win, baseMorphManager _morphMgr, mapPairManager _mapMgr, String _morphTitle) {super(_win, _morphMgr, _mapMgr, _morphTitle);}
 	
 	@Override
-	protected void initCalcMorph_Indiv(float tA, float tB) {
+	public void initCalcMorph_Indiv(float tA, float tB) {
 		if(null==carriers) {return;}
-		//myPointf[] mapADiag = mapA.getCntlPtDiagonal(),mapBDiag = mapB.getCntlPtDiagonal();		
-		//carrier.deriveSimilarityFromCntlPts(new myPointf[] {mapADiag[0],mapADiag[1],mapBDiag[0],mapBDiag[1]}, true);	
 		for(int i=0;i<carriers.length;++i) {
 			carriers[i].deriveSimilarityFromCntlPts(diagPtAras[1], mapFlags[mapUpdateNoResetIDX]);
 		}			
 	}
-
+	
+	@Override
+	protected void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd) {
+	}
 
 	
 	/**
@@ -39,7 +40,7 @@ public class DualCarrierSimMorph extends baseMorph {
 	 * @param _calledFrom : string denoting who called this method.  For debugging
 	 */
 	@Override
-	protected void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
+	public void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
 		
 	}
 
@@ -47,7 +48,7 @@ public class DualCarrierSimMorph extends baseMorph {
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */	
 	@Override
-	protected final void _endCtorInit() {	
+	public final void _endCtorInit() {	
 		myPointf[] mapADiag = mapA.getCntlPtDiagonal(), mapAOffDiag =  mapA.getCntlPtOffDiagonal();
 		myPointf[] mapBDiag = mapB.getCntlPtDiagonal(), mapBOffDiag =  mapB.getCntlPtOffDiagonal();
 		diagPtAras = new myPointf[2][];
@@ -61,11 +62,11 @@ public class DualCarrierSimMorph extends baseMorph {
 	}
 
 	@Override
-	protected final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));}
+	public final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));}
 	@Override
-	protected float calcMorph_Float(float tA, float AVal, float tB, float BVal) {		return (tA*AVal) + (tB*BVal);}
+	public float calcMorph_Float(float tA, float AVal, float tB, float BVal) {		return (tA*AVal) + (tB*BVal);}
 	@Override
-	protected double calcMorph_Double(float tA, double AVal, float tB, double BVal) {		return (tA*AVal) + (tB*BVal);}
+	public double calcMorph_Double(float tA, double AVal, float tB, double BVal) {		return (tA*AVal) + (tB*BVal);}
 
 	/**
 	 * calcluate this morph algorithm between Apts and Bpts, putting result in destPts
@@ -76,7 +77,7 @@ public class DualCarrierSimMorph extends baseMorph {
 	 * @param tB
 	 */
 	@Override
-	protected final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
+	public final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
 		for(int i=0;i<Apts.length;++i) {		
 			destPts[i]= (null==carriers) ? 
 					myPointf._add(new myPointf(Apts[i]),myVectorf._mult(normDispTimeVec, tB)) : 
@@ -87,17 +88,9 @@ public class DualCarrierSimMorph extends baseMorph {
 //					myPointf._add(myPointf._mult(carrier.transformPoint(Apts[i],tB), tA),myPointf._mult(carrier.transformPoint(Bpts[i],tA), tB));
 		}
 	}
-//	@Override
-//	protected myPointf calcMorph_Point(float tA, myPointf AVal, float tB, myPointf BVal) {
-//		if(null==carrier) {return new myPointf(AVal);}
-//		//return carrier.mapPoint(AVal,tA, tB);                                                                                                    
-//		//return myPointf._add(myPointf._mult(carrier.transformPoint(AVal,tB), tA),myPointf._mult(carrier.transformPoint(BVal,tA), tB));		 
-//		return myPointf._add(myPointf._mult(carrier.transformPoint(AVal,tB), tA),myPointf._mult(carrier.transformPoint(BVal,tA), tB));	
-//	}
-
 
 	@Override
-	protected float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		for(int i=0;i<carriers.length;++i) {
 			yOff+= carriers[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
 		}

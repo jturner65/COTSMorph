@@ -1,5 +1,6 @@
 package COTS_Morph_PKG.morphs.analysis.base;
 
+import java.util.TreeMap;
 
 /**
  * abstract class to provide the backbone for analysis of data sets
@@ -39,6 +40,8 @@ public abstract class baseProbSummary {
 	public static final String[] mmntLabels = new String[] {"Mean","STD","Skew","Kurtosis", "Variance","Excess Kurtosis"};
 	//# of moments being tracked, including duped moments - idx doesn't correspond necessarily to moment order
 	public static final int numTrackedMmnts = mmntLabels.length;
+	protected final String frmtStr = "% 10.2f";
+
 
 	public baseProbSummary() {
 		initFlags();		
@@ -48,6 +51,7 @@ public abstract class baseProbSummary {
 	public boolean doClipAllSamples() {return getFlag(clipAllSmplsIDX);}
 	public void setClipAllSamples(boolean val) {setFlag(clipAllSmplsIDX, val);}
 	
+	public abstract TreeMap<String,String> summaryStringAra(String smryName);
 	
 	protected void initFlags(){stFlags = new int[1 + numFlags/32]; for(int i = 0; i<numFlags; ++i){setFlag(i,false);}}
 	public void setAllFlags(int[] idxs, boolean val) {for (int idx : idxs) {setFlag(idx, val);}}

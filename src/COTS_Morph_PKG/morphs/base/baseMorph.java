@@ -11,6 +11,7 @@ import COTS_Morph_PKG.morphs.analysis.morphCntlPtTrajAnalyzer;
 import COTS_Morph_PKG.morphs.analysis.base.baseMorphAnalyzer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
@@ -38,7 +39,7 @@ public abstract class baseMorph {
 	/**
 	 * current morph map - will be same type as passed maps
 	 */
-	private baseMap curMorphMap;
+	protected baseMap curMorphMap;
 	
 	/**
 	 * current time in morph
@@ -123,7 +124,7 @@ public abstract class baseMorph {
 	/**
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */
-	protected abstract void _endCtorInit();
+	public abstract void _endCtorInit();
 		
 	private final void _morphColors(baseMap _curMorphMap, float tA, float tB) {
 		//calculate checker board and grid color morphs
@@ -155,14 +156,14 @@ public abstract class baseMorph {
 		if(_calcColors) {_morphColors(_curMorphMap, tA, tB);}
 		//calculate geometry morph - find delta to use with control points
 		//myPointf[] delPts = 
-		calcMorphDeltaOfCntlPts(_curMorphMap, tA, tB);	
+		calcMorphAndApplyToMap(_curMorphMap, tA, tB);	
 	}
 	
-	protected abstract void initCalcMorph_Indiv(float tA, float tB);
+	public abstract void initCalcMorph_Indiv(float tA, float tB);
 	
-	protected abstract int calcMorph_Integer(float tA, int AVal, float tB, int BVal);	
-	protected abstract float calcMorph_Float(float tA, float AVal, float tB, float BVal);
-	protected abstract double calcMorph_Double(float tA, double AVal, float tB, double BVal);
+	public abstract int calcMorph_Integer(float tA, int AVal, float tB, int BVal);	
+	public abstract float calcMorph_Float(float tA, float AVal, float tB, float BVal);
+	public abstract double calcMorph_Double(float tA, double AVal, float tB, double BVal);
 	
 	public TreeMap<Float, baseMap> buildLineupOfFrames(int _numFrames) {
 		return buildArrayOfMorphMaps(_numFrames, "_Lineup_Frames");
@@ -177,7 +178,7 @@ public abstract class baseMorph {
 	 */
 	protected final myPointf[] getMorphMapTrajPts(baseMap _curMorphMap, float tA, float tB) {
 		//update map with current morph calc
-		calcMorphDeltaOfCntlPts(_curMorphMap, tA, tB);
+		calcMorphAndApplyToMap(_curMorphMap, tA, tB);
 		//get relevant points from map, based on what kind of map, to build trajectories from
 		myPointf[] newPts = _curMorphMap.getAllMorphCntlPts();
 		
@@ -186,27 +187,9 @@ public abstract class baseMorph {
 	
 	
 	/**
-	 * use currently set t value to calculate morph
+	 * use currently set t value to calculate morph and apply to passed morph map
 	 */
-	protected final void calcMorphDeltaOfCntlPts(baseMap _curMorphMap, float tA, float tB) {
-		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(); 
-		//myPointf[] morphCntlPts = _curMorphMap.getCntlPts(),delPts = new myPointf[aCntlPts.length];
-		myPointf[] newPts = new myPointf[aCntlPts.length];
-		
-		//put morph results into newPts
-		calcMorphBetweenTwoSetsOfCntlPoints(aCntlPts, bCntlPts, newPts, tA, tB);
-		_curMorphMap.setCntlPts(newPts, mapFlags[mapUpdateNoResetIDX]);
-//		for(int i=0;i<aCntlPts.length;++i) {	
-//			delPts[i] = myPointf._sub(newPts[i], morphCntlPts[i]);	//performing this to make sure we have COV properly calculated
-//		}
-//		_curMorphMap.updateCntlPts(delPts);
-		
-//		//rebuild pts array to include other points
-//		if(retPts) {			newPts = _curMorphMap.getAllMorphCntlPts();		}
-//		newPts[newPts.length-2] = _curMorphMap.getCOV();
-//		newPts[newPts.length-1] = _curMorphMap.getCenterPoint();	//F point for COTS, otherwise re-maps COV	
-//		return newPts;
-	}//calcMorphOfDeltaCntlPts	
+	public abstract void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB);
 	
 	/**
 	 * calcluate this morph algorithm between Apts and Bpts, putting result in destPts
@@ -216,17 +199,8 @@ public abstract class baseMorph {
 	 * @param tA
 	 * @param tB
 	 */
-	protected abstract void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB);
-	
-	protected final myPointf[][] calcMorphBetweenTwoSetsOfPoints_2DAra(myPointf[][] Apts, myPointf[][] Bpts, float tA, float tB) {
-		myPointf[][] destPts = new myPointf[Apts.length][];
-		for(int i=0;i<Apts.length;++i) {
-			destPts[i]=new myPointf[Apts[i].length];
-			calcMorphBetweenTwoSetsOfCntlPoints(Apts[i], Bpts[i], destPts[i], tA, tB);
-		}
-		return destPts;
-	}
-	
+	public abstract void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB);
+
 	/**
 	 * this function will conduct calculations between the two keyframe maps, if such calcs are used, whenever either is modified.  this is morph dependent
 	 */
@@ -236,7 +210,7 @@ public abstract class baseMorph {
 		if(reBuildNow) {buildCntlPointTrajs();}
 		mapCalcsAfterCntlPointsSet_Indiv(_calledFrom);
 	};
-	protected abstract void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom);
+	public abstract void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom);
 	
 	/**
 	 * call only once
@@ -353,8 +327,15 @@ public abstract class baseMorph {
 		}		
 		return res;
 	}
+	
+	public final void updateMorphValsFromUI(mapUpdFromUIData upd) {
+		setMorphSlices(upd.getNumMorphSlices());
+		
+		updateMorphValsFromUI_Indiv(upd);
+	}
+	protected abstract void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd);
 
-	////////////////////////////// String[] mmntDispLabels
+	//////////////////////////////
 	// draw routines	
 	/**
 	 * draw all traj analysis data
@@ -411,13 +392,20 @@ public abstract class baseMorph {
 		}
 		return yOff;
 	}
+	
+	public final float drawMorphTitle(float yOff, float sideBarYDisp) {
+		pa.showOffsetText(0,IRenderInterface.gui_Cyan, morphTitle + " Morph : ");
+		yOff += sideBarYDisp;
+		pa.translate(0.0f, sideBarYDisp, 0.0f);
+		return yOff;
+	}
+	
 	public final float drawMorphRtSdMenuDescr(float yOff, float sideBarYDisp, float _morphSpeed) {//, String[] _scopeList) {
 		pa.pushMatrix();pa.pushStyle();
-			//pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.0f, morphTitle);
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, "Morph Between :");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, mapA.mapTitle);
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, " and");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, mapB.mapTitle);
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.2f, "Morph Between :");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapA.mapTitle);
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.2f, " and");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapB.mapTitle);
 		pa.popStyle();pa.popMatrix();		
 		yOff += sideBarYDisp;
 		pa.translate(0.0f,sideBarYDisp, 0.0f);		
@@ -434,7 +422,7 @@ public abstract class baseMorph {
 		yOff = drawMorphRtSdMenuDescr_Indiv(yOff, sideBarYDisp);	
 		return yOff;
 	}	
-	protected abstract float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp);	
+	public abstract float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp);	
 	public final void drawMorphedMap_CntlPts(int _detail) {		curMorphMap.drawMap_CntlPts(false, _detail);	}
 	
 	protected baseMap getCopyOfMap(baseMap cpyMap, String fullCpyName) {

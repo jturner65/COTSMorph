@@ -292,6 +292,13 @@ public class myProbSummary_ptOrVec extends baseProbSummary {
 		}
 		return resMap;		
 	}//summaryStringAra()
+	/**
+	 * don't use this one, use the one above
+	 */
+	@Override
+	public TreeMap<String, String> summaryStringAra(String _notUsed) {
+		return new TreeMap<String, String>();
+	}
 	
 //	/**
 //	 * return a single string per row of values, determined by key ara holding keys to include
@@ -321,4 +328,6 @@ public class myProbSummary_ptOrVec extends baseProbSummary {
 		
 		return res;
 	}
+
+
 }//class myProbSummary_myPointf

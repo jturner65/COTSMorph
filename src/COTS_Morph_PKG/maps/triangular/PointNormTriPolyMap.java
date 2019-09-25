@@ -137,7 +137,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 	protected void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale) {}
 	@Override
 	public final float calcTtlSurfaceArea() {	
-		return mgr.calcAreaOfPolyInPlane(cntlPts, basisVecs[0]);
+		return mgr.calcAreaOfPolyInPlane(cntlPts, distPlanarPt, basisVecs[0]);
 	}//calcTtlSurfaceArea	
 	
 	/**

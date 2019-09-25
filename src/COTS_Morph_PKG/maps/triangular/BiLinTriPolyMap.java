@@ -41,7 +41,7 @@ public class BiLinTriPolyMap extends baseTriangleMap {
 	
 	@Override
 	public final float calcTtlSurfaceArea() {	
-		return mgr.calcAreaOfPolyInPlane(cntlPts, basisVecs[0]);
+		return mgr.calcAreaOfPolyInPlane(cntlPts, distPlanarPt, basisVecs[0]);
 	}//calcTtlSurfaceArea	
 	
 	/**

@@ -44,13 +44,15 @@ public abstract class baseMap {
 	/**
 	 * current (and original) point at center of cntrl points; 
 	 * control point currently being moved/modified by UI interaction;
-	 * center of mass of control points (area-weighted COV)
-	 */
-	protected myPointf cntlPtCOV,origCntlPtCOV, currMseModCntlPt, cntlPtCOM;	
-	/**
+	 * center of mass of control points (area-weighted COV);
 	 * the control point that is furthest from the cntlPtCOV - this will be used to scale the image for the lineup picture
+	 * a distant point in the plane for use with area calcs
 	 */
-	protected myPointf mostDistCntlPt;
+	protected myPointf cntlPtCOV,origCntlPtCOV, currMseModCntlPt, cntlPtCOM, mostDistCntlPt, distPlanarPt;	
+	/**
+	 * area of map in current configuration; polygon equivalent area
+	 */
+	protected float areaOfMap, polyAreaOfMap;
 	/**
 	 * # of cells per side in grid
 	 */
@@ -75,16 +77,15 @@ public abstract class baseMap {
 	 * whether or not this is a keyframe map
 	 */
 	public boolean isKeyFrameMap;
-
-		//rotational UI mod scale value
-	private static final float rotScl = .0025f;
-		//base radius of drawn sphere
-	public static final float sphereRad = 5.0f;
 		//array of 2 poly colors
 	protected int[][] polyColors;
 		//color for grid ISO lines
 	protected int[] gridColor;
-
+	
+		//rotational UI mod scale value
+	private static final float rotScl = .0025f;
+		//base radius of drawn sphere
+	public static final float sphereRad = 5.0f;
 	protected static my_procApplet pa;
 	protected COTS_MorphWin win;
 		//title of map for display	
@@ -93,23 +94,62 @@ public abstract class baseMap {
 	protected myPointf mapTitleOffset;
 	public final float mapTtlXOff;	
 		//array of labels to use for control points
-	protected final String[] cntlPtLbls;	
-	public final String COV_Label = "Map COV";
+	protected String[] cntlPtLbls;	
+	public final String COV_Label = "Map COV",
+			COM_Label = "Map COM";
 		//display ortho frame
 	private myPointf[] orthoFrame;
 		//ref to UI object from map manager
 	private mapUpdFromUIData currUIVals;
 		//flag control construction for regular updates
-	protected mapCntlFlags regMapUpdateFlags;// = new boolean[] {false, false};
-		
+	protected mapCntlFlags regMapUpdateFlags;// = new boolean[] {false, false};		
 		//flag control construction for reset updates
-	protected mapCntlFlags resetMapUpdateFlags;// = new boolean[] {false, false};
+	protected mapCntlFlags resetMapUpdateFlags;// = new boolean[] {true, false};
+	boolean distPlanarPtMade = false;
 
 	protected static final int[] whiteClr = new int[] {255,255,255,255};
 	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
 		win=_win; pa=myDispWindow.pa; mgr = _mapMgr; currUIVals = _currUIVals;
-		mapTypeIDX = _mapTypeIDX;		mapIdx = _mapIdx;		
+		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		
 		mapTitle = _mapTitle;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
+		isKeyFrameMap = _isKeyFrame;
+		//init point structures
+		initCtorMethodVars(_pClrs, _cntlPts,_cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 	
+		//set control points and initialize 
+		setCntlPts(_cntlPts, resetMapUpdateFlags, currUIVals.getNumCellsPerSide());
+		
+	}//ctor	
+	/**
+	 * make a deep copy of passed map
+	 * @param _otr
+	 */
+	public baseMap(String _mapTitle, baseMap _otr) {
+		win=_otr.win; pa=myDispWindow.pa;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
+		mapIdx = _otr.mapIdx;		mapTypeIDX = _otr.mapTypeIDX;
+		mapTitle = _mapTitle ;		mapTtlXOff = _otr.mapTtlXOff;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
+		//keyframes are never copies
+		isKeyFrameMap = false;
+		//points and labels for points, basis vectors, and map flags structures
+		initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.origCntlPts, _otr.basisVecs[0]);
+		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
+		cntlPtCOM = new myPointf(_otr.cntlPtCOM);
+		//configure for future calls to setCntlPts
+		updateNumCellsPerSide(_otr.numCellsPerSide);
+		//don't call this here
+		//setCntlPts(_otr.cntlPts,regMapUpdateFlags, _otr.numCellsPerSide);		
+	}//copy ctor
+	
+	/**
+	 * called from constructors : initialze all relevant method variables with either passed args or copies from passed map (copy ctor)
+	 * @param _cntlPts
+	 * @param _origCntlPts
+	 */	
+	private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myPointf[] _origCntlPts, myVectorf tmpNorm) {
+		//init mse click obj refs - not really necessary
+		currMseModCntlPt = null;			currMseClkLocVec = null;
+		cntlPtCOV = new myPointf(0,0,0);	cntlPtCOM = new myPointf(0,0,0);
+		areaOfMap=0;polyAreaOfMap = 0;
+		
 		polyColors = new int[_pClrs.length][];
 		for(int i=0;i<polyColors.length;++i) {
 			polyColors[i]=new int[_pClrs[i].length];
@@ -118,95 +158,35 @@ public abstract class baseMap {
 		gridColor = new int[polyColors[1].length];
 		System.arraycopy(polyColors[1], 0, gridColor, 0, gridColor.length);
 
-		cntlPtCOV = new myPointf(0,0,0);
-		cntlPtCOM = new myPointf(0,0,0);
-		currMseModCntlPt = null;
-		currMseClkLocVec = null;
-		isKeyFrameMap = _isKeyFrame;
 		//build ortho basis for map based on initial control points
-		basisVecs = buildBasisVecs(myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize());
+		basisVecs = buildBasisVecs(tmpNorm);
 		//build display-only ortho frame
-		buildOrthoFrame();
-		//labels for points
+		buildOrthoFrame();		
 		origCntlPtCOV = new myPointf();
 		cntlPts = new myPointf[_cntlPts.length];
 		origCntlPts = new myPointf[cntlPts.length];
 		cntlPtLbls = new String[cntlPts.length];
 		for(int i=0;i<cntlPts.length;++i) {	
-			cntlPts[i]= new myPointf();
-			origCntlPts[i] = new myPointf(_cntlPts[i]);
+			cntlPts[i]= new myPointf(_cntlPts[i]);
+			origCntlPts[i] = new myPointf(_origCntlPts[i]);
 			cntlPtLbls[i]="" + ((char)(i+'A'));
 			origCntlPtCOV._add(origCntlPts[i]);
 		}
-		origCntlPtCOV._div(origCntlPts.length);
-			//update flags for UI modification updates and for full resets
-		regMapUpdateFlags = new mapCntlFlags();
-		
+		origCntlPtCOV._div(origCntlPts.length);		
+		regMapUpdateFlags = new mapCntlFlags();		
 		resetMapUpdateFlags = new mapCntlFlags();
-		resetMapUpdateFlags.setResetBranching(true);
-		
-		//set control points and initialize 
-		setCntlPts(_cntlPts, resetMapUpdateFlags, currUIVals.getNumCellsPerSide());
+		resetMapUpdateFlags.setResetBranching(true);	
+	}//initCntlPtsBasisVecsMapUpdateFlags
 
-	}//ctor	
-	/**
-	 * make a deep copy of passed map
-	 * @param _otr
-	 */
-	public baseMap(String _mapTitle, baseMap _otr) {
-		win=_otr.win; pa=myDispWindow.pa;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
-		mapIdx = _otr.mapIdx;
-		mapTypeIDX = _otr.mapTypeIDX;
-		mapTitle = _mapTitle ;
-		mapTtlXOff = _otr.mapTtlXOff;
-		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
-		polyColors = new int[_otr.polyColors.length][];
-		for(int i=0;i<polyColors.length;++i) {
-			polyColors[i]=new int[_otr.polyColors[i].length];
-			System.arraycopy(_otr.polyColors[i], 0, polyColors[i], 0, polyColors[i].length);
-		}
-		gridColor = new int[polyColors[1].length];
-		System.arraycopy(polyColors[1], 0, gridColor, 0, gridColor.length);
-
-		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
-		cntlPtCOM = new myPointf(_otr.cntlPtCOM);
-		currMseModCntlPt = null;
-		currMseClkLocVec = null;
-		//keyframes are never copies
-		isKeyFrameMap = false;
-		//build ortho basis for map based on initial control points
-		basisVecs = new myVectorf[_otr.basisVecs.length];
-		for(int i=0;i<basisVecs.length;++i) {basisVecs[i]=new myVectorf(_otr.basisVecs[i]);}
-		//build display-only ortho frame
-		buildOrthoFrame();
-		//points and labels for points
-		origCntlPtCOV = new myPointf(_otr.origCntlPtCOV);
-		cntlPts = new myPointf[_otr.cntlPts.length];
-		origCntlPts = new myPointf[cntlPts.length];
-		cntlPtLbls = new String[cntlPts.length];	
-		for(int i=0;i<cntlPts.length;++i) {	
-			cntlPts[i]= new myPointf(_otr.cntlPts[i]);
-			origCntlPts[i] = new myPointf(_otr.origCntlPts[i]);
-			cntlPtLbls[i]="" + ((char)(i+'A'));	
-			//origCntlPtCOV._add(origCntlPts[i]);
-		}
-		//origCntlPtCOV._div(origCntlPts.length);
-			//update flags for UI modification updates and for full resets
-		regMapUpdateFlags = new mapCntlFlags();
-		
-		resetMapUpdateFlags = new mapCntlFlags();
-		resetMapUpdateFlags.setResetBranching(true);
-		updateNumCellsPerSide(_otr.numCellsPerSide);
-		//setCntlPts(_otr.cntlPts,regMapUpdateFlags, _otr.numCellsPerSide);
-		
-	}//copy ctor
-	
 
 	/**
 	 * register another map to this map - this will transform the passed map to be as close as possible to this map and return the changes as parameters
-	 * @param otrMap
-	 */	
-	public void findDifferenceToMe(baseMap otrMap, myVectorf dispBetweenMaps, float[] angleAndScale) {  
+	 * forces correspondence between vertices in both maps  - will orient maps to have there vertices closest to one another
+	 * @param otrMap the other map to register to this one
+	 * @param dispBetweenMaps displacement vector between maps
+	 * @param angleAndScale array holding angle (idx 0) and scale (idx 1)
+	 */
+	public void findDifferenceToMe(baseMap otrMap, myVectorf dispBetweenMaps, float[] angleAndScale) {
 		myPointf A = cntlPtCOV, B = otrMap.cntlPtCOV; 
 		myVectorf AP, BP,rBP;
 		float sin = 0.0f, cos = 0.0f;
@@ -215,15 +195,42 @@ public abstract class baseMap {
 		for(int i=0;i<cntlPts.length;++i) {
 		  AP = new myVectorf(A, cntlPts[i]);
 		  BP = new myVectorf(B, otrMap.cntlPts[i]);
+		  scl *= AP.magn/BP.magn;
+		  //don't need to normalize since atan2 takes care of this (arctan(y/x))
 		  rBP = BP.rotMeAroundAxis(otrMap.basisVecs[0], MyMathUtils.halfPi_f);
 		  cos += AP._dot(BP);
 		  sin += AP._dot(rBP);
-		  scl *= AP.magn/BP.magn;
 		}
 		angleAndScale[0] = (float) Math.atan2(sin,cos);
 		dispBetweenMaps.set(new myVectorf(B,A));
 		angleAndScale[1] = (float) Math.pow(scl, 1.0/cntlPts.length);
+	}
+	/**
+	 * register another map to this map - this will transform the passed map to be as close as possible to this map and return the changes as parameters
+	 * @param otrMap the other map to register to this one
+	 * @param _idxOffset offset in cntl point array - use this to orient other control points for closer fit
+	 * @param dispBetweenMaps displacement vector between maps
+	 * @param angleAndScale array holding angle (idx 0) and scale (idx 1)
+	 */
+	public void findDifferenceToMe(baseMap otrMap, int _idxOffset, myVectorf dispBetweenMaps, float[] angleAndScale) {  
+		myPointf A = cntlPtCOV, B = otrMap.cntlPtCOV; 
+		myVectorf AP, BP,rBP;
+		float sin = 0.0f, cos = 0.0f;
+		//geometric avg of vector lengths from cov to cntlpts
+		double scl = 1.0;
+		for(int i=0;i<cntlPts.length;++i) {
+		  AP = new myVectorf(A, cntlPts[(i+_idxOffset)%cntlPts.length]);
+		  BP = new myVectorf(B, otrMap.cntlPts[i]);
+		  scl *= AP.magn/BP.magn;
+		  rBP = BP.rotMeAroundAxis(otrMap.basisVecs[0], MyMathUtils.halfPi_f);
+		  cos += AP._dot(BP);
+		  sin += AP._dot(rBP);
+		}
+		angleAndScale[0] = (float) Math.atan2(sin,cos);// + (_idxOffset * (MyMathUtils.twoPi_f/cntlPts.length));
+		dispBetweenMaps.set(new myVectorf(B,A));
+		angleAndScale[1] = (float) Math.pow(scl, 1.0/cntlPts.length);
 	}//findDifferenceToMe
+
 	
 	/**
 	 * move this map to the passed values
@@ -232,10 +239,9 @@ public abstract class baseMap {
 	 */
 	public void registerMeToVals(myVectorf dispBetweenMaps, float[] angleAndScale) {
 		registerMeToVals_PreIndiv(dispBetweenMaps,angleAndScale);	//updateMapFromCntlPtVals(regMapUpdateFlags);
-		rotateMapInPlane(angleAndScale[0]);							//updateMapFromCntlPtVals(regMapUpdateFlags);
 		dilateMap(angleAndScale[1]);								//updateMapFromCntlPtVals(regMapUpdateFlags);
-		moveMapInPlane(dispBetweenMaps);		
-		updateMapFromCntlPtVals(regMapUpdateFlags);
+		rotateMapInPlane(angleAndScale[0]);							//updateMapFromCntlPtVals(regMapUpdateFlags);
+		moveMapInPlane(dispBetweenMaps);							updateMapFromCntlPtVals(regMapUpdateFlags);
 	}	
 	protected abstract void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale);	
 	
@@ -252,12 +258,23 @@ public abstract class baseMap {
 	 */
 	public void setCntlPts(myPointf[] _cntlPts, mapCntlFlags flags) {setCntlPts(_cntlPts, flags, numCellsPerSide);}
 	
-	
 	private void setCntlPts(myPointf[] _cntlPts, mapCntlFlags flags, int _numCellsPerSide) {
 		updateNumCellsPerSide(_numCellsPerSide);
 		for(int i=0;i<cntlPts.length;++i) {		cntlPts[i].set(_cntlPts[i]);}
 		updateMapFromCntlPtVals(flags);
 	}	
+	
+	/**
+	 * shift control point idxs - this should result in rebuild of cntl points
+	 * @param i
+	 */
+	public final void shiftCntlPtIDXs(int idx) {
+		if(idx==0) {return;}
+		myPointf[] newCntlPts = new myPointf[cntlPts.length];
+		for(int i=0;i<cntlPts.length;++i) {	newCntlPts[(i+idx)%cntlPts.length] = new myPointf(cntlPts[i]);}
+		resetCntlPts(newCntlPts);
+	}
+
 	
 	
 //	/**
@@ -337,11 +354,21 @@ public abstract class baseMap {
 	 * calc center of area point and map title offset
 	 */
 	protected final void finalizeValsAfterCntlPtsMod() {
+		//this.win.getMsgObj().dispInfoMessage("baseMap::"+mapTitle, "finalizeValsAfterCntlPtsMod", "Start finalizeValsAfterCntlPtsMod");
 		//center of vertices
-		myPointf newCOV = myPointf._average(cntlPts);
+		myPointf newPt = myPointf._average(cntlPts);		
+		cntlPtCOV.set(newPt);
+		if(!distPlanarPtMade) {		//only make 1 time
+			distPlanarPt = myVectorf._add(cntlPtCOV, 100.0f, basisVecs[1], 100.0f, basisVecs[2]);
+			distPlanarPtMade = true;
+		}
 		
-		cntlPtCOV.set(newCOV);
+		newPt = mgr.calcCOM(cntlPts, distPlanarPt, basisVecs[0]);
+		cntlPtCOM.set(newPt);
 		
+		areaOfMap = calcTtlSurfaceArea();
+		polyAreaOfMap = mgr.calcAreaOfPolyInPlane(cntlPts,distPlanarPt, basisVecs[0]);
+		//find most distant control point, to attempt to fit map in frame - need to improve this for COTS maps
 		float maxDist = -1.0f, dist;
 		mostDistCntlPt = null;
 		for(int i=0;i<cntlPts.length;++i) {	
@@ -354,6 +381,7 @@ public abstract class baseMap {
 		edgePts = buildEdgePoints();
 		//find angles at each cntl point
 		cntlPtAngles = buildCntlPtAngles();
+		//this.win.getMsgObj().dispInfoMessage("baseMap::"+mapTitle, "finalizeValsAfterCntlPtsMod", "Done finalizeValsAfterCntlPtsMod");
 	}	
 	
 	
@@ -425,7 +453,13 @@ public abstract class baseMap {
 		pa.sphereDetail(5);
 		pa.stroke(0,0,0,255);
 		for(int i=0;i<cntlPts.length;++i) {	myPointf p = cntlPts[i];mgr._drawPt(p, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));}
-		if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {		mgr._drawPt(cntlPtCOV,sphereRad*1.5f);	mgr._drawPt(cntlPtCOM, sphereRad*1.5f);	}
+		if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {		
+			mgr._drawPt(cntlPtCOV,sphereRad*1.5f);	
+			pa.stroke(255,0,0,255);
+			mgr._drawPt(cntlPtCOM, sphereRad*1.5f);	
+			pa.stroke(0,0,0,255);
+		}
+		
 		//instance specific 
 		_drawCntlPoints_Indiv(isCurMap, detail);
 		
@@ -526,7 +560,10 @@ public abstract class baseMap {
 		win._drawLabelAtPt(mapTitleOffset, mapTitle, 0.0f, 0.0f);
 		if(_drawLabels) {
 			for(int i=0; i< cntlPts.length;++i) {	win._drawLabelAtPt(cntlPts[i],cntlPtLbls[i] + "_"+mapIdx + " : (" + cntlPts[i].toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f);}
-			if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {win._drawLabelAtPt(cntlPtCOV,COV_Label + "_"+mapIdx + " : (" + cntlPtCOV.toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f); }
+			if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {
+				win._drawLabelAtPt(cntlPtCOV,COV_Label + "_"+mapIdx + " : (" + cntlPtCOV.toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f); 
+				win._drawLabelAtPt(cntlPtCOM, COM_Label+ "_"+mapIdx + " : (" + cntlPtCOM.toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f); 
+			}
 			_drawPointLabels_Indiv(detail);
 		}
 		pa.popStyle();pa.popMatrix();
@@ -559,8 +596,21 @@ public abstract class baseMap {
 		if(showCntlPtsAndCentroid) {
 			pa.translate(20.0f,sideBarYDisp, 0.0f);
 			pa.pushMatrix();pa.pushStyle();
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Area of Map :  ");
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, String.format(strPointDispFrmt8,areaOfMap));
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Cntl Pt Poly Area :  ");
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 6.0f, String.format(strPointDispFrmt8,polyAreaOfMap));
+			pa.popStyle();pa.popMatrix();
+			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
+			
+			pa.pushMatrix();pa.pushStyle();
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Centroid :  ");
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
+			pa.popStyle();pa.popMatrix();
+			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
+			pa.pushMatrix();pa.pushStyle();
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "COM :  ");
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOM.toStrCSV(strPointDispFrmt8)+")");
 			pa.popStyle();pa.popMatrix();
 			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
 			for(int i=0;i<cntlPts.length;++i) {
@@ -805,14 +855,16 @@ public abstract class baseMap {
 
 	public final myPointf[] getCntlPts() {			return cntlPts;}
 	public abstract int getNumCntlPts();
-//	/**
-//	 * copy of control points
-//	 * @return
-//	 */
-//	public final myPointf[] getCntlPts_Copy() {			
-//		myPointf[] cpyPts = new myPointf[cntlPts.length];
-//		for(int i=0;i<cpyPts.length;++i) {	cpyPts[i]= new myPointf(cntlPts[i]);}		
-//		return cpyPts;}
+	/**
+	 * copy of control points
+	 * @return
+	 */
+	public final myPointf[] getCntlPts_Copy() {			
+		myPointf[] cpyPts = new myPointf[cntlPts.length];
+		for(int i=0;i<cpyPts.length;++i) {	cpyPts[i]= new myPointf(cntlPts[i]);}		
+		return cpyPts;
+	}
+
 	public final myPointf[] getCntlPtDiagonal() {	return new myPointf[] {cntlPts[0],cntlPts[2]};}
 	public abstract myPointf[] getCntlPtOffDiagonal();
 

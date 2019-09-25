@@ -50,7 +50,10 @@ public class COTS_MorphMain extends my_procApplet {
 		String[] appletArgs = new String[] { "COTS_Morph_PKG.COTS_MorphMain" };
 	    if (passedArgs != null) {PApplet.main(PApplet.concat(appletArgs, passedArgs)); } else {PApplet.main(appletArgs);		    }
 	}//main	
-
+	
+	@Override
+	protected void setSmoothing() {	smooth(8);}
+	
 	@Override
 	protected int[] getDesiredAppDims() {return new int[] {(int)(getDisplayWidth()*.95f), (int)(getDisplayHeight()*.92f)};}
 	//instance-specific setup code

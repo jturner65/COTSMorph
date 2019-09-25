@@ -41,6 +41,7 @@ public class COTSMap extends baseQuadMap {
 		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame, _mapTitle);
 		cots = new COTS_Similarity(mapTitle,basisVecs[0], basisVecs[2], basisVecs[1]);
 		updateMapFromCntlPtVals_Indiv(resetMapUpdateFlags);
+		finalizeValsAfterCntlPtsMod();
 		edgePts = buildEdgePoints();
 	}
 	
@@ -131,6 +132,7 @@ public class COTSMap extends baseQuadMap {
 	@Override
 	public final float calcTtlSurfaceArea() {
 		float res = 0.0f;
+		if(!isAbleToExec()) {return res;}
 		float[] scales = cots.getScales();
 		double mult = 1.0;
 		for(int i=0;i<scales.length;++i) {
@@ -138,7 +140,7 @@ public class COTSMap extends baseQuadMap {
 		}
 		// find set of cntl points to use to calc area of tile
 		ArrayList<myPointf> tilePts = buildPolyPointAra(0,0,100);
-		float tileArea = mgr.calcAreaOfPolyInPlane(tilePts.toArray(new myPointf[0]), basisVecs[0]);
+		float tileArea = mgr.calcAreaOfPolyInPlane(tilePts.toArray(new myPointf[0]), distPlanarPt, basisVecs[0]);
 		
 		res = (float) (tileArea * mult);
 //		float smplRes = mgr.calcAreaOfPolyInPlane(cntlPts, basisVecs[0]);

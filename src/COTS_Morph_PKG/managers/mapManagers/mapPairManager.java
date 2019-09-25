@@ -11,6 +11,7 @@ import COTS_Morph_PKG.maps.triangular.BiLinTriPolyMap;
 import COTS_Morph_PKG.maps.triangular.PointNormTriPolyMap;
 import COTS_Morph_PKG.morphs.CarrierSimDiagMorph;
 import COTS_Morph_PKG.morphs.CarrierSimTransformMorph;
+import COTS_Morph_PKG.morphs.CompoundMorph;
 import COTS_Morph_PKG.morphs.DualCarrierSimMorph;
 import COTS_Morph_PKG.morphs.LERPMorph;
 import COTS_Morph_PKG.morphs.LogPolarMorph;
@@ -21,6 +22,7 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
+import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
@@ -146,21 +148,41 @@ public class mapPairManager {
 		toMapIDX = 1;
 		lineUpMorphMaps = new TreeMap<Float, baseMap>();
 		mapType=_mapType;
-		_initMorphs();
+		morphs = new baseMorph[baseMorphManager.morphTypes.length];
+		for(int i=0;i<morphs.length;++i) {	morphs[i]=buildMorph(i);}
+		//_initMorphs();
 		setPopUpWins_RectDims();
 	}//ctor
-	/**
-	 * initialize all morphs - only call once
-	 */
-	private void _initMorphs() {
-		morphs = new baseMorph[baseMorphManager.morphTypes.length];
-		morphs[baseMorphManager.LERPMorphIDX] = new LERPMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.LERPMorphIDX]); 
-		morphs[baseMorphManager.CarrierSimDiagIDX] = new CarrierSimDiagMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.CarrierSimDiagIDX]); 		
-		morphs[baseMorphManager.CarrierSimRegTransIDX] = new CarrierSimTransformMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.CarrierSimRegTransIDX]); 
-		morphs[baseMorphManager.DualCarrierSimIDX] = new DualCarrierSimMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.DualCarrierSimIDX]); 
-		morphs[baseMorphManager.QuadSpiralEdgeIDS] = new QuadKeyEdgeSpiralMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.DualCarrierSimIDX]); 
-		morphs[baseMorphManager.LogPolarMorphIDX] = new LogPolarMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.LogPolarMorphIDX]);	
+	
+	public baseMorph buildMorph(int typeIDX) {
+		switch (typeIDX) {
+			case baseMorphManager.LERPMorphIDX : {			return new LERPMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]); 		}
+			case baseMorphManager.CarrierSimDiagIDX : {		return new CarrierSimDiagMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);	}
+			case baseMorphManager.CarrierSimRegTransIDX : {	return new CarrierSimTransformMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
+			case baseMorphManager.DualCarrierSimIDX : {		return new DualCarrierSimMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]); }
+			case baseMorphManager.QuadSpiralEdgeIDX : {		return new QuadKeyEdgeSpiralMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
+			case baseMorphManager.LogPolarMorphIDX : {		return new LogPolarMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
+			case baseMorphManager.CompoundMorphIDX : {		return new CompoundMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
+		
+			default : {
+				win.getMsgObj().dispInfoMessage("mapPairManager", "buildMorph", "Unknown morph type idx : " + typeIDX + ". Returning null.");
+				return null;
+			}
+		}
 	}
+	
+//	/**
+//	 * initialize all morphs - only call once
+//	 */
+//	private void _initMorphs() {
+//		morphs = new baseMorph[baseMorphManager.morphTypes.length];
+//		morphs[baseMorphManager.LERPMorphIDX] = new LERPMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.LERPMorphIDX]); 
+//		morphs[baseMorphManager.CarrierSimDiagIDX] = new CarrierSimDiagMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.CarrierSimDiagIDX]); 		
+//		morphs[baseMorphManager.CarrierSimRegTransIDX] = new CarrierSimTransformMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.CarrierSimRegTransIDX]); 
+//		morphs[baseMorphManager.DualCarrierSimIDX] = new DualCarrierSimMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.DualCarrierSimIDX]); 
+//		morphs[baseMorphManager.QuadSpiralEdgeIDX] = new QuadKeyEdgeSpiralMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.DualCarrierSimIDX]); 
+//		morphs[baseMorphManager.LogPolarMorphIDX] = new LogPolarMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.LogPolarMorphIDX]);	
+//	}
 	
 	public final baseMap buildCopyMapOfPassedMapType(baseMap oldMap, String _mapName) {	
 		baseMap map;
@@ -200,33 +222,33 @@ public class mapPairManager {
 	//////////////
 	// map comparison and map/morph processing
 	
-	/**
-	 * find and display areas of both key frame maps
-	 */
-	
-	public final void calcAndShowAreas() {
-		for(int j=0;j<maps.length;++j) {
-			float mapArea = maps[j].calcTtlSurfaceArea();
-			System.out.println("For Map : " + maps[j].mapTitle + " : " + mapArea);
-			
-		}
-	}//calcAndShowAreas
+//	/**
+//	 * find and display areas of both key frame maps
+//	 */
+//	
+//	public final void calcAndShowAreas() {
+//		for(int j=0;j<maps.length;++j) {
+//			float mapArea = maps[j].calcTtlSurfaceArea();
+//			System.out.println("For Map : " + maps[j].mapTitle + " : " + mapArea);
+//			
+//		}
+//	}//calcAndShowAreas
 	/**
 	 * takes array of points and calculates the area of the poly described by them in the plane described by the normal n
 	 * @param pts array of points making up poly
 	 * @param n unit normal of plane points live in
 	 * @return
 	 */
-	public final float calcAreaOfPolyInPlane(myPointf[] pts, myVectorf n) {
+	public final float calcAreaOfPolyInPlane(myPointf[] pts, myPointf planarPt, myVectorf n) {
 		float res = 0.0f;
 		myVectorf U = new myVectorf(),V= new myVectorf();
 		for(int i=1;i<pts.length;++i) {
-			U.set(pts[i-1]);
-			V.set(pts[i]);
+			U.set(planarPt, pts[i-1]);
+			V.set(planarPt, pts[i]);
 			res +=  myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
 		}
-		U.set(pts[pts.length-1]);
-		V.set(pts[0]);
+		U.set(planarPt,pts[pts.length-1]);
+		V.set(planarPt,pts[0]);
 		res +=  myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
 		res/=2.0f;
 		return res;
@@ -234,41 +256,51 @@ public class mapPairManager {
 	}
 
 	/**
-	 * calculate center of mass of poly desribed by passed point array
+	 * calculate center of mass of poly described by passed point array
 	 * center of mass is not necessarily centroid of array of passed points
 	 * each area weights COM Calc  : (individual triangle coms * triangle areas)/total area
-	 * @param pts
-	 * @return
+	 * @param pts points to take COM of
+	 * @param thirdPt a third point in the plane of these points, to use as a pivot point for the triangles used to build COM
+	 * @param n normal to plane of points
+	 * @return COM point
 	 */
-	public final myPointf calcCOM(myPointf[] pts, myVectorf n){
+	public final myPointf calcCOM(myPointf[] pts, myPointf thirdPt, myVectorf n){
 		myPointf COM = new myPointf(), triCOM;
 		float ttlArea = 0.0f, triArea = 0.0f;
 		myVectorf U = new myVectorf(),V= new myVectorf();
 		for(int i = 1; i< pts.length;++i) {
-			triCOM = myPointf._average(myPointf.ZEROPT, pts[i-1],pts[i]);
+			U.set(thirdPt,pts[i-1]);
+			V.set(thirdPt,pts[i]);
+			
+			triCOM = myPointf._average(thirdPt, pts[i-1],pts[i]);
 			triArea = myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
 			COM._add(myPointf._mult(triCOM, triArea));
 			ttlArea += triArea;			
 		}
-		triCOM = myPointf._average(myPointf.ZEROPT, pts[pts.length-1],pts[0]);
+		U.set(thirdPt,pts[pts.length-1]);
+		V.set(thirdPt,pts[0]);
+		triCOM = myPointf._average(thirdPt, pts[pts.length-1],pts[0]);
 		triArea = myVectorf._mixProd(n,U, V);		//signed area projected on normal axis
 		COM._add(myPointf._mult(triCOM, triArea));
 		ttlArea += triArea;
 		myPointf Ct = myPointf._mult(COM, 1.0f/ttlArea);
 		return Ct;
-	}
-
-	
+	}//calcCOM
 	
 	/**
 	 * register "from" map to "to" map, and build a copy
-	 * @param setCopyMap
 	 * @param dispMod
 	 */
-	public final void findDifferenceBetweenMaps(boolean dispMod) {		
+	public final void findDifferenceBetweenMaps(boolean dispMod, boolean findBestDist, boolean updateCopyMap) {		
 		baseMap fromMap = maps[fromMapIDX];
 		baseMap toMap = maps[toMapIDX];
-		copyMap = calcDifferenceBetweenMaps(fromMap, toMap, dispMod);
+		if(updateCopyMap) {
+			if(findBestDist) {
+				copyMap = findBestDifferenceBetweenMaps(fromMap, toMap, dispMod);			
+			} else {
+				copyMap = calcDifferenceBetweenMaps(fromMap, toMap, dispMod);
+			}
+		}
 	}//findDifferenceBetweenMaps
 	
 	
@@ -278,7 +310,7 @@ public class mapPairManager {
 		float[] angleAndScale = new float[2];
 		toMap.findDifferenceToMe(fromMap, dispBetweenMaps, angleAndScale);
 		if(dispMod) {
-			win.getMsgObj().dispInfoMessage("mapManager", "findDiffBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
+			win.getMsgObj().dispInfoMessage("mapManager", "calcDifferenceBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
 		}
 		//System.out.println("Building copy of from map : " + fromMap.mapTitle);
 		baseMap tmpMap = buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
@@ -286,6 +318,36 @@ public class mapPairManager {
 		//System.out.println("Done Building copy of from map : " + fromMap.mapTitle);
 		return tmpMap;	
 	}	
+	
+	public baseMap findBestDifferenceBetweenMaps(baseMap fromMap, baseMap toMap, boolean dispMod) {
+		baseMap bestMap = null;
+		float distBetweenMaps, minDistBetweenMaps = 9999999999.9f;
+		for(int i=0;i<fromMap.getNumCntlPts();++i) {
+			myVectorf dispBetweenMaps = new myVectorf();
+			float[] angleAndScale = new float[2];
+			toMap.findDifferenceToMe(fromMap, i, dispBetweenMaps, angleAndScale);
+			baseMap tmpMap = buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
+			tmpMap.shiftCntlPtIDXs(i);
+			tmpMap.registerMeToVals(dispBetweenMaps, angleAndScale);
+			distBetweenMaps = findSqDistBetween2MapVerts(tmpMap, toMap);
+			if(dispMod) {
+				win.getMsgObj().dispInfoMessage("mapManager", "findBestDifferenceBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " == " + distBetweenMaps+" for i : "+ i +" | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
+			}
+			if(distBetweenMaps < minDistBetweenMaps) {
+				minDistBetweenMaps = distBetweenMaps;
+				bestMap = tmpMap;
+			}
+		}
+		return bestMap;
+	}
+	
+	public float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
+		float res = 0.0f;
+		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
+		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
+		return res;
+	}
+
 	/**
 	 * build oriented lineup of specific # of frames (default 5) where each frame is registered to keyframe A, and then displayed side-by-side
 	 */
@@ -348,15 +410,17 @@ public class mapPairManager {
 	 * @param drawOrtho
 	 * @param drawEdgeLines
 	 */
-	public final void drawMaps_Aux(boolean debug, boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines, boolean drawCntlPts, boolean showLbls, int _detail) {
-		if(drawTexture)	{		for(int i=0;i<maps.length;++i) {maps[i].drawMap_Texture();}}
-		if(drawOrtho) {			for(int i=0;i<maps.length;++i) {maps[i].drawOrthoFrame();}}
+	public final void drawMaps_Aux(boolean debug, boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines, boolean drawCntlPts, boolean drawCopy, boolean showLbls, int _detail) {
+		if(drawTexture)	{		for(int i=0;i<maps.length;++i) {maps[i].drawMap_Texture();} if(drawCopy) {copyMap.drawMap_Texture();}}
+		if(drawOrtho) {			for(int i=0;i<maps.length;++i) {maps[i].drawOrthoFrame();}	if(drawCopy) {copyMap.drawOrthoFrame();}}
 		if(drawEdgeLines) {		maps[0].drawMap_EdgeLines();}
 		if(drawCntlPts) {
 			int curModMapIDX = (null==currMseModMap ? -1 : currMseModMap.mapIdx);
 			for(int i=0;i<maps.length;++i) {maps[i].drawMap_CntlPts(i==curModMapIDX, _detail);}
+			if(drawCopy) {copyMap.drawMap_CntlPts(false, _detail);}
 		}
-		for(int i=0;i<maps.length;++i) {	maps[i].drawHeaderAndLabels(showLbls,_detail);}
+		for(int i=0;i<maps.length;++i) {	maps[i].drawHeaderAndLabels(showLbls,_detail);if(drawCopy) {copyMap.drawHeaderAndLabels(showLbls,_detail);}}
+		
 	}//drawMaps_Aux
 	
 	/**
@@ -510,9 +574,8 @@ public class mapPairManager {
 	 * @return
 	 */	
 	protected final float drawCurrentMorph(float _yOff, float sideBarYDisp, float morphSpeed) {// , String[] morphScopes) {
-		pa.showOffsetText(0,IRenderInterface.gui_Cyan, morphs[currMorphTypeIDX].morphTitle + " Morph : ");
-		_yOff += sideBarYDisp;
-		pa.translate(10.0f, sideBarYDisp, 0.0f);
+		_yOff = morphs[currMorphTypeIDX].drawMorphTitle(_yOff, sideBarYDisp);
+		pa.translate(10.0f,0.0f,0.0f);
 		_yOff = morphs[currMorphTypeIDX].drawMorphRtSdMenuDescr(_yOff, sideBarYDisp, morphSpeed);//,morphScopes);
 		return _yOff;
 	}
@@ -543,17 +606,17 @@ public class mapPairManager {
 		
 	}
 	
-	/**
-	 * this will set whether the morphing mechanism will use per-freature morphs or a single global morph
-	 * @param isPerFeature
-	 */
-	public final void setGlobalOrPerFeatureMorphs(boolean isPerFeature) {	
-		
-		
-		
-		
-		
-	}//setGlobalOrPerFeatureMorphs	
+//	/**
+//	 * this will set whether the morphing mechanism will use per-freature morphs or a single global morph
+//	 * @param isPerFeature
+//	 */
+//	public final void setGlobalOrPerFeatureMorphs(boolean isPerFeature) {	
+//		
+//		
+//		
+//		
+//		
+//	}//setGlobalOrPerFeatureMorphs	
 	
 	/**
 	 * this will reset branching on all maps that use branching
@@ -577,7 +640,8 @@ public class mapPairManager {
 		morphSpeed = currUIVals.getMorphSpeed(); 
 		
 		setPopUpWins_RectDims();
-		for(int i=0;i<this.morphs.length;++i) {	morphs[i].setMorphSlices(currUIVals.getNumMorphSlices());}
+		//for(int i=0;i<this.morphs.length;++i) {	morphs[i].setMorphSlices(currUIVals.getNumMorphSlices());}//
+		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphValsFromUI(upd);}//
 		morphMap.updateMapVals_FromUI(currUIVals);
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true);
