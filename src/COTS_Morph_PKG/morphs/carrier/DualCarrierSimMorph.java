@@ -70,7 +70,12 @@ public class DualCarrierSimMorph extends baseSimpleMorph {
 			int carrierIdx = 0;
 			for(int i=0;i<Apts.length;++i) {	
 				carrierIdx = i%2;
-				destPts[i]=  myPointf._add(myPointf._mult(transforms[carrierIdx].transformPoint(Apts[i], tB), tA),myPointf._mult(transforms[carrierIdx].transformPoint(Bpts[i], tA), tB));
+				//destPts[i]=  myPointf._add(myPointf._mult(transforms[carrierIdx].transformPoint(Apts[i], tB), tA),myPointf._mult(transforms[carrierIdx].transformPoint(Bpts[i], tA), tB));
+				//destPts[i]=  transforms[carrierIdx].transformPoint(Apts[i], tB);
+				myPointf res = transforms[carrierIdx].transformPoint( Apts[i],tB);			
+				destPts[i]= myPointf._add(res, myVectorf._mult(normDispTimeVec, tB));//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);		
+
+				
 				//destPts[i]= myPointf._add(res, myVectorf._mult(normDispTimeVec, tB));//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);	
 	//			destPts[i]= (null==carrier) ? 
 	//					myPointf._add(new myPointf(Apts[i]),myVectorf._mult(normDispTimeVec, tB)) : 

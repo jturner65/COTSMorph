@@ -2,9 +2,9 @@ package COTS_Morph_PKG.morphs.base;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.similarities.CarrierSimilarity;
 import COTS_Morph_PKG.similarities.base.baseSimilarity;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import COTS_Morph_PKG.utils.mapRegDist;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
@@ -22,24 +22,28 @@ public abstract class baseSimpleMorph extends baseMorph {
 	 * arrays of corresponding edges between key frames
 	 */	
 	protected myPointf[][] crnrPtAras;
+	
+	/**
+	 * class to perform registrations and reg-related calculations, if necessary for a particular morph
+	 */
+	protected mapRegDist mapRegDistCalc;
 
 	public baseSimpleMorph(COTS_MorphWin _win, mapPairManager _mapMgr, String _morphTitle) {
 		super(_win, _mapMgr, _morphTitle);
+		
 	}
 
 	/**
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */	
 	@Override
-	public void _endCtorInit() {			
+	public void _endCtorInit() {		
+		mapRegDistCalc = new mapRegDist(this.mapMgr, mapA, mapB);
 		crnrPtAras = getDiagPtsAras();
 		transforms = new baseSimilarity[crnrPtAras.length];
 		if(crnrPtAras.length == 0) {return;}
 		
-		for(int i=0;i<transforms.length;++i) {
-			//transforms[i] = new CarrierSimilarity(morphTitle+"_"+i, mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);
-			transforms[i] = buildSimilarity(i);//, mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);
-		}
+		for(int i=0;i<transforms.length;++i) {			transforms[i] = buildSimilarity(i);		}
 		
 	}	
 	protected abstract myPointf[][] getDiagPtsAras();
@@ -81,11 +85,8 @@ public abstract class baseSimpleMorph extends baseMorph {
 	 */
 	protected final void _calcMorphWithSingleSim(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, boolean useLerp, float tA, float tB) {
 		if(useLerp) {
-			for(int i=0;i<Apts.length;++i) {		
-//				myPointf res = new myPointf( Apts[i]);			
-//				destPts[i]= myPointf._add(res, myVectorf._mult(normDispTimeVec, tB));//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);		
-				destPts[i]=  myPointf._add(myPointf._mult(Apts[i], tA), myPointf._mult(Bpts[i], tB));}//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);				}
-			
+			for(int i=0;i<Apts.length;++i) {		//forces to lerp calc - only use if not yet properly initialized
+				destPts[i]=  myPointf._add(myPointf._mult(Apts[i], tA), myPointf._mult(Bpts[i], tB));}			
 		} else {
 			for(int i=0;i<Apts.length;++i) {		
 				myPointf res = transforms[0].transformPoint( Apts[i],tB);			
@@ -106,8 +107,8 @@ public abstract class baseSimpleMorph extends baseMorph {
 	@Override
 	public void resetAllBranching_Indiv() {
 		for(int i=0;i<transforms.length;++i) {transforms[i].setAllBranchingZero();}
-		mapCalcsAfterCntlPointsSet("self::resetAllBranching_Indiv", true, false);
+		mapCalcsAfterCntlPointsSet("this::resetAllBranching_Indiv", true, false);
 	}
 
 
-}
+}//class baseSimpleMorph

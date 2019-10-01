@@ -35,8 +35,6 @@ public class COTSMap extends baseQuadMap {
 	 */
 	protected boolean shouldShareBranching = false;	
 	
-	protected final String SpiralCtrLbl = "Spiral Center";
-	
 	public COTSMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {	
 		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame,_isBaryQuad, _mapTitle);
 		cots = new COTS_Similarity(mapTitle,basisVecs[0], basisVecs[2], basisVecs[1]);

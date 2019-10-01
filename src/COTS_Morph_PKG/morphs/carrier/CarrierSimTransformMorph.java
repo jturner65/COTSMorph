@@ -36,13 +36,14 @@ public class CarrierSimTransformMorph extends baseSimpleMorph {
 	@Override
 	public void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {
 		if(null==transforms) {return;}
-		myVectorf dispBetweenMaps = new myVectorf();
-		float[] angleAndScale = new float[2];
-		mapB.findDifferenceToMe(mapA, dispBetweenMaps, angleAndScale);
-		
+		mapRegDistCalc.setMapsAndCalc(mapA, mapB, false, false);
+//		myVectorf dispBetweenMaps = new myVectorf();
+//		float[] angleAndScale = new float[2];
+//		mapB.findDifferenceToMe(mapA, dispBetweenMaps, angleAndScale);
+//		
 		myPointf mapPtA = new myPointf(mapA.getCOV()),mapPtB = new myPointf(mapB.getCOV());
 
-		transforms[0].deriveSimilarityFromCntlPts(new myPointf[] {dispBetweenMaps, new myPointf(angleAndScale[0],angleAndScale[1],0.0f),mapPtA,mapPtB},mapFlags[mapUpdateNoResetIDX]);
+		transforms[0].deriveSimilarityFromCntlPts(new myPointf[] {mapRegDistCalc.getDispBetweenMaps(), new myPointf(mapRegDistCalc.getAngle(),mapRegDistCalc.getScale(),0.0f),mapPtA,mapPtB},mapFlags[mapUpdateNoResetIDX]);
 	}//mapCalcsAfterCntlPointsSet_Indiv
 
 

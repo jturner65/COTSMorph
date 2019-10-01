@@ -18,6 +18,7 @@ import COTS_Morph_PKG.morphs.direct.LERPMorph;
 import COTS_Morph_PKG.morphs.direct.LogPolarMorph;
 import COTS_Morph_PKG.morphs.direct.RigidMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
@@ -55,7 +56,7 @@ public class mapPairManager {
 	 * map being currently modified by mouse interaction - only a ref to a map, or null,
 	 * copy map to display if being copied or similarity mapped - only a copy of either mapA or mapB
 	 */
-	public baseMap currMseModMap, copyMap;
+	public baseMap currMseModMap;//, copyMap;
 	/**
 	 * idx's of maps to use for similarity mapping/registration between maps,
 	 * current morph being executed
@@ -65,6 +66,10 @@ public class mapPairManager {
 	 * bounds for the key frame maps managed by this
 	 */
 	public final myPointf[][] bndPts;
+	/**
+	 * structure to manage registration functionality and distance calculation
+	 */
+	public mapRegDist mapRegDistCalc;
 	
 	
 	/**
@@ -110,7 +115,7 @@ public class mapPairManager {
 	 */
 	public static final String[] mapTypes = new String[] {
 		"Triangle",
-		"Point Normal Triangle",
+		"Pt-Norm Tri",
 		"Bilinear",
 		"COTS",	
 		"Bary BiLin pt D",	
@@ -169,8 +174,8 @@ public class mapPairManager {
 		//build maps
 		maps = new baseMap[2];
 		for(int j=0;j<maps.length;++j) {	maps[j] = buildKeyFrameMapOfPassedType(_mapType,j, "");}		
-
-		copyMap = buildCopyMapOfPassedMapType(maps[0], maps[0].mapTitle+"_Copy");
+		mapRegDistCalc = new mapRegDist(this, maps[0],maps[1]);
+		//copyMap = buildCopyMapOfPassedMapType(maps[0], maps[0].mapTitle+"_Copy");
 		
 		for(int j=0;j<maps.length;++j) {	maps[j].setImageToMap(_txtrImages[j]);	maps[j].setOtrMap(maps[(j+1)%maps.length]);}
 		//for building registration copy
@@ -310,62 +315,10 @@ public class mapPairManager {
 	 * register "from" map to "to" map, and build a copy
 	 * @param dispMod
 	 */
-	public final void findDifferenceBetweenMaps(boolean dispMod, boolean findBestDist, boolean updateCopyMap) {		
-		baseMap fromMap = maps[fromMapIDX];
-		baseMap toMap = maps[toMapIDX];
-		if(updateCopyMap) {
-			if(findBestDist) {
-				copyMap = findBestDifferenceBetweenMaps(fromMap, toMap, dispMod);			
-			} else {
-				copyMap = calcDifferenceBetweenMaps(fromMap, toMap, dispMod);
-			}
-		}
+	public final void findDifferenceBetweenMaps(boolean dispMod, boolean findBestDist) {	
+		mapRegDistCalc.setMapsAndCalc(maps[fromMapIDX], maps[toMapIDX], dispMod, findBestDist);
 	}//findDifferenceBetweenMaps
-	
-	
-	public final baseMap calcDifferenceBetweenMaps(baseMap fromMap, baseMap toMap) {return calcDifferenceBetweenMaps(fromMap, toMap, false);}	
-	private baseMap calcDifferenceBetweenMaps(baseMap fromMap, baseMap toMap, boolean dispMod) {
-		myVectorf dispBetweenMaps = new myVectorf();
-		float[] angleAndScale = new float[2];
-		toMap.findDifferenceToMe(fromMap, dispBetweenMaps, angleAndScale);
-		if(dispMod) {
-			win.getMsgObj().dispInfoMessage("mapManager", "calcDifferenceBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
-		}
-		//System.out.println("Building copy of from map : " + fromMap.mapTitle);
-		baseMap tmpMap = buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
-		tmpMap.registerMeToVals(dispBetweenMaps, angleAndScale);
-		//System.out.println("Done Building copy of from map : " + fromMap.mapTitle);
-		return tmpMap;	
-	}	
-	
-	public baseMap findBestDifferenceBetweenMaps(baseMap fromMap, baseMap toMap, boolean dispMod) {
-		baseMap bestMap = null;
-		float distBetweenMaps, minDistBetweenMaps = 9999999999.9f;
-		for(int i=0;i<fromMap.getNumCntlPts();++i) {
-			myVectorf dispBetweenMaps = new myVectorf();
-			float[] angleAndScale = new float[2];
-			toMap.findDifferenceToMe(fromMap, i, dispBetweenMaps, angleAndScale);
-			baseMap tmpMap = buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
-			tmpMap.shiftCntlPtIDXs(i);
-			tmpMap.registerMeToVals(dispBetweenMaps, angleAndScale);
-			distBetweenMaps = findSqDistBetween2MapVerts(tmpMap, toMap);
-			if(dispMod) {
-				win.getMsgObj().dispInfoMessage("mapManager", "findBestDifferenceBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " == " + distBetweenMaps+" for i : "+ i +" | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
-			}
-			if(distBetweenMaps < minDistBetweenMaps) {
-				minDistBetweenMaps = distBetweenMaps;
-				bestMap = tmpMap;
-			}
-		}
-		return bestMap;
-	}
-	
-	public float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
-		float res = 0.0f;
-		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
-		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
-		return res;
-	}
+
 
 	/**
 	 * build oriented lineup of specific # of frames (default 5) where each frame is registered to keyframe A, and then displayed side-by-side
@@ -376,7 +329,7 @@ public class mapPairManager {
 		lineUpMorphMaps.clear();
 		for(Float t : rawMorphMaps.keySet()) {
 			baseMap tmpMorphMap = rawMorphMaps.get(t);
-			lineUpMorphMaps.put(t, calcDifferenceBetweenMaps(tmpMorphMap, maps[0]));
+			lineUpMorphMaps.put(t, mapRegDistCalc.calcDifferenceBetweenMaps(tmpMorphMap, maps[0]));
 		}		
 	}
 
@@ -417,10 +370,10 @@ public class mapPairManager {
 			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Wf();}}
 		}
 		if(drawCircles) {
-			if((!drawMap)&& (fillOrWf)) {		for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Fill();}}		
+			if((!drawMap) && (fillOrWf)) {		for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Fill();}}		
 			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Wf();}}					
 		}
-		if(drawCopy) {			if(fillOrWf) {copyMap.drawMap_Fill();	} else {copyMap.drawMap_Wf();}}
+		if(drawCopy) {			mapRegDistCalc.drawMaps_Main(fillOrWf);}
 	}//drawMaps_Main
 	
 	/**
@@ -430,15 +383,15 @@ public class mapPairManager {
 	 * @param drawEdgeLines
 	 */
 	public final void drawMaps_Aux(boolean debug, boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines, boolean drawCntlPts, boolean drawCopy, boolean showLbls, int _detail) {
-		if(drawTexture)	{		for(int i=0;i<maps.length;++i) {maps[i].drawMap_Texture();} if(drawCopy) {copyMap.drawMap_Texture();}}
-		if(drawOrtho) {			for(int i=0;i<maps.length;++i) {maps[i].drawOrthoFrame();}	if(drawCopy) {copyMap.drawOrthoFrame();}}
+		if(drawCopy) {mapRegDistCalc.drawMaps_Aux(drawTexture, drawOrtho, drawCntlPts,showLbls, _detail);}
+		if(drawTexture)	{		for(int i=0;i<maps.length;++i) {maps[i].drawMap_Texture();}}
+		if(drawOrtho) {			for(int i=0;i<maps.length;++i) {maps[i].drawOrthoFrame();}}
 		if(drawEdgeLines) {		maps[0].drawMap_EdgeLines();}
 		if(drawCntlPts) {
 			int curModMapIDX = (null==currMseModMap ? -1 : currMseModMap.mapIdx);
 			for(int i=0;i<maps.length;++i) {maps[i].drawMap_CntlPts(i==curModMapIDX, _detail);}
-			if(drawCopy) {copyMap.drawMap_CntlPts(false, _detail);}
 		}
-		for(int i=0;i<maps.length;++i) {	maps[i].drawHeaderAndLabels(showLbls,_detail);if(drawCopy) {copyMap.drawHeaderAndLabels(showLbls,_detail);}}
+		for(int i=0;i<maps.length;++i) {	maps[i].drawHeaderAndLabels(showLbls,_detail);}
 		
 	}//drawMaps_Aux
 	
@@ -473,8 +426,12 @@ public class mapPairManager {
 		}
 	}
 	
-	public final void drawMaps_AnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, float sideBarYDisp) {
+	public final void drawMaps_AnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, int dispDetail, float sideBarYDisp) {
 		int alpha = 120;
+		int mod=0;
+		if(dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) { mod+=2;}
+		else if(dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX){ mod+=1;}
+		recalcTrajAnalysisDims(mod);
 		pa.pushMatrix();pa.pushStyle();	
 		pa.setStroke(new int[] {0, 0,0}, 255);
 		pa.setStrokeWt(2.0f);
@@ -485,7 +442,7 @@ public class mapPairManager {
 			pa.setFill(new int[] {255, 235,255},alpha);
 			pa.translate(0.0f,-perTragAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTragAnalysisImageWidth up from bottom
 			pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
-			
+			morphs[currMorphTypeIDX].drawTrajAnalyzerGraphs(mmntDispLabels,  dispDetail, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
 			++numWinBarsToDraw;
 			pa.popStyle();pa.popMatrix();
 		}
@@ -494,21 +451,11 @@ public class mapPairManager {
 			pa.setFill(new int[] {235, 252,255},alpha);
 			pa.translate(0.0f,-perTragAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTragAnalysisImageWidth up from bottom
 			pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
-			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
+			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels,  dispDetail, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
 			
 			pa.popStyle();pa.popMatrix();
 			
 		}
-		pa.popStyle();pa.popMatrix();
-	}
-	protected final void drawMaps_TrajAnalysisWindow(String[] mmntDispLabels, float sideBarYDisp) {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.setStroke(new int[] {0, 0,0}, 255);
-		pa.setStrokeWt(2.0f);
-		pa.setFill(new int[] {235, 252,255},120);
-		pa.translate(0.0f,win.rectDim[3]-perTragAnalysisImageWidth,0.0f);//perTragAnalysisImageWidth up from bottom
-		pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
-		morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});		
 		pa.popStyle();pa.popMatrix();
 	}
 
@@ -570,7 +517,8 @@ public class mapPairManager {
 		
 		pa.translate(10.0f, sideBarYDisp, 0.0f);		
 		for(int i=0; i<maps.length;++i) {			_yOff = maps[i].drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);		}
-		if(drawRegCopy) {_yOff = copyMap.drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);}
+		if(drawRegCopy) {_yOff = mapRegDistCalc.drawRightSideMaps(_yOff, sideBarYDisp);}
+		//if(drawRegCopy) {_yOff = copyMap.drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);}
 		if(drawMorph) {			_yOff = _drawRightSideMorphMap(_yOff, sideBarYDisp);	}		
 		pa.translate(-10.0f, sideBarYDisp, 0.0f);	
 		pa.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Morph : ");
@@ -610,13 +558,13 @@ public class mapPairManager {
 		perLineupImageWidth = lineupRectDims[2]/(1.0f*currUIVals.getNumLineupFrames());
 		lineupRectDims[3] = perLineupImageWidth;
 		//traj analysis window
-		recalcTrajAnalysisDims();
+		recalcTrajAnalysisDims(0);
 	}
 	
-	private final void recalcTrajAnalysisDims() {
+	private final void recalcTrajAnalysisDims(int mod) {
 		//traj analysis window
 		trajAnalysisRectDims = win.getOrientedDims();
-		perTragAnalysisImageWidth = trajAnalysisRectDims[2]/(1.0f* morphs[currMorphTypeIDX].getNumAnalysisBoxes());
+		perTragAnalysisImageWidth = trajAnalysisRectDims[2]/(1.0f* morphs[currMorphTypeIDX].getNumAnalysisBoxes() - mod);
 		trajAnalysisRectDims[3] = perTragAnalysisImageWidth;
 	}
 	

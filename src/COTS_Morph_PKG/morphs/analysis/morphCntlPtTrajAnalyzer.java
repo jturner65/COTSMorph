@@ -48,11 +48,12 @@ public class morphCntlPtTrajAnalyzer extends baseMorphAnalyzer{
 	
 
 	@Override
-	protected void drawSingleSummary(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult) {
+	protected boolean drawSingleSummary(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult) {
 		myProbSummary_ptOrVec smry = ((myProbSummary_ptOrVec)smryRaw);
 			
 		TreeMap<String,String>[] smryStrings = smry.summaryStringAra();
 		for(int row=0;row<smryStrings.length;++row) {
+			if(smryStrings[row].get(mmntDispLabels[mmntDispLabels.length-1]).toLowerCase().contains("nan")) {continue;}
 			pa.pushMatrix();pa.pushStyle();
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), ltrMult*.3f, smryStrings[row].get("summaryName"));
 			for(int i=0;i<mmntDispLabels.length;++i) {
@@ -61,8 +62,14 @@ public class morphCntlPtTrajAnalyzer extends baseMorphAnalyzer{
 			pa.popStyle();pa.popMatrix();
 			pa.translate(0.0f,txtLineYDisp,0.0f);	
 		}
-		
+		return true;
 	}//	drawSingleSummary
+
+	@Override
+	protected boolean drawSingleSmryGraph(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp,float ltrMult) {
+		
+		return true;
+	}
 	
 	
 }//class baseMorphAnalyzer

@@ -31,7 +31,7 @@ public class morphAreaTrajAnalyzer extends baseMorphAnalyzer {
 		if((null==areas) || (areas.size() < 4)) {return;}
 		if(_dbg) {System.out.println("Area Analyzer " + ID+ " for : " + name  + " # area vals : " +areas.size() +" morphAreaTrajAnalyzer::analyzeTrajectory : ");}
 
-		trajVals = buildAreaTrajVals(areas);
+		trajVals = buildFloatTrajVals(areas);
 		for(int i=0;i<summaries.length;++i) {
 			summaries[i]=new myProbSummary_Flts(name +" " +statNames[i], trajVals[i]);
 			if(_dbg) {System.out.println("\nSummary : " +summaries[i].toString());}
@@ -40,7 +40,7 @@ public class morphAreaTrajAnalyzer extends baseMorphAnalyzer {
 	}
 
 	@Override
-	protected void drawSingleSummary(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult) {
+	protected boolean drawSingleSummary(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult) {
 		myProbSummary_Flts smry = ((myProbSummary_Flts)smryRaw);
 		TreeMap<String,String> smryStrings = smry.summaryStringAra("A");
 		pa.pushMatrix();pa.pushStyle();
@@ -50,7 +50,16 @@ public class morphAreaTrajAnalyzer extends baseMorphAnalyzer {
 		}			
 		pa.popStyle();pa.popMatrix();
 		pa.translate(0.0f,txtLineYDisp,0.0f);	
+		return true;
 		
 	}//drawSingleSummary
+
+	@Override
+	protected boolean drawSingleSmryGraph(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp,float ltrMult) {
+		
+		return true;
+	}
+	
+	
 
 }//class morphAreaTrajAnalyzer

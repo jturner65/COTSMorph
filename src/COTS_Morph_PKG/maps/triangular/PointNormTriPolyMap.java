@@ -102,8 +102,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 				
 			}
 			setOtrMapVals(flags);
-		}
-		
+		}		
 	}
 	
 	private void setOtrMapVals(mapCntlFlags flags) {

@@ -1,5 +1,6 @@
 package COTS_Morph_PKG.maps.base;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
@@ -74,9 +75,18 @@ public abstract class baseMap {
 	 */
 	public myVectorf[] basisVecs;
 	/**
-	 * whether or not this is a keyframe map
+	 * whether or not this is a keyframe map; whether or not distant planar point has been made
 	 */
-	public boolean isKeyFrameMap;
+	public boolean isKeyFrameMap,distPlanarPtMade = false;
+	
+	/**
+	 * poly corner t values - recalced when cntlpts move - idx 1 is x idx, idx2 is y idx
+	 */
+	protected float[] polyPointTVals;	
+		//# of subdivisions per poly for checkerboard
+	protected float subDivLenPerPoly;
+		//# of total points for edge of map
+	protected static final float numTtlPtsPerEdge = 300.0f;
 		//array of 2 poly colors
 	protected int[][] polyColors;
 		//color for grid ISO lines
@@ -95,9 +105,10 @@ public abstract class baseMap {
 	protected myPointf mapTitleOffset;
 		//array of labels to use for control points
 	protected String[] cntlPtLbls;	
-	public final String 
+	public static final String 
 		COV_Label = "Map COV",
-		COM_Label = "Map COM";
+		COM_Label = "Map COM",
+		SpiralCtrLbl = "Spiral Center";
 		//display ortho frame
 	private myPointf[] orthoFrame;
 		//ref to UI object from map manager
@@ -106,8 +117,7 @@ public abstract class baseMap {
 	protected mapCntlFlags regMapUpdateFlags;// = new boolean[] {false, false};		
 		//flag control construction for reset updates
 	protected mapCntlFlags resetMapUpdateFlags;// = new boolean[] {true, false};
-	
-	boolean distPlanarPtMade = false;
+
 	/**
 	 * whether the title of this map should be shown on 2 lines in the right side info disp
 	 */
@@ -137,8 +147,8 @@ public abstract class baseMap {
 		isKeyFrameMap = false;
 		//points and labels for points, basis vectors, and map flags structures
 		initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.origCntlPts, _otr.basisVecs[0]);
+		//set inited values to copies
 		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
-		distPlanarPtMade = false;
 		cntlPtCOM = new myPointf(_otr.cntlPtCOM);
 		//configure for future calls to setCntlPts
 		updateNumCellsPerSide(_otr.numCellsPerSide);
@@ -154,7 +164,7 @@ public abstract class baseMap {
 	 */	
 	private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myPointf[] _origCntlPts, myVectorf tmpNorm) {
 		//init mse click obj refs - not really necessary
-		currMseModCntlPt = null;			currMseClkLocVec = null;
+		currMseModCntlPt = null;			currMseClkLocVec = null; distPlanarPtMade = false;
 		cntlPtCOV = new myPointf(0,0,0);	cntlPtCOM = new myPointf(0,0,0);
 		areaOfMap=0;polyAreaOfMap = 0;
 		
@@ -351,14 +361,7 @@ public abstract class baseMap {
 	 * @return
 	 */
 	public abstract float calcTtlSurfaceArea();
-	/**
-	 * calculate total area of the triangular map
-	 */
-	
-	/**
-	 * calculate the total area of the shapes embedded on the matrix/map TODO
-	 */
-	//public abstract float calcTtlShapeAreaOnMap(float shapeArea);
+
 	
 	/**
 	 * calc center of area point and map title offset
@@ -394,6 +397,17 @@ public abstract class baseMap {
 		//this.win.getMsgObj().dispInfoMessage("baseMap::"+mapTitle, "finalizeValsAfterCntlPtsMod", "Done finalizeValsAfterCntlPtsMod");
 	}	
 	
+	/**
+	 * precalculate the tx,ty values for the grid poly bounds - only necessary when numCellsPerSide changes
+	 */
+	protected final void buildPolyPointTVals() {		
+		subDivLenPerPoly = numCellsPerSide/numTtlPtsPerEdge;
+		polyPointTVals = new float[numCellsPerSide+1];	
+			
+		for(int i=0;i<polyPointTVals.length;++i) {
+			polyPointTVals[i]=i/(1.0f*numCellsPerSide);
+		}			
+	}//buildPolyPointTVals
 	
 	protected abstract myPointf[][] buildEdgePoints();
 	/**
@@ -446,10 +460,21 @@ public abstract class baseMap {
 	 */
 	protected abstract void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags);
 	
+	
 	/**
-	 * precalculate the tx,ty values for the grid poly bounds - only necessary when numCellsPerSide changes
+	 * build corners of all polys
 	 */
-	protected abstract void buildPolyPointTVals();
+	public abstract myPointf[][][] buildPolyCorners();
+	
+	/**
+	 * build single tile points
+	 * @param i
+	 * @param j
+	 * @param numPtsPerEdge # of points to interpolate between adjacent t values
+	 * @return
+	 */
+	protected abstract ArrayList<myPointf> buildPolyPointAra(int i, int j, int numPtsPerPolyEdge);
+	
 	
 	
 	////////////////////////
@@ -626,10 +651,39 @@ public abstract class baseMap {
 		pa.pushMatrix();pa.pushStyle();	
 		_drawCntlPts(isCurMap, detail);
 		pa.popStyle();pa.popMatrix();
-	}
-	public abstract void drawMap_Fill();	
+	}	
+
+	public void drawMap_Fill() {
+		pa.pushMatrix();pa.pushStyle();	
+		pa.stroke(255,255,255,255);
+		pa.setStrokeWt(1.0f);
+		int clrIdx = 0;
+		
+		for(int i=0;i<polyPointTVals.length-1;++i) {
+			clrIdx = i % 2;
+			for(int j=0;j<polyPointTVals.length-1;++j) {
+				pa.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
+				_drawPoly(i,j);		
+				clrIdx = (clrIdx + 1) % 2;
+			}				
+		}	
+		pa.popStyle();pa.popMatrix();
+	}//drawMap_Fill
+	
+	public void drawMap_Wf() {
+		pa.pushMatrix();pa.pushStyle();	
+		pa.noFill();
+		pa.setStroke(gridColor, gridColor[3]);
+		pa.setStrokeWt(2.0f);	
+		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals.length-1;++j) {_drawPoly(i,j);}}	
+		pa.popStyle();pa.popMatrix();
+	}//drawMap_Wf
+	
+	protected abstract void _drawPoly(int i, int j);
+	
+//	public abstract void drawMap_Fill();	
+//	public abstract void drawMap_Wf();	
 	public abstract void drawMap_PolyCircles_Fill();		
-	public abstract void drawMap_Wf();	
 	public abstract void drawMap_PolyCircles_Wf();
 	public abstract void drawMap_Texture();
 	
