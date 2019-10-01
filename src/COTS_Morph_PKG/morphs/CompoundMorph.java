@@ -3,7 +3,6 @@ package COTS_Morph_PKG.morphs;
 import java.util.ArrayList;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
-import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.morphs.base.baseMorph;
 import COTS_Morph_PKG.morphs.base.baseSimpleMorph;
@@ -58,33 +57,28 @@ public class CompoundMorph extends baseMorph {
 	 * @param _morphTitle
 	 */
 	
-	public CompoundMorph(COTS_MorphWin _win, baseMorphManager _morphMgr, mapPairManager _mapMgr, String _morphTitle) {
-		super(_win, _morphMgr, _mapMgr, _morphTitle);
+	public CompoundMorph(COTS_MorphWin _win, mapPairManager _mapMgr, String _morphTitle) {
+		super(_win, _mapMgr, _morphTitle);
 	}
 
 	@Override
 	public void _endCtorInit() {
 		currMorphToUseIDX = new int[numMorphFeatures];
 		_currPerMorphMaps = new baseMap[numMorphFeatures];
-		morphsAvailable = new baseSimpleMorph[numMorphFeatures][baseMorphManager.morphTypes.length-1];//don't allow for compound of compound morphs
+		morphsAvailable = new baseSimpleMorph[numMorphFeatures][mapPairManager.morphTypes.length-1];//don't allow for compound of compound morphs
 		for(int i=0;i<numMorphFeatures;++i) {
 			currMorphToUseIDX[i]=0;
 			_currPerMorphMaps[i]=getCopyOfMap(mapA, "Map for "+morphFtrNames[i]);
 			ArrayList<baseSimpleMorph> tmpNewMorphs = new ArrayList<baseSimpleMorph>();
-			for(int j=0;j<baseMorphManager.morphTypes.length;++j) {
-				if(j==baseMorphManager.CompoundMorphIDX) {continue;}
+			for(int j=0;j<mapPairManager.morphTypes.length;++j) {
+				if(j==mapPairManager.CompoundMorphIDX) {continue;}
 				tmpNewMorphs.add((baseSimpleMorph) mapMgr.buildMorph(j));
 			}
 			morphsAvailable[i] = tmpNewMorphs.toArray(new baseSimpleMorph[0]);
 		}
 	}
 
-	@Override
-	public void initCalcMorph_Indiv(float tA, float tB) {
-		
 
-	}
-	
 	@Override
 	protected void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd) {
 		currMorphToUseIDX[shapeMorphIDX] = upd.getCurrMorphType_ShapeIDX();       
@@ -104,10 +98,42 @@ public class CompoundMorph extends baseMorph {
 	@Override
 	public void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB) {
 		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(); 
-		myPointf[][] newPts = new myPointf[numMorphFeatures][aCntlPts.length];
 		myVectorf[] distBetweenAllMaps = new myVectorf[_currPerMorphMaps.length];
-		float[][] angleScalesAllMaps = new float[_currPerMorphMaps.length][];
+		float[][] angleScalesAllMaps = new float[_currPerMorphMaps.length][];	
 		
+		//this is shape with points deregistered (aligned) against mapA on translation, rotation and scale
+		myPointf[] resPts = getDeRegShapeMapCntlPts(aCntlPts, bCntlPts,distBetweenAllMaps, angleScalesAllMaps, tA, tB);
+		
+		_curMorphMap.setCntlPts(resPts, mapFlags[mapUpdateNoResetIDX]);		
+		_curMorphMap.registerMeToVals(myVectorf._mult(distBetweenAllMaps[transMorphIDX],-1.0f), new float[] {-angleScalesAllMaps[orientMorphIDX][0],1.0f/angleScalesAllMaps[scaleMorphIDX][1]});
+	}
+
+	@Override
+	public void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] aCntlPts, myPointf[] bCntlPts, myPointf[] destPts, float tA,	float tB) {
+		myVectorf[] distBetweenAllMaps = new myVectorf[_currPerMorphMaps.length];
+		float[][] angleScalesAllMaps = new float[_currPerMorphMaps.length][];	
+
+		//this is shape with points deregistered (aligned) against mapA on translation, rotation and scale
+		myPointf[] resPts = getDeRegShapeMapCntlPts(aCntlPts, bCntlPts,distBetweenAllMaps, angleScalesAllMaps, tA, tB);
+		baseMap tmpMap = getCopyOfMap(mapA, "Tmp Copy of Map A");
+		
+		tmpMap.setCntlPts(resPts, mapFlags[mapUpdateNoResetIDX]);
+		
+		tmpMap.registerMeToVals(myVectorf._mult(distBetweenAllMaps[transMorphIDX],-1.0f), new float[] {-angleScalesAllMaps[orientMorphIDX][0],1.0f/angleScalesAllMaps[scaleMorphIDX][1]});
+		destPts = tmpMap.getCntlPts();	
+	}
+	/**
+	 * Calculate the control points of the shape map, and also return the arrays holding COV distance vector, angles and scales
+	 * @param aCntlPts
+	 * @param bCntlPts
+	 * @param distBetweenAllMaps
+	 * @param angleScalesAllMaps
+	 * @param tA
+	 * @param tB
+	 * @return
+	 */
+	private myPointf[] getDeRegShapeMapCntlPts(myPointf[] aCntlPts, myPointf[] bCntlPts, myVectorf[] distBetweenAllMaps,  float[][] angleScalesAllMaps, float tA, float tB) {
+		myPointf[][] newPts = new myPointf[numMorphFeatures][aCntlPts.length];
 		
 		for(int i=0;i<_currPerMorphMaps.length;++i) {
 			distBetweenAllMaps[i] = new myVectorf();
@@ -121,38 +147,9 @@ public class CompoundMorph extends baseMorph {
 		}
 		//remove its registration values to be left only with shape
 		_currPerMorphMaps[shapeMorphIDX].registerMeToVals(distBetweenAllMaps[shapeMorphIDX], new float[] {angleScalesAllMaps[shapeMorphIDX][0],angleScalesAllMaps[shapeMorphIDX][1]});
-		//this is shape with points on mapA
+		//these are control points from map which is desired shape
 		myPointf[] resPts = _currPerMorphMaps[shapeMorphIDX].getCntlPts_Copy();		
-		_curMorphMap.setCntlPts(resPts, mapFlags[mapUpdateNoResetIDX]);		
-		_curMorphMap.registerMeToVals(myVectorf._mult(distBetweenAllMaps[transMorphIDX],-1.0f), new float[] {-angleScalesAllMaps[orientMorphIDX][0],1.0f/angleScalesAllMaps[scaleMorphIDX][1]});
-	}
-
-	@Override
-	public void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA,	float tB) {
-		myPointf[][] newPts = new myPointf[numMorphFeatures][Apts.length];
-		myVectorf[] distBetweenAllMaps = new myVectorf[_currPerMorphMaps.length];
-		float[][] angleScalesAllMaps = new float[_currPerMorphMaps.length][];	
-		
-		for(int i=0;i<_currPerMorphMaps.length;++i) {
-			distBetweenAllMaps[i] = new myVectorf();
-			angleScalesAllMaps[i] = new float[] {0.0f,0.0f};
-			
-			int morphIDXToUse = currMorphToUseIDX[i];
-			//System.out.println("Morph Feature : " + i + " = " + morphFtrNames[i] + " using idx : " + morphIDXToUse + " : " +baseMorphManager.morphTypes[morphIDXToUse] );
-			morphsAvailable[i][morphIDXToUse].calcMorphBetweenTwoSetsOfCntlPoints(Apts, Bpts, newPts[i], tA, tB);			
-			_currPerMorphMaps[i].setCntlPts( newPts[i], mapFlags[mapUpdateNoResetIDX]);
-			mapA.findDifferenceToMe(_currPerMorphMaps[i], distBetweenAllMaps[i], angleScalesAllMaps[i]);
-		}
-		//remove its registration values to be left only with shape
-		_currPerMorphMaps[shapeMorphIDX].registerMeToVals(distBetweenAllMaps[shapeMorphIDX], new float[] {angleScalesAllMaps[shapeMorphIDX][0],angleScalesAllMaps[shapeMorphIDX][1]});
-		//this is shape with points on mapA
-		myPointf[] resPts = _currPerMorphMaps[shapeMorphIDX].getCntlPts_Copy();		
-		baseMap tmpMap = getCopyOfMap(mapA, "Tmp Copy of Map A");
-		
-		tmpMap.setCntlPts(resPts, mapFlags[mapUpdateNoResetIDX]);
-		
-		tmpMap.registerMeToVals(myVectorf._mult(distBetweenAllMaps[transMorphIDX],-1.0f), new float[] {-angleScalesAllMaps[orientMorphIDX][0],1.0f/angleScalesAllMaps[scaleMorphIDX][1]});
-		destPts = tmpMap.getCntlPts();	
+		return resPts;
 	}
 
 	@Override
@@ -195,12 +192,8 @@ public class CompoundMorph extends baseMorph {
 
 	
 	@Override
-	public void resetAllBranching() {
-		for(int i=0;i<numMorphFeatures;++i) {
-			for(int j=0;j<morphsAvailable[i].length;++j) {
-				morphsAvailable[i][j].resetAllBranching();
-			}
-		}
+	public void resetAllBranching_Indiv() {
+		for(int i=0;i<numMorphFeatures;++i) {for(int j=0;j<morphsAvailable[i].length;++j) {morphsAvailable[i][j].resetAllBranching();}}
 	}
 
 }//class CompoundMorph

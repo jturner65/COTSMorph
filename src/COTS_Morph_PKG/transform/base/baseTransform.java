@@ -105,7 +105,7 @@ public abstract class baseTransform {
 	
 	public final String getDebugStr() {
 		String res = "Ortho Frame of transform : norm : " + norm.toStrBrf() +" | I : " + I.toStrBrf() + " | J : " + J.toStrBrf()+"\n";
-		res += getDebugStr_Indiv();
+		res += getDebugStr_Indiv()+"\n";
 		return res;		
 	};
 	protected abstract String getDebugStr_Indiv();

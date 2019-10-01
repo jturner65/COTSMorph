@@ -118,6 +118,11 @@ public abstract class baseSimilarity {
 		yOff = drawRightSideBarMenuDescr_Indiv(pa, yOff, sideBarYDisp);
 		return yOff;
 	}
+	public final float drawRightSideBarMenuDescr(my_procApplet pa, float yOff, float sideBarYDisp, String[] _transLbls) {
+		for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, _transLbls[i]);}
+		yOff = drawRightSideBarMenuDescr_Indiv(pa, yOff, sideBarYDisp);
+		return yOff;
+	}
 	protected abstract float drawRightSideBarMenuDescr_Indiv(my_procApplet pa, float yOff, float sideBarYDisp);
 	
 	/////////////////////////

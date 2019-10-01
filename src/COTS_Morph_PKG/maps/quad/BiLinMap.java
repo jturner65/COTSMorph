@@ -13,7 +13,9 @@ import base_Utils_Objects.vectorObjs.myVectorf;
 
 public class BiLinMap extends baseQuadMap {
 
-	public BiLinMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame, _mapTitle);}
+	public BiLinMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {
+		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame, _isBaryQuad, _mapTitle);
+	}
 	public BiLinMap(String _mapTitle, BiLinMap _otrMap) {super(_mapTitle, _otrMap);}
 
 	
@@ -27,7 +29,7 @@ public class BiLinMap extends baseQuadMap {
 	@Override
 	protected boolean updateMapVals_FromUI_Indiv(mapUpdFromUIData upd) {	boolean hasBeenUpdated = false;		return hasBeenUpdated;}
 	@Override
-	public void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags) {
+	public void _updateMeWithQuadMapVals(baseMap otrMap, mapCntlFlags flags) {
 		
 	}
 	
@@ -78,7 +80,7 @@ public class BiLinMap extends baseQuadMap {
 		
 	}
 	@Override
-	protected float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	protected float _drawQuadMapRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		return yOff;
 	}
 	@Override
@@ -94,7 +96,7 @@ public class BiLinMap extends baseQuadMap {
 	@Override
 	public final void setFlags(boolean[] flags) {};
 	@Override
-	protected final void setOtrMap_Indiv() {};
+	protected final void _setOtrQuadMap_Indiv() {};
 	
 	/**
 	 * whether this map is ready to execute

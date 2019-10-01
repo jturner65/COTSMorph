@@ -68,7 +68,7 @@ public abstract class baseMap {
 	/**
 	 * image to deform/distort for map
 	 */
-	protected PImage imageToMap;	
+	private PImage imageToMap;	
 	/**
 	 * coplanar ortho frame for map idx 0 == norm; idx 1 == 'y' axis, idx 2 == 'x' axis
 	 */
@@ -89,14 +89,15 @@ public abstract class baseMap {
 	protected static my_procApplet pa;
 	protected COTS_MorphWin win;
 		//title of map for display	
-	public String mapTitle;
+	public final String mapTitle;
+	public final float mapTtlXOff;	
 		//where to print map title above map
 	protected myPointf mapTitleOffset;
-	public final float mapTtlXOff;	
 		//array of labels to use for control points
 	protected String[] cntlPtLbls;	
-	public final String COV_Label = "Map COV",
-			COM_Label = "Map COM";
+	public final String 
+		COV_Label = "Map COV",
+		COM_Label = "Map COM";
 		//display ortho frame
 	private myPointf[] orthoFrame;
 		//ref to UI object from map manager
@@ -105,7 +106,12 @@ public abstract class baseMap {
 	protected mapCntlFlags regMapUpdateFlags;// = new boolean[] {false, false};		
 		//flag control construction for reset updates
 	protected mapCntlFlags resetMapUpdateFlags;// = new boolean[] {true, false};
+	
 	boolean distPlanarPtMade = false;
+	/**
+	 * whether the title of this map should be shown on 2 lines in the right side info disp
+	 */
+	protected boolean dispTitleOn2Lines = false;
 
 	protected static final int[] whiteClr = new int[] {255,255,255,255};
 	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
@@ -126,15 +132,17 @@ public abstract class baseMap {
 	public baseMap(String _mapTitle, baseMap _otr) {
 		win=_otr.win; pa=myDispWindow.pa;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
 		mapIdx = _otr.mapIdx;		mapTypeIDX = _otr.mapTypeIDX;
-		mapTitle = _mapTitle ;		mapTtlXOff = _otr.mapTtlXOff;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
-		//keyframes are never copies
+		mapTitle = _mapTitle ;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
+		//keyframes are never copies;
 		isKeyFrameMap = false;
 		//points and labels for points, basis vectors, and map flags structures
 		initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.origCntlPts, _otr.basisVecs[0]);
 		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
+		distPlanarPtMade = false;
 		cntlPtCOM = new myPointf(_otr.cntlPtCOM);
 		//configure for future calls to setCntlPts
 		updateNumCellsPerSide(_otr.numCellsPerSide);
+		dispTitleOn2Lines = _otr.dispTitleOn2Lines;
 		//don't call this here
 		//setCntlPts(_otr.cntlPts,regMapUpdateFlags, _otr.numCellsPerSide);		
 	}//copy ctor
@@ -238,10 +246,12 @@ public abstract class baseMap {
 	 * @param angleAndScale
 	 */
 	public void registerMeToVals(myVectorf dispBetweenMaps, float[] angleAndScale) {
+		distPlanarPtMade = false;
 		registerMeToVals_PreIndiv(dispBetweenMaps,angleAndScale);	//updateMapFromCntlPtVals(regMapUpdateFlags);
-		dilateMap(angleAndScale[1]);								//updateMapFromCntlPtVals(regMapUpdateFlags);
 		rotateMapInPlane(angleAndScale[0]);							//updateMapFromCntlPtVals(regMapUpdateFlags);
-		moveMapInPlane(dispBetweenMaps);							updateMapFromCntlPtVals(regMapUpdateFlags);
+		dilateMap(angleAndScale[1]);								//updateMapFromCntlPtVals(regMapUpdateFlags);
+		moveMapInPlane(dispBetweenMaps);							//updateMapFromCntlPtVals(regMapUpdateFlags);
+		updateMapFromCntlPtVals(regMapUpdateFlags);
 	}	
 	protected abstract void registerMeToVals_PreIndiv(myVectorf dispBetweenMaps, float[] angleAndScale);	
 	
@@ -441,6 +451,129 @@ public abstract class baseMap {
 	 */
 	protected abstract void buildPolyPointTVals();
 	
+	
+	////////////////////////
+	// mouse interaction - need to determine which map control point of both maps is closest to mouse location
+
+	
+	/**
+	 * returns distance to closest point to passed line/ray or _mseLoc point, depending on whether 3d or 2d
+	 * @param _mseLoc mouse cick location
+	 * @param _rayOrigin origin of click ray, if 3d (zero vec in 2d)
+	 * @param _rayDir direction of click ray, if 3d (FORWARD vec in 2d)
+	 * @return
+	 */
+	public final Float findClosestCntlPt(myPointf _mseLoc, myPointf _rayOrigin, myVectorf _rayDir){
+		currMseClkLocVec = new myVectorf(cntlPtCOV, _mseLoc);
+		TreeMap<Float, myPointf> ptsByDist = new TreeMap<Float, myPointf>();
+		for(int i=0;i<cntlPts.length;++i) {		ptsByDist.put(win.findDistToPtOrRay(_mseLoc, cntlPts[i],_rayOrigin,_rayDir), cntlPts[i]);}		
+		ptsByDist.put(win.findDistToPtOrRay(_mseLoc, cntlPtCOV, _rayOrigin,_rayDir), cntlPtCOV);	
+		findClosestCntlPt_Indiv( _mseLoc,_rayOrigin, _rayDir,ptsByDist);
+		Float leastKey = ptsByDist.firstKey();
+		currMseModCntlPt = ptsByDist.get(leastKey);
+		return leastKey;		
+	}//findClosestCntlPt
+	
+	protected abstract void findClosestCntlPt_Indiv(myPointf _mseLoc, myPointf _rayOrigin, myVectorf _rayDir, TreeMap<Float, myPointf> ptsByDist);
+	
+	/**
+	 * 0 needs to vanish, no negatives, either <1 which shrinks, or >1 which grows
+	 * @param amt
+	 */
+	public final void dilateMap_MseDrag(myVectorf mseDragInWorld_f) {
+		myVectorf currMseClkLocVecNorm = currMseClkLocVec._normalized();
+		myVectorf deltaVec = currMseClkLocVecNorm._mult(currMseClkLocVecNorm._dot(mseDragInWorld_f)), dispVec = myVectorf._add(currMseClkLocVec, deltaVec);
+		
+		float amt = dispVec.sqMagn/currMseClkLocVec.sqMagn;
+		//System.out.println("dilateMap : amt : " + amt + " deltavec : " + deltaVec.toStrBrf() + " mseDragInWorld_f : " + mseDragInWorld_f.toStrBrf() + " | currMseClkLocVec : " + currMseClkLocVec.toStrBrf());
+		if(amt < .0f) {amt=.01f;}		//TODO need different mechanism to bound dilation
+		dilateMap(amt);
+	}//dilateMap
+	
+	private final float minDilate = 10.0f;
+	public final void dilateMap(float amt) {
+		//scale all points toward COV
+		for(int i=0;i<cntlPts.length;++i) {
+			myVectorf COV_ToCntlPt = new myVectorf(cntlPtCOV, cntlPts[i]);
+			myVectorf dispVec = myVectorf._mult(COV_ToCntlPt, amt);
+			if(dispVec.magn < minDilate) {dispVec._mult(minDilate/dispVec.magn);}
+			cntlPts[i].set(myPointf._add(cntlPtCOV, dispVec));
+		}
+		dilateMap_Indiv(amt);
+	}
+	protected abstract void dilateMap_Indiv(float amt);
+
+	public final void rotateMapInPlane_MseDrag(myPointf clckPt, myVectorf deltaVec) {		
+		myVectorf vecToPoint = new myVectorf(cntlPtCOV,clckPt)._normalize();
+		myVectorf rotVec = myVectorf._cross(vecToPoint, deltaVec);		
+		rotateMapInPlane(rotVec._dot(basisVecs[0])*rotScl);
+		
+	}//rotateMapInPlane
+	
+	/**
+	 * callable internally or by UI
+	 * @param thet angle to rotate, in radians
+	 */
+	public final void rotateMapInPlane(float thet) {
+		//rotate all control points in plane by thet around basisVecs[0]
+		for(int i=0;i<cntlPts.length;++i) {
+			myVectorf COV_ToCntlPt = new myVectorf(cntlPtCOV, cntlPts[i]),
+					rotVec = COV_ToCntlPt.rotMeAroundAxis(basisVecs[0], thet);
+			cntlPts[i].set(myPointf._add(cntlPtCOV, rotVec));			
+		}
+		rotateMapInPlane_Indiv(thet);
+	}//rotateMapInPlane
+	protected abstract void rotateMapInPlane_Indiv(float thet);
+	
+	/**
+	 * move the map in the plane by passed deflection vector
+	 * @param defVec coplanar movement vector
+	 */
+	public final void moveMapInPlane(myVectorf defVec) {for(int i=0;i<cntlPts.length;++i) {	cntlPts[i]._add(defVec);}	moveMapInPlane_Indiv(defVec);}
+	protected abstract void moveMapInPlane_Indiv(myVectorf defVec);
+	protected abstract void moveCntlPtInPlane_Indiv(myVectorf defVec);
+	
+	/**
+	 * manage mouse dragging closest point to click, whichever that ends up being
+	 * @param defVec
+	 * @return
+	 */
+	public final boolean mseDragPickedCntlPt(myVectorf defVec) {
+		if(currMseModCntlPt==null) {return false;}	
+		currMseModCntlPt._add(defVec);	
+		if(currMseModCntlPt.equals(cntlPtCOV)) {moveMapInPlane(defVec);	}	
+		else {moveCntlPtInPlane_Indiv(defVec);}
+		return true;
+	}
+	/**
+	 * final, instance-specific mouse mod handling
+	 * @param defVec
+	 * @param mseClickIn3D_f
+	 * @param isScale
+	 * @param isRotation
+	 * @param key
+	 * @param keyCode
+	 */
+	public final void mseDragInMap_Post(myVectorf defVec, myPointf mseClickIn3D_f, boolean isScale, boolean isRotation, boolean isTranslation, char key, int keyCode) {
+		mseDragInMap_Indiv(defVec,mseClickIn3D_f,isScale, isRotation, isTranslation, key, keyCode);			
+		updateMapFromCntlPtVals(regMapUpdateFlags);
+	}
+	
+	protected abstract void mseDragInMap_Indiv(myVectorf defVec, myPointf mseClickIn3D_f,boolean isScale,boolean isRotation, boolean isTranslation, char key, int keyCode);
+	
+	/**
+	 * code for whenever mouse release is executed
+	 */
+	public final void mseRelease() {
+		updateMapFromCntlPtVals(regMapUpdateFlags);
+		currMseModCntlPt = null;
+		currMseClkLocVec = null;
+		mseRelease_Indiv();
+	}
+	
+	protected abstract void mseRelease_Indiv();
+
+	
 
 	///////////////////////
 	// draw routines
@@ -575,14 +708,20 @@ public abstract class baseMap {
 	public final float drawRtSdMenuDescr(float yOff, float sideBarYDisp, boolean showTitle, boolean showCntlPtsAndCentroid) {
 		if(showTitle) {
 			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, mapTitle);
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, " | # Cells Per Side : ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
-				if (otrMap!=null) {
-					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, " | Other Map : ");
-					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, otrMap.mapTitle);
-				}
-
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.2f, mapTitle);
+			if(dispTitleOn2Lines) {
+				pa.popStyle();pa.popMatrix();
+				yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
+				pa.pushMatrix();pa.pushStyle();
+			}
+				
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, " | # Cells Per Side : ");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
+			if (otrMap!=null) {
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, " | Other Map : ");
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, otrMap.mapTitle);
+			}
+			
 			pa.popStyle();pa.popMatrix();
 			yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
 			drawRtSdMenuTitle_Indiv();
@@ -641,164 +780,13 @@ public abstract class baseMap {
 	protected abstract void _drawPointLabels_Indiv(int detail);
 
 	
-	/**
-	 * 3D only : find point in this map's plane where passed line intersects
-	 * @param _rayOrigin point origin of parametric line eq
-	 * @param _rayDir direction of line - assumed to be unit length
-	 * @return point of intersection in this plane
-	 */
-	public myPointf findPointInMyPlane(myPointf _rayOrigin, myVectorf _rayDir) {
-		myVectorf dispVec = new myVectorf(otrMap.origCntlPtCOV,origCntlPtCOV);
-		myVectorf _unitDispVec = dispVec._normalized();
-		float cosThet = _rayDir._dot(_unitDispVec);// sinThet = (float) Math.sqrt(1-(cosThet * cosThet));
-		if(cosThet == 0) {win.getMsgObj().dispInfoMessage("baseMap","findPointInMyPlane",this.mapTitle + " : zero denom");return new myPointf();}//degenerate - ray is coplanar with plane of map
-		//parallel component of _rayDir is dispVec, want to calculate perp component
-		float newMag = dispVec.magn/cosThet;		
-		myVectorf rayDirMult = myVectorf._mult(_rayDir, newMag);
-		myPointf resPt = myPointf._add(_rayOrigin, 1.0f, rayDirMult);	
-		return 	resPt;
-	}
-	  
-	/**
-	 * this will calculate normalized barycentric coordinates for pt w/respect to first 3 control points of poly
-	 * @param pt
-	 * @return
-	 */
-	public float[] calcNormBaryCoords(myPointf pt) {return pt.calcNormBaryCoords(cntlPts);}
-	public myPointf calcPointFromNormBaryCoords(float[] coords) {return myPointf.calcPointFromNormBaryCoords(cntlPts,coords);}
-
-	
-	////////////////////////
-	// mouse interaction - need to determine which map control point of both maps is closest to mouse location
-
-	
-	/**
-	 * returns distance to closest point to passed line/ray or _mseLoc point, depending on whether 3d or 2d
-	 * @param _mseLoc mouse cick location
-	 * @param _rayOrigin origin of click ray, if 3d (zero vec in 2d)
-	 * @param _rayDir direction of click ray, if 3d (FORWARD vec in 2d)
-	 * @return
-	 */
-	public final Float findClosestCntlPt(myPointf _mseLoc, myPointf _rayOrigin, myVectorf _rayDir){
-		currMseClkLocVec = new myVectorf(cntlPtCOV, _mseLoc);
-		TreeMap<Float, myPointf> ptsByDist = new TreeMap<Float, myPointf>();
-		for(int i=0;i<cntlPts.length;++i) {		ptsByDist.put(win.findDistToPtOrRay(_mseLoc, cntlPts[i],_rayOrigin,_rayDir), cntlPts[i]);}		
-		ptsByDist.put(win.findDistToPtOrRay(_mseLoc, cntlPtCOV, _rayOrigin,_rayDir), cntlPtCOV);	
-		findClosestCntlPt_Indiv( _mseLoc,_rayOrigin, _rayDir,ptsByDist);
-		Float leastKey = ptsByDist.firstKey();
-		currMseModCntlPt = ptsByDist.get(leastKey);
-		return leastKey;		
-	}//findClosestCntlPt
-	
-	protected abstract void findClosestCntlPt_Indiv(myPointf _mseLoc, myPointf _rayOrigin, myVectorf _rayDir, TreeMap<Float, myPointf> ptsByDist);
-	
-	/**
-	 * 0 needs to vanish, no negatives, either <1 which shrinks, or >1 which grows
-	 * @param amt
-	 */
-	public final void dilateMap_MseDrag(myVectorf mseDragInWorld_f) {
-		myVectorf currMseClkLocVecNorm = currMseClkLocVec._normalized();
-		myVectorf deltaVec = currMseClkLocVecNorm._mult(currMseClkLocVecNorm._dot(mseDragInWorld_f)), dispVec = myVectorf._add(currMseClkLocVec, deltaVec);
-		
-		float amt = dispVec.sqMagn/currMseClkLocVec.sqMagn;
-		//System.out.println("dilateMap : amt : " + amt + " deltavec : " + deltaVec.toStrBrf() + " mseDragInWorld_f : " + mseDragInWorld_f.toStrBrf() + " | currMseClkLocVec : " + currMseClkLocVec.toStrBrf());
-		if(amt < .0f) {amt=.01f;}		//TODO need different mechanism to bound dilation
-		dilateMap(amt);
-	}//dilateMap
-	
-	private final float minDilate = 10.0f;
-	public final void dilateMap(float amt) {
-		//scale all points toward COV
-		for(int i=0;i<cntlPts.length;++i) {
-			myVectorf COV_ToCntlPt = new myVectorf(cntlPtCOV, cntlPts[i]);
-			myVectorf dispVec = myVectorf._mult(COV_ToCntlPt, amt);
-			if(dispVec.magn < minDilate) {dispVec._mult(minDilate/dispVec.magn);}
-			cntlPts[i].set(myPointf._add(cntlPtCOV, dispVec));
-		}
-		dilateMap_Indiv(amt);
-	}
-	protected abstract void dilateMap_Indiv(float amt);
-
-	public final void rotateMapInPlane_MseDrag(myPointf clckPt, myVectorf deltaVec) {		
-		myVectorf vecToPoint = new myVectorf(cntlPtCOV,clckPt)._normalize();
-		myVectorf rotVec = myVectorf._cross(vecToPoint, deltaVec);		
-		rotateMapInPlane(rotVec._dot(basisVecs[0])*rotScl);
-		
-	}//rotateMapInPlane
-	
-	/**
-	 * callable internally or by UI
-	 * @param thet angle to rotate, in radians
-	 */
-	public final void rotateMapInPlane(float thet) {
-		//rotate all control points in plane by thet around basisVecs[0]
-		for(int i=0;i<cntlPts.length;++i) {
-			myVectorf COV_ToCntlPt = new myVectorf(cntlPtCOV, cntlPts[i]),
-					rotVec = COV_ToCntlPt.rotMeAroundAxis(basisVecs[0], thet);
-			cntlPts[i].set(myPointf._add(cntlPtCOV, rotVec));			
-		}
-		rotateMapInPlane_Indiv(thet);
-	}//rotateMapInPlane
-	protected abstract void rotateMapInPlane_Indiv(float thet);
-	
-	/**
-	 * move the map in the plane by passed deflection vector
-	 * @param defVec coplanar movement vector
-	 */
-	public final void moveMapInPlane(myVectorf defVec) {for(int i=0;i<cntlPts.length;++i) {	cntlPts[i]._add(defVec);}	moveMapInPlane_Indiv(defVec);}
-	protected abstract void moveMapInPlane_Indiv(myVectorf defVec);
-	protected abstract void moveCntlPtInPlane_Indiv(myVectorf defVec);
-	
-	/**
-	 * manage mouse dragging closest point to click, whichever that ends up being
-	 * @param defVec
-	 * @return
-	 */
-	public final boolean mseDragPickedCntlPt(myVectorf defVec) {
-		if(currMseModCntlPt==null) {return false;}	
-		currMseModCntlPt._add(defVec);	
-		if(currMseModCntlPt.equals(cntlPtCOV)) {moveMapInPlane(defVec);	}	
-		else {moveCntlPtInPlane_Indiv(defVec);}
-		return true;
-	}
-	/**
-	 * final, instance-specific mouse mod handling
-	 * @param defVec
-	 * @param mseClickIn3D_f
-	 * @param isScale
-	 * @param isRotation
-	 * @param key
-	 * @param keyCode
-	 */
-	public final void mseDragInMap_Post(myVectorf defVec, myPointf mseClickIn3D_f, boolean isScale, boolean isRotation, boolean isTranslation, char key, int keyCode) {
-		mseDragInMap_Indiv(defVec,mseClickIn3D_f,isScale, isRotation, isTranslation, key, keyCode);			
-		updateMapFromCntlPtVals(regMapUpdateFlags);
-	}
-	
-	protected abstract void mseDragInMap_Indiv(myVectorf defVec, myPointf mseClickIn3D_f,boolean isScale,boolean isRotation, boolean isTranslation, char key, int keyCode);
-	
-	/**
-	 * code for whenever mouse release is executed
-	 */
-	public final void mseRelease() {
-		updateMapFromCntlPtVals(regMapUpdateFlags);
-		currMseModCntlPt = null;
-		currMseClkLocVec = null;
-		mseRelease_Indiv();
-	}
-	
-	protected abstract void mseRelease_Indiv();
-
-	
 	/////////////////////////
 	// setters/getters
 	
 	public final baseMap getOtrMap() {return otrMap;}
 	public final void setOtrMap(baseMap _otr) {		otrMap = _otr;  setOtrMap_Indiv();}
 	protected abstract void setOtrMap_Indiv();
-	
-	public final void setMapTitle(String _mapTitle) {mapTitle = _mapTitle;}
-	
+
 	public final int getNumCellsPerSide() {			return numCellsPerSide;}
 	
 	public final int[][] getPolyColors() {			return polyColors;}
@@ -869,13 +857,42 @@ public abstract class baseMap {
 	public abstract myPointf[] getCntlPtOffDiagonal();
 
 	
-	public final void setImageToMap(PImage _img) {	imageToMap=_img;	}	
+	public PImage getImageToMap() {	return imageToMap;}
+	public final void setImageToMap(PImage _img) {	imageToMap=_img;	}
+
 	
 	public final mapPairManager getMapManager() {return mgr;}
 	
 	//////////////
 	// utils
 	
+	/**
+	 * 3D only : find point in this map's plane where passed line intersects
+	 * @param _rayOrigin point origin of parametric line eq
+	 * @param _rayDir direction of line - assumed to be unit length
+	 * @return point of intersection in this plane
+	 */
+	public myPointf findPointInMyPlane(myPointf _rayOrigin, myVectorf _rayDir) {
+		myVectorf dispVec = new myVectorf(otrMap.origCntlPtCOV,origCntlPtCOV);
+		myVectorf _unitDispVec = dispVec._normalized();
+		float cosThet = _rayDir._dot(_unitDispVec);// sinThet = (float) Math.sqrt(1-(cosThet * cosThet));
+		if(cosThet == 0) {win.getMsgObj().dispInfoMessage("baseMap","findPointInMyPlane",this.mapTitle + " : zero denom");return new myPointf();}//degenerate - ray is coplanar with plane of map
+		//parallel component of _rayDir is dispVec, want to calculate perp component
+		float newMag = dispVec.magn/cosThet;		
+		myVectorf rayDirMult = myVectorf._mult(_rayDir, newMag);
+		myPointf resPt = myPointf._add(_rayOrigin, 1.0f, rayDirMult);	
+		return 	resPt;
+	}
+	  
+	/**
+	 * this will calculate normalized barycentric coordinates for pt w/respect to first 3 control points of poly
+	 * @param pt
+	 * @return
+	 */
+	public float[] calcNormBaryCoords(myPointf pt) {return pt.calcNormBaryCoords(cntlPts);}
+	public myPointf calcPointFromNormBaryCoords(float[] coords) {return myPointf.calcPointFromNormBaryCoords(cntlPts,coords);}
+
+
 	protected final void printOutAllCntlPts() {
 		String debug = "";
 	    for(int i=0;i<cntlPts.length;++i) {	    	debug +="\n\t"+cntlPts[i].toStrBrf();	    }
@@ -932,6 +949,13 @@ public abstract class baseMap {
 		//display-only ortho frame
 		orthoFrame = new myPointf[basisVecs.length];		
 		for(int i=0;i<orthoFrame.length;++i) {orthoFrame[i]= myPointf._add(myPointf.ZEROPT, 200.0f, basisVecs[i]);}		
+	}
+	
+	@Override
+	public String toString() {
+		String res = "Name : "+ mapTitle +"\n";
+		
+		return res;
 	}
 
 	

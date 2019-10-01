@@ -3,26 +3,25 @@ package COTS_Morph_PKG.managers.mapManagers;
 
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.maps.quad.BiLinMap;
 import COTS_Morph_PKG.maps.quad.COTSMap;
 import COTS_Morph_PKG.maps.triangular.BiLinTriPolyMap;
 import COTS_Morph_PKG.maps.triangular.PointNormTriPolyMap;
-import COTS_Morph_PKG.morphs.CarrierSimDiagMorph;
-import COTS_Morph_PKG.morphs.CarrierSimTransformMorph;
 import COTS_Morph_PKG.morphs.CompoundMorph;
-import COTS_Morph_PKG.morphs.DualCarrierSimMorph;
-import COTS_Morph_PKG.morphs.LERPMorph;
-import COTS_Morph_PKG.morphs.LogPolarMorph;
-import COTS_Morph_PKG.morphs.QuadKeyEdgeSpiralMorph;
 import COTS_Morph_PKG.morphs.base.baseMorph;
+import COTS_Morph_PKG.morphs.carrier.CarrierSimDiagMorph;
+import COTS_Morph_PKG.morphs.carrier.CarrierSimTransformMorph;
+import COTS_Morph_PKG.morphs.carrier.DualCarrierSimMorph;
+import COTS_Morph_PKG.morphs.carrier.QuadKeyEdgeSpiralMorph;
+import COTS_Morph_PKG.morphs.direct.LERPMorph;
+import COTS_Morph_PKG.morphs.direct.LogPolarMorph;
+import COTS_Morph_PKG.morphs.direct.RigidMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
-import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
@@ -53,29 +52,58 @@ public class mapPairManager {
 	 */
 	public mapUpdFromUIData currUIVals;
 	/**
-	 * map being currently modified by mouse interaction - only a ref to a map, or null
-	 */
-	public baseMap currMseModMap;	
-	/**
-	 * current morph being executed
-	 */
-	protected int currMorphTypeIDX;
-	/**
+	 * map being currently modified by mouse interaction - only a ref to a map, or null,
 	 * copy map to display if being copied or similarity mapped - only a copy of either mapA or mapB
 	 */
-	public baseMap copyMap;
+	public baseMap currMseModMap, copyMap;
 	/**
-	 * map used to represent current status of morph
+	 * idx's of maps to use for similarity mapping/registration between maps,
+	 * current morph being executed
 	 */
-	public final baseMap morphMap;
-	/**
-	 * idx's of maps to use for similarity mapping/registration between maps
-	 */
-	protected int fromMapIDX = -1, toMapIDX = -1;
+	protected int fromMapIDX = -1, toMapIDX = -1, currMorphTypeIDX;
 	/**
 	 * bounds for the key frame maps managed by this
 	 */
 	public final myPointf[][] bndPts;
+	
+	
+	/**
+	 * types of morphs supported
+	 */
+	public static final String[] morphTypes = new String[] {
+		"LERP",						//linearly interpolate control points
+		"Rigid",
+		"Carrier Sim using Diagonal",
+		"Carrier Sim w/Transformation",
+		"Dual Carrier Similarity",
+		"Key edge->Key edge Spiral",
+		"Log Polar",
+		"Compound Morph"
+	};
+	/**
+	 * morph types available to compound morph - CompoundMorphIDX should not be available
+	 */
+	public static final String[] cmpndMorphTypes = new String[] {
+		"LERP",						//linearly interpolate control points
+		"Rigid",
+		"Carrier Sim using Diagonal",
+		"Carrier Sim w/Transformation",
+		"Dual Carrier Similarity",
+		"Key edge->Key edge Spiral",
+		"Log Polar",			
+	};
+	
+	//need an index per morph type
+	public static final int
+		LERPMorphIDX			= 0,
+		RigidMorphIDX			= 1,
+		CarrierSimDiagIDX		= 2,
+		CarrierSimRegTransIDX	= 3,
+		DualCarrierSimIDX		= 4,
+		QuadSpiralEdgeIDX		= 5,
+		LogPolarMorphIDX 		= 6,
+		CompoundMorphIDX		= 7;
+	
 	
 	/**
 	 * types of maps supported
@@ -84,15 +112,19 @@ public class mapPairManager {
 		"Triangle",
 		"Point Normal Triangle",
 		"Bilinear",
-		"COTS",			
+		"COTS",	
+		"Bary BiLin pt D",	
+		"Bary COTS pt D"
 	};
 	//need an index per map type
 	public static final int
-		triangleMapIDX		= 0,
-		ptNormTriMapIDX		= 1,
-		bilinearMapIDX		= 2,
-		COTSMapIDX		 	= 3;	
-	
+		triangleMapIDX			= 0,
+		ptNormTriMapIDX			= 1,
+		bilinearMapIDX			= 2,
+		COTSMapIDX		 		= 3,
+		BaryBiLinQuadMapIDX		= 4,
+		BaryCOTSQuadMapIDX		= 5;	
+
 	/**
 	 * array holding morphs
 	 */
@@ -137,9 +169,7 @@ public class mapPairManager {
 		//build maps
 		maps = new baseMap[2];
 		for(int j=0;j<maps.length;++j) {	maps[j] = buildKeyFrameMapOfPassedType(_mapType,j, "");}		
-		
-		morphMap = buildCopyMapOfPassedMapType(maps[0], maps[0].mapTitle+"_Morph"); 
-		morphMap.setImageToMap(_txtrImages[0]);
+
 		copyMap = buildCopyMapOfPassedMapType(maps[0], maps[0].mapTitle+"_Copy");
 		
 		for(int j=0;j<maps.length;++j) {	maps[j].setImageToMap(_txtrImages[j]);	maps[j].setOtrMap(maps[(j+1)%maps.length]);}
@@ -148,21 +178,23 @@ public class mapPairManager {
 		toMapIDX = 1;
 		lineUpMorphMaps = new TreeMap<Float, baseMap>();
 		mapType=_mapType;
-		morphs = new baseMorph[baseMorphManager.morphTypes.length];
+		morphs = new baseMorph[morphTypes.length];
 		for(int i=0;i<morphs.length;++i) {	morphs[i]=buildMorph(i);}
-		//_initMorphs();
+
 		setPopUpWins_RectDims();
+		updateMapValsFromUI(currUIVals);
 	}//ctor
 	
 	public baseMorph buildMorph(int typeIDX) {
 		switch (typeIDX) {
-			case baseMorphManager.LERPMorphIDX : {			return new LERPMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]); 		}
-			case baseMorphManager.CarrierSimDiagIDX : {		return new CarrierSimDiagMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);	}
-			case baseMorphManager.CarrierSimRegTransIDX : {	return new CarrierSimTransformMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
-			case baseMorphManager.DualCarrierSimIDX : {		return new DualCarrierSimMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]); }
-			case baseMorphManager.QuadSpiralEdgeIDX : {		return new QuadKeyEdgeSpiralMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
-			case baseMorphManager.LogPolarMorphIDX : {		return new LogPolarMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
-			case baseMorphManager.CompoundMorphIDX : {		return new CompoundMorph(win,null,this,baseMorphManager.morphTypes[typeIDX]);}
+			case LERPMorphIDX : {			return new LERPMorph(win,this,morphTypes[typeIDX]); 		}
+			case RigidMorphIDX  : {			return new RigidMorph(win,this,morphTypes[typeIDX]); 		}
+			case CarrierSimDiagIDX : {		return new CarrierSimDiagMorph(win,this,morphTypes[typeIDX]);	}
+			case CarrierSimRegTransIDX : {	return new CarrierSimTransformMorph(win,this,morphTypes[typeIDX]);}
+			case DualCarrierSimIDX : {		return new DualCarrierSimMorph(win,this,morphTypes[typeIDX]); }
+			case QuadSpiralEdgeIDX : {		return new QuadKeyEdgeSpiralMorph(win,this,morphTypes[typeIDX]);}
+			case LogPolarMorphIDX : {		return new LogPolarMorph(win,this,morphTypes[typeIDX]);}
+			case CompoundMorphIDX : {		return new CompoundMorph(win,this,morphTypes[typeIDX]);}
 		
 			default : {
 				win.getMsgObj().dispInfoMessage("mapPairManager", "buildMorph", "Unknown morph type idx : " + typeIDX + ". Returning null.");
@@ -170,27 +202,17 @@ public class mapPairManager {
 			}
 		}
 	}
-	
-//	/**
-//	 * initialize all morphs - only call once
-//	 */
-//	private void _initMorphs() {
-//		morphs = new baseMorph[baseMorphManager.morphTypes.length];
-//		morphs[baseMorphManager.LERPMorphIDX] = new LERPMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.LERPMorphIDX]); 
-//		morphs[baseMorphManager.CarrierSimDiagIDX] = new CarrierSimDiagMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.CarrierSimDiagIDX]); 		
-//		morphs[baseMorphManager.CarrierSimRegTransIDX] = new CarrierSimTransformMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.CarrierSimRegTransIDX]); 
-//		morphs[baseMorphManager.DualCarrierSimIDX] = new DualCarrierSimMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.DualCarrierSimIDX]); 
-//		morphs[baseMorphManager.QuadSpiralEdgeIDX] = new QuadKeyEdgeSpiralMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.DualCarrierSimIDX]); 
-//		morphs[baseMorphManager.LogPolarMorphIDX] = new LogPolarMorph(win,null,this,baseMorphManager.morphTypes[baseMorphManager.LogPolarMorphIDX]);	
-//	}
+
 	
 	public final baseMap buildCopyMapOfPassedMapType(baseMap oldMap, String _mapName) {	
 		baseMap map;
 		switch (oldMap.mapTypeIDX) {
-			case triangleMapIDX		: {	map = new BiLinTriPolyMap(_mapName,(BiLinTriPolyMap)oldMap);		break;}
-			case ptNormTriMapIDX	: {	map = new PointNormTriPolyMap(_mapName,(PointNormTriPolyMap)oldMap);		break;}
-			case bilinearMapIDX 	: {	map = new BiLinMap(_mapName,(BiLinMap)oldMap);		break;}
-			case COTSMapIDX 		: {	map = new COTSMap(_mapName,(COTSMap)oldMap); 		break;}
+			case triangleMapIDX			: {	map = new BiLinTriPolyMap(_mapName,(BiLinTriPolyMap)oldMap);		break;}
+			case ptNormTriMapIDX		: {	map = new PointNormTriPolyMap(_mapName,(PointNormTriPolyMap)oldMap);		break;}
+			case bilinearMapIDX 		: {	map = new BiLinMap(_mapName,(BiLinMap)oldMap);		break;}
+			case COTSMapIDX 			: {	map = new COTSMap(_mapName,(COTSMap)oldMap); 		break;}
+			case BaryBiLinQuadMapIDX	: {	map = new BiLinMap(_mapName,(BiLinMap)oldMap);		break;} 
+			case BaryCOTSQuadMapIDX		: {	map = new COTSMap(_mapName,(COTSMap)oldMap); 		break;} 
 			default		:{
 				win.getMsgObj().dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to duplicate passed map "+ oldMap.mapTitle + " due to unknown map type : " + oldMap.mapTypeIDX + " : "  +mapTypes[oldMap.mapTypeIDX] + ". Returning null.");
 				return null;
@@ -198,7 +220,13 @@ public class mapPairManager {
 		}
 		return map;
 	}//buildCopyMapOfPassedMapType		
-	
+	/**
+	 * build a map of the specified map type
+	 * @param _mapType type of map : Bilin, cots, etc
+	 * @param _mapValIdx : idx of map, either 0 or 1
+	 * @param _mapNameSuffix : descriptive string to add to end of map namme
+	 * @return
+	 */
 	public final baseMap buildKeyFrameMapOfPassedType(int _mapType, int _mapValIdx, String _mapNameSuffix) {
 		String mapName = mapTypes[_mapType] + ( _mapNameSuffix.length() == 0 ? "":  " " + _mapNameSuffix) + " Map"+ _mapValIdx;
 		switch (_mapType) {
@@ -209,9 +237,11 @@ public class mapPairManager {
 			case ptNormTriMapIDX		: {	
 				myPointf[] triBndPts = new myPointf[3];
 				for(int i=0;i<triBndPts.length;++i) {		triBndPts[i]=bndPts[_mapValIdx][i];		}
-				return new PointNormTriPolyMap(win, this,triBndPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, mapName);}
-			case bilinearMapIDX 	: {	return new BiLinMap(win,this, bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, mapName);}
-			case COTSMapIDX 		: {	return new COTSMap(win,this,  bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, mapName);}
+				return new PointNormTriPolyMap(win, this,triBndPts, _mapValIdx, _mapType, mapGridColors[_mapValIdx], currUIVals,true, mapName);}
+			case bilinearMapIDX 		: {	return new BiLinMap(win,this, bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, false, mapName);}
+			case COTSMapIDX 			: {	return new COTSMap(win,this,  bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, false, mapName);}
+		    case BaryBiLinQuadMapIDX	: { return new BiLinMap(win,this, bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
+		    case BaryCOTSQuadMapIDX		: { return new COTSMap(win,this,  bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
 			default		:{
 				win.getMsgObj().dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to build requested map due to unknown map type : " + _mapType + " : "  +mapTypes[_mapType] + ". Returning null.");
 				return null;
@@ -221,18 +251,7 @@ public class mapPairManager {
 	
 	//////////////
 	// map comparison and map/morph processing
-	
-//	/**
-//	 * find and display areas of both key frame maps
-//	 */
-//	
-//	public final void calcAndShowAreas() {
-//		for(int j=0;j<maps.length;++j) {
-//			float mapArea = maps[j].calcTtlSurfaceArea();
-//			System.out.println("For Map : " + maps[j].mapTitle + " : " + mapArea);
-//			
-//		}
-//	}//calcAndShowAreas
+
 	/**
 	 * takes array of points and calculates the area of the poly described by them in the plane described by the normal n
 	 * @param pts array of points making up poly
@@ -601,22 +620,7 @@ public class mapPairManager {
 		trajAnalysisRectDims[3] = perTragAnalysisImageWidth;
 	}
 	
-	public final void setFromAndToCopyIDXs(int _fromIdx, int _toIdx) {
-		fromMapIDX = _fromIdx;		toMapIDX = _toIdx;
-		
-	}
-	
-//	/**
-//	 * this will set whether the morphing mechanism will use per-freature morphs or a single global morph
-//	 * @param isPerFeature
-//	 */
-//	public final void setGlobalOrPerFeatureMorphs(boolean isPerFeature) {	
-//		
-//		
-//		
-//		
-//		
-//	}//setGlobalOrPerFeatureMorphs	
+	public final void setFromAndToCopyIDXs(int _fromIdx, int _toIdx) {	fromMapIDX = _fromIdx;		toMapIDX = _toIdx;	}
 	
 	/**
 	 * this will reset branching on all maps that use branching
@@ -627,24 +631,21 @@ public class mapPairManager {
 		for (int i=0;i<morphs.length;++i) {morphs[i].resetAllBranching();}		
 	}
 	
-	public final void resetBranchingMap(int mapIDX) {
-		
-		
+	public final void resetIndivMapBranching(int idx) {
+		maps[idx].setFlags(new boolean[] {true});
 	}
 	
 	public final void updateMapValsFromUI(mapUpdFromUIData upd) {
 		currUIVals.setAllVals(upd);
 		currMorphTypeIDX = currUIVals.getCurrMorphTypeIDX();
-		morphProgress = currUIVals.getMorphProgress();
-        
+		
+		morphProgress = currUIVals.getMorphProgress();        
 		morphSpeed = currUIVals.getMorphSpeed(); 
 		
 		setPopUpWins_RectDims();
-		//for(int i=0;i<this.morphs.length;++i) {	morphs[i].setMorphSlices(currUIVals.getNumMorphSlices());}//
-		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphValsFromUI(upd);}//
-		morphMap.updateMapVals_FromUI(currUIVals);
+		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphValsFromUI(upd);}
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true);
+		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true, true);
 	}
 	
 	/**
@@ -652,8 +653,8 @@ public class mapPairManager {
 	 * @return
 	 */
 	public final boolean checkCurrMorphUsesReg() {
-		return baseMorphManager.CarrierSimRegTransIDX==currMorphTypeIDX;
-	}
+		return CarrierSimRegTransIDX==currMorphTypeIDX;
+	}	
 	
 	////////////////////
 	// mouse/keyboard ui interaction 
@@ -662,16 +663,20 @@ public class mapPairManager {
 	 * reset corners of all maps
 	 */	
 	public final void resetAllMapCorners() {
-		morphMap.resetCntlPts(bndPts[0]);
 		for(int j=0;j<maps.length;++j) {		maps[j].resetCntlPts(bndPts[j]);	}	
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetAllMapCorners", true);
-		
+		for (int i=0;i<morphs.length;++i) {morphs[i].resetAllBranching();}		
+		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetAllMapCorners", true, true);		
 	}	
+	
 	/**
 	 * reset all instances of either "floor"/A or "ceiling"/B map
 	 * @param mapIDX
 	 */
-	public final void resetMapCorners(int mapIDX) {	maps[mapIDX].resetCntlPts(bndPts[mapIDX]);morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetMapCorners", true);}
+	public final void resetMapCorners(int mapIDX) {	
+		if(mapIDX==0) {for (int i=0;i<morphs.length;++i) {morphs[i].resetCurMorphBranching();}		}//if map A is reset then branching needs to be reset as well for morphs
+		maps[mapIDX].resetCntlPts(bndPts[mapIDX]);morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetMapCorners", true, true);
+	}
+	
 	/**
 	 * match map destIDX corners to map srcIDX's corners
 	 */
@@ -679,7 +684,7 @@ public class mapPairManager {
 		myPointf[] rawPts0 = maps[srcIDX].getCntlPts(), newPts = new myPointf[rawPts0.length];
 		for(int j=0;j<rawPts0.length;++j) {	newPts[j] = myPointf._add(myPointf._sub(rawPts0[j], bndPts[srcIDX][j]), bndPts[destIDX][j]);}			
 		maps[destIDX].resetCntlPts(newPts);	
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::matchAllMapCorners", true);
+		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::matchAllMapCorners", true, true);
 				
 	}//matchAllMapCorners	
 
@@ -715,7 +720,7 @@ public class mapPairManager {
 		currMseModMap = null;
 		return false;
 	}
-
+	
 	
 	/**
 	 * handle mouse drag on map
@@ -737,17 +742,18 @@ public class mapPairManager {
 		}
 		if(performFinalIndiv) {		//some editing happened, so finalize
 			currMseModMap.mseDragInMap_Post(defVec,mseClickIn3D_f,isScale, isRotation, isTranslation, key, keyCode);	
-			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap", false);
+			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap", false, ( win.getPrivFlags(COTS_MorphWin.drawMorph_MapIDX)));
 		}
 		return performFinalIndiv;
 	}//mseDragInMap
 	
 	
 	public final void hndlMouseRelIndiv() {
-		morphMap.mseRelease();
 		for(int i=0;i<maps.length;++i) {	maps[i].mseRelease();}
-		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::hndlMouseRelIndiv", true);
-		currMseModMap = null;
+		if(currMseModMap != null) {
+			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::hndlMouseRelIndiv", true, true);
+			currMseModMap = null;
+		}
 	}	
 	
 

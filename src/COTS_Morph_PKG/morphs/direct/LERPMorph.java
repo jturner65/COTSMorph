@@ -1,30 +1,31 @@
-package COTS_Morph_PKG.morphs;
+package COTS_Morph_PKG.morphs.direct;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
-import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.morphs.base.baseSimpleMorph;
+import COTS_Morph_PKG.similarities.base.baseSimilarity;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Utils_Objects.vectorObjs.myPointf;
 
 public class LERPMorph extends baseSimpleMorph {
-	public LERPMorph(COTS_MorphWin _win, baseMorphManager _morphMgr, mapPairManager _mapMgr, String _morphTitle) {super(_win, _morphMgr, _mapMgr, _morphTitle);}
+	public LERPMorph(COTS_MorphWin _win, mapPairManager _mapMgr, String _morphTitle) {super(_win, _mapMgr, _morphTitle);}
 	
-	
-	/**
-	 * any morph code that needs to be executed before any morph/inteprolation occurs
-	 */
-	@Override
-	public void initCalcMorph_Indiv(float tA, float tB) {	}
 	
 	@Override
 	protected void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd) {}
 
-	/**
-	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
-	 */	
+	
 	@Override
-	public void _endCtorInit() {	}
+	protected final baseSimilarity buildSimilarity(int i) {
+		return null;		
+	};
+	
+	@Override
+	protected final myPointf[][] getDiagPtsAras(){
+		myPointf[][] res = new myPointf[0][];
+		return res;
+	}
+
 	
 	@Override
 	public final int calcMorph_Integer(float tA, int AVal, float tB, int BVal) { return (int) ((tA*AVal) + (tB*BVal));}
@@ -42,7 +43,9 @@ public class LERPMorph extends baseSimpleMorph {
 	 */
 	@Override
 	public final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
-		for(int i=0;i<Apts.length;++i) {				destPts[i]=  myPointf._add(myPointf._mult(Apts[i], tA), myPointf._mult(Bpts[i], tB));}//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);	}
+		//(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, boolean useLerp, float tA, float tB)
+		_calcMorphWithSingleSim(Apts,Bpts,destPts,true, tA, tB);
+		//for(int i=0;i<Apts.length;++i) {				destPts[i]=  myPointf._add(myPointf._mult(Apts[i], tA), myPointf._mult(Bpts[i], tB));}//calcMorph_Point(tA, Apts[i], tB, Bpts[i]);	}
 	}
 	
 	/**
@@ -52,10 +55,6 @@ public class LERPMorph extends baseSimpleMorph {
 	@Override
 	public void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom) {	}
 
-	@Override
-	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
-		return yOff;
-	}
 	/**
 	 * this will draw instancing morph-specific data on screen 
 	 */
@@ -68,7 +67,5 @@ public class LERPMorph extends baseSimpleMorph {
 		
 		pa.popStyle();pa.popMatrix();	
 	}
-	@Override
-	public void resetAllBranching() {	}
 
 }//class LERPMorph

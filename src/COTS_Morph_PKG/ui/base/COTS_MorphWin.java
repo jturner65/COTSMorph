@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
-import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
@@ -323,13 +322,13 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	@Override 
 	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) { 
 		tmpListObjVals.put(gIDX_MapType, mapPairManager.mapTypes);	
-		tmpListObjVals.put(gIDX_MorphType, baseMorphManager.morphTypes); 
+		tmpListObjVals.put(gIDX_MorphType, mapPairManager.morphTypes); 
 		
 		
-		tmpListObjVals.put(gIDX_MorphTypeOrient, baseMorphManager.cmpndMorphTypes); 
-		tmpListObjVals.put(gIDX_MorphTypeSize, baseMorphManager.cmpndMorphTypes); 
-		tmpListObjVals.put(gIDX_MorphTypeShape, baseMorphManager.cmpndMorphTypes); 
-		tmpListObjVals.put(gIDX_MorphTypeCOVPath, baseMorphManager.cmpndMorphTypes); 
+		tmpListObjVals.put(gIDX_MorphTypeOrient, mapPairManager.cmpndMorphTypes); 
+		tmpListObjVals.put(gIDX_MorphTypeSize, mapPairManager.cmpndMorphTypes); 
+		tmpListObjVals.put(gIDX_MorphTypeShape, mapPairManager.cmpndMorphTypes); 
+		tmpListObjVals.put(gIDX_MorphTypeCOVPath, mapPairManager.cmpndMorphTypes); 
 		tmpListObjVals.put(gIDX_SetBrnchStrat, branchShareStrategies);
 		tmpListObjVals.put(gIDX_CntlPtDispDetail, cntlPtDispDetail);
 		tmpListObjVals.put(gIDX_AnalysisMmmntsDetail, analysisMmmntsDetail);
@@ -342,15 +341,15 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 		tmpUIObjArray.put(gIDX_MapType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},1.0* currMapTypeIDX, "Map Type to Show", new boolean[]{true, true, true}}); 
 
-		tmpUIObjArray.put(gIDX_MorphType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphType).length-1, 1},1.0* baseMorphManager.LERPMorphIDX, "Morph Type to Process", new boolean[]{true, true, true}});
+		tmpUIObjArray.put(gIDX_MorphType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphType).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Morph Type to Process", new boolean[]{true, true, true}});
 
-		tmpUIObjArray.put(gIDX_MorphTypeOrient, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeOrient).length-1, 1},1.0* baseMorphManager.LERPMorphIDX, "Orientation Morph Type to Use", new boolean[]{true, true, true}});
-		tmpUIObjArray.put(gIDX_MorphTypeSize, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeSize).length-1, 1},1.0* baseMorphManager.LERPMorphIDX, "Size Morph Type to Use", new boolean[]{true, true, true}});
-		tmpUIObjArray.put(gIDX_MorphTypeShape, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeShape).length-1, 1},1.0* baseMorphManager.LERPMorphIDX, "Shape Morph Type to Use", new boolean[]{true, true, true}});
-		tmpUIObjArray.put(gIDX_MorphTypeCOVPath,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeCOVPath).length-1, 1},1.0* baseMorphManager.LERPMorphIDX, "COV Path Morph Type to Use", new boolean[]{true, true, true}});
+		tmpUIObjArray.put(gIDX_MorphTypeOrient, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeOrient).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Orientation Morph Type to Use", new boolean[]{true, true, true}});
+		tmpUIObjArray.put(gIDX_MorphTypeSize, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeSize).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Size Morph Type to Use", new boolean[]{true, true, true}});
+		tmpUIObjArray.put(gIDX_MorphTypeShape, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeShape).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Shape Morph Type to Use", new boolean[]{true, true, true}});
+		tmpUIObjArray.put(gIDX_MorphTypeCOVPath,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeCOVPath).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "COV Path Morph Type to Use", new boolean[]{true, true, true}});
 		
-		tmpUIObjArray.put(gIDX_NumLineupFrames,new Object[] { new double[]{5.0, 20.0, 1.0},8.0, "# of Frames in Lineup", new boolean[]{true, false, true}}); 
-		tmpUIObjArray.put(gIDX_NumMorphSlices,new Object[] { new double[]{5.0, 20.0, 1.0},8.0, "# of Slices in Morph", new boolean[]{true, false, true}}); 
+		tmpUIObjArray.put(gIDX_NumLineupFrames,new Object[] { new double[]{5.0, 20.0, 1.0},11.0, "# of Frames in Lineup", new boolean[]{true, false, true}}); 
+		tmpUIObjArray.put(gIDX_NumMorphSlices,new Object[] { new double[]{5.0, 20.0, 1.0},11.0, "# of Slices in Morph", new boolean[]{true, false, true}}); 
 		
 		tmpUIObjArray.put(gIDX_CntlPtDispDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_CntlPtDispDetail).length-1, 1},1.0*drawMapDetail, "Cntl Pt Disp Detail", new boolean[]{true, true, true}});
 		tmpUIObjArray.put(gIDX_AnalysisMmmntsDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_AnalysisMmmntsDetail).length-1, 1},1.0*currMmntDispIDX, "Traj Analysis Moments Detail", new boolean[]{true, true, true}});
@@ -472,10 +471,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				if(val) {		mapManagers[currMapTypeIDX].resetAllBranching();					clearBtnNextFrame(idx);	}	
 				break;}			
 			case resetMapBranch_0IDX			: {			
-				if(val) {		resetMapCorners(0);		clearBtnNextFrame(idx);	}
+				if(val) {		mapManagers[currMapTypeIDX].resetIndivMapBranching(0);		clearBtnNextFrame(idx);	}
 				break;		}
 			case resetMapBranch_1IDX			: {			
-				if(val) {		resetMapCorners(1);		clearBtnNextFrame(idx);		}
+				if(val) {		mapManagers[currMapTypeIDX].resetIndivMapBranching(1);		clearBtnNextFrame(idx);		}
 				break;		}
 			
 			case drawMapIDX						: {			break;		}

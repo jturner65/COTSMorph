@@ -32,6 +32,7 @@ public class BiLinTriPolyMap extends baseTriangleMap {
 	/**
 	 * Instance-class specific initialization
 	 */	
+	@SuppressWarnings("unused")
 	@Override
 	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
 		boolean reset = flags.getResetBranching();

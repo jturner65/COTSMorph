@@ -1,8 +1,6 @@
 package COTS_Morph_PKG.morphs.analysis.base;
 
 import java.util.ArrayList;
-
-import COTS_Morph_PKG.morphs.analysis.myProbSummary_ptOrVec;
 import COTS_Morph_PKG.morphs.base.baseMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.IRenderInterface;

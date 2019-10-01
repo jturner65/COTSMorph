@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
-import COTS_Morph_PKG.managers.morphManagers.base.baseMorphManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.morphs.analysis.morphAreaTrajAnalyzer;
 import COTS_Morph_PKG.morphs.analysis.morphCntlPtTrajAnalyzer;
@@ -28,10 +27,6 @@ public abstract class baseMorph {
 	 * current map manager, managing key frames of a specific type that this morph is working on
 	 */
 	protected mapPairManager mapMgr;
-	/**
-	 * current map manager, managing key frames of a specific type that this morph is working on
-	 */
-	//protected baseMorphManager morphMgr;
 	/**
 	 * maps this morph is working on
 	 */
@@ -70,9 +65,8 @@ public abstract class baseMorph {
 	 */
 	protected TreeMap<Float, myPointf[][]> cntlPtTrajs;
 	/**
-	 * keyed by time, value is area of morph map
+	 * list of areas, sorted by time in morph traj
 	 */
-	//protected TreeMap<Float, Float> areaTrajMaps;
 	protected ArrayList<Float> areaTrajs;
 	
 	/**
@@ -91,12 +85,15 @@ public abstract class baseMorph {
 	
 	protected boolean reCalcTrajsAndAnalysis;
 
-	public baseMorph(COTS_MorphWin _win, baseMorphManager _morphMgr, mapPairManager _mapMgr, String _morphTitle) {
-		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;//morphMgr=_morphMgr;
+	public baseMorph(COTS_MorphWin _win, mapPairManager _mapMgr, String _morphTitle) {
+		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;
 		morphT=.5f;
 		mapA = mapMgr.maps[0];
 		mapB = mapMgr.maps[1];	
-		curMorphMap = mapMgr.morphMap;	
+		
+		curMorphMap = getCopyOfMap(mapA,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
+		curMorphMap.setImageToMap(mapA.getImageToMap());		
+		
 		normDispTimeVec = new myVectorf(mapA.getCOV(), mapB.getCOV());
 		normDispTimeVec = myVectorf._mult(mapA.basisVecs[0], normDispTimeVec._dot(mapA.basisVecs[0]));	
 		//areaTrajMaps = new TreeMap<Float, Float>();
@@ -110,13 +107,13 @@ public abstract class baseMorph {
 		initTrajAnalyzers();
 		for(int i=0;i<mapFlags.length;++i) {
 			mapFlags[i] = new mapCntlFlags();
-			mapFlags[i].setOptimizeAlpha(true);
+			mapFlags[i].setOptimizeAlpha(true); 
 			mapFlags[i].setCopyBranching(true);
 		}
 
 		//initialize essential data before calcMorph is called
 		_endCtorInit();
-		mapCalcsAfterCntlPointsSet(morphTitle + "::ctor",false);	
+		mapCalcsAfterCntlPointsSet(morphTitle + "::ctor",false, false);	
 
 		setMorphSliceAra();
 		calcMorph();		
@@ -137,29 +134,93 @@ public abstract class baseMorph {
 	}
 	
 	/**
+	 * this should be called whenever map A's values have changed
+	 */
+	private float oldMorphT = 0.0f;
+	public final void updateMorphMapWithMapVals() {	updateMorphMapWithMapVals(true);}
+	public final void updateMorphMapWithMapVals(boolean calcMorph) {
+		//win.getMsgObj().dispInfoMessage("baseMorph::"+morphTitle, "updateMorphMapWithMapVals", "Before updateMeWithMapVals");// :  curMorphMap :  "+ curMorphMap.toString());
+		
+//		curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
+//		if(calcMorph) {
+//			calcMorph();
+//		}
+		//win.getMsgObj().dispInfoMessage("baseMorph::"+morphTitle, "updateMorphMapWithMapVals", "After updateMeWithMapVals :  curMorphMap :  "+ curMorphMap.toString());
+	}
+	
+	/**
+	 * issue  : branching is flaking out with curMorphMap.  Problem is that old alpha values are not properly tracked.  
+	 * 
+	 * Forcing curMorphMap to have mapA's branching at t==0 is a temporary work around
+	 */
+	
+	
+	/**
 	 * use currently set t value to calculate morph
 	 */
 	protected final void calcMorph() {
+		if(morphT == 0.0f) {
+			curMorphMap = getCopyOfMap(mapA,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
+		} else if(morphT != oldMorphT){
+			curMorphMap = getCopyOfMap(curMorphMap,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
+		}
 		//update morph map with map a's vals, 
-		curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
+		//curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
+		//if(morphT != oldMorphT) {
+		//curMorphMap = getCopyOfMap(curMorphMap,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
+		//}
+		//if(morphT == 0.0f) {updateMorphMapWithMapVals();}
 		//manage slices
-		setMorphSliceAra();		
+		setMorphSliceAra();	
+		
+		//mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(morphT != oldMorphT);
+		
 		_calcMorphOnMap(curMorphMap, true, morphT);
+		
+		//oldMorphT = morphT;
+		//mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(true);
+		
 		buildCntlPointTrajs();
 	}	
 	
+//	/**
+//	 * use currently set t value to calculate morph
+//	 */
+//	protected final void calcMorph() {
+//		//update morph map with map a's vals, 
+//		//curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
+////		if (morphT != oldMorphT) {
+////			baseMap tmpMap = getCopyOfMap(mapA, mapA.mapTitle);	
+////			curMorphMap = getCopyOfMap(tmpMap,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
+////		}
+//	
+//		if(morphT == 0.0f) {updateMorphMapWithMapVals(false);}
+//		//manage slices
+//		setMorphSliceAra();	
+//		
+//		mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(morphT != oldMorphT);
+//		
+//		_calcMorphOnMap(curMorphMap, true, morphT);
+//		
+//		oldMorphT = morphT;
+//		mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(true);
+//		
+//		buildCntlPointTrajs();
+//		
+//	}	
+	
 	protected final void _calcMorphOnMap(baseMap _curMorphMap, boolean _calcColors, float t) {
 		float tA = 1.0f-t, tB = t;
-		//initial code for morph, if necessary
-		initCalcMorph_Indiv(tA, tB);
+		//initial code for morph, if necessary - assume control points have changed
+		//Shouldn't be necessary here because any changes should have caused this to be processed already via mapCalcsAfterCntlPointsSet_Indiv
+		//initCalcMorph_Indiv(tA, tB);
 		//morph colors
 		if(_calcColors) {_morphColors(_curMorphMap, tA, tB);}
-		//calculate geometry morph - find delta to use with control points
-		//myPointf[] delPts = 
+		
 		calcMorphAndApplyToMap(_curMorphMap, tA, tB);	
 	}
 	
-	public abstract void initCalcMorph_Indiv(float tA, float tB);
+	//public abstract void initCalcMorph_Indiv(float tA, float tB);
 	
 	public abstract int calcMorph_Integer(float tA, int AVal, float tB, int BVal);	
 	public abstract float calcMorph_Float(float tA, float AVal, float tB, float BVal);
@@ -205,10 +266,14 @@ public abstract class baseMorph {
 	 * this function will conduct calculations between the two keyframe maps, if such calcs are used, whenever either is modified.  this is morph dependent
 	 */
 	//public final void mapCalcsAfterCntlPointsSet(String _calledFrom) {
-	public final void mapCalcsAfterCntlPointsSet(String _calledFrom, boolean reBuildNow) {
+	public final void mapCalcsAfterCntlPointsSet(String _calledFrom, boolean reBuildNow, boolean updCurMorphMap) {
 		reCalcTrajsAndAnalysis = true;
-		if(reBuildNow) {buildCntlPointTrajs();}
 		mapCalcsAfterCntlPointsSet_Indiv(_calledFrom);
+		if(reBuildNow) {buildCntlPointTrajs();}
+		if(updCurMorphMap) {//call this if mapA's values have changed, and currMorphMap needs to get reassigned possible branching info
+			updateMorphMapWithMapVals();
+		}
+		//mapCalcsAfterCntlPointsSet_Indiv(_calledFrom);
 	};
 	public abstract void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom);
 	
@@ -258,7 +323,9 @@ public abstract class baseMorph {
 			//areaTrajMaps.clear();
 			areaTrajs.clear();
 			baseMap tmpMap = getCopyOfMap(null,mapA.mapTitle +"_MorphCntlPtTraj");
-			myPointf[] cntlPtsOld = getMorphMapTrajPts(tmpMap,1.0f, 0.0f);//includes cov and possibly center/f
+			_calcMorphOnMap(tmpMap, false, 0.0f);
+			myPointf[] cntlPtsOld = tmpMap.getAllMorphCntlPts();
+			//myPointf[] cntlPtsOld = getMorphMapTrajPts(tmpMap,1.0f, 0.0f);//includes cov and possibly center/f
 			//areaTrajMaps.put(0.0f, tmpMap.calcTtlSurfaceArea());
 			areaTrajs.add(tmpMap.calcTtlSurfaceArea());
 			myPointf[][] tmpCntlPtAra;
@@ -267,9 +334,11 @@ public abstract class baseMorph {
 			
 			pa.strokeWeight(1.0f);
 			for(float t = 0.01f;t<=1.0f;t+=.01f) {
-				float tA = 1.0f-t, tB = t;
-				initCalcMorph_Indiv(tA, tB);
-				myPointf[] cntlPts = getMorphMapTrajPts(tmpMap,tA, tB);
+				//float tA = 1.0f-t, tB = t;
+				//initCalcMorph_Indiv(tA, tB);
+				_calcMorphOnMap(tmpMap, false, t);
+				myPointf[] cntlPts = tmpMap.getAllMorphCntlPts();
+				//myPointf[] cntlPts = getMorphMapTrajPts(tmpMap,tA, tB);
 				myPointf[][] edgePts = tmpMap.getEdgePts();
 				//areaTrajMaps.put(t, tmpMap.calcTtlSurfaceArea());
 				areaTrajs.add(tmpMap.calcTtlSurfaceArea());
@@ -330,7 +399,7 @@ public abstract class baseMorph {
 	
 	public final void updateMorphValsFromUI(mapUpdFromUIData upd) {
 		setMorphSlices(upd.getNumMorphSlices());
-		
+		curMorphMap.updateMapVals_FromUI(upd);
 		updateMorphValsFromUI_Indiv(upd);
 	}
 	protected abstract void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd);
@@ -368,7 +437,7 @@ public abstract class baseMorph {
 	}//_drawAnalyzerData
 	
 	public final float drawMapRtSdMenuDescr(float yOff, float sideBarYDisp) {
-		if(null == curMorphMap) {return yOff;}	
+		//if(null == curMorphMap) {return yOff;}	
 		
 		pa.pushMatrix();pa.pushStyle();
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, morphTitle);
@@ -385,7 +454,7 @@ public abstract class baseMorph {
 		if(null!=morphSliceAra) {
 			float modYAmt = sideBarYDisp*.9f;
 			yOff += modYAmt;
-			pa.translate(10.0f,modYAmt, 0.0f);		
+			//pa.translate(10.0f,modYAmt, 0.0f);		
 			for(float key : morphSliceAra.keySet()) {
 				yOff = morphSliceAra.get(key).drawRtSdMenuDescr(yOff, modYAmt, true, false);
 			}
@@ -443,8 +512,8 @@ public abstract class baseMorph {
 	
 		pa.strokeWeight(1.0f);
 		for(float t = 0.01f;t<=1.0f;t+=.01f) {
-			float tA = 1.0f-t, tB = t;
-			initCalcMorph_Indiv(tA, tB);
+			//float tA = 1.0f-t, tB = t;
+			//initCalcMorph_Indiv(tA, tB);
 			myPointf[][] cntlPts = cntlPtTrajs.get(t);
 			myPointf[][][] edgePts = edgePtTrajs.get(t);
 			//idx 5 is cov, idx 6 is ctr pt
@@ -522,7 +591,7 @@ public abstract class baseMorph {
 	}
 
 	protected final void setMorphSliceAra() {
-		morphSliceAra = buildArrayOfMorphMaps(numMorphSlices, "_MorphSlice");
+		morphSliceAra = buildArrayOfMorphMaps(numMorphSlices, "_MrphSlc");
 	}//setMorphMapAra()	
 	
 	protected final TreeMap<Float, baseMap> buildArrayOfMorphMaps(int numMaps, String _name) {
@@ -546,10 +615,18 @@ public abstract class baseMorph {
 		return morphMaps;
 	}
 
+	public final void resetCurMorphBranching() {
+		curMorphMap.setFlags(new boolean[] {true});
+	}
+	
 	/**
 	 * resets branching if any morphs maintain branching values on their own
 	 */
-	public abstract void resetAllBranching();
+	public final void resetAllBranching() {
+		resetCurMorphBranching();
+		resetAllBranching_Indiv();
+	};
+	public abstract void resetAllBranching_Indiv();
 
 	public final String toStringEdge(myPointf[] e) {
 		return "0:["+e[0].toStrCSV(baseMap.strPointDispFrmt8)+"] | 1:["+e[1].toStrCSV(baseMap.strPointDispFrmt8)+"]";

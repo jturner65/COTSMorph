@@ -24,7 +24,7 @@ public class COTSMap extends baseQuadMap {
 	/**
 	 * data holding COTS map control values
 	 */
-	protected COTS_Similarity cots;
+	public COTS_Similarity cots;
 	/**
 	 * currently set branch sharing strategy, for maps that use angle branching (i.e. COTS)
 	 * 0 : do not share branching; 1: force all branching to be map A's branching; 2 : force all branching to be map B's branching; 3 : force all branching to be most recently edited map's branching
@@ -37,8 +37,8 @@ public class COTSMap extends baseQuadMap {
 	
 	protected final String SpiralCtrLbl = "Spiral Center";
 	
-	public COTSMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {	
-		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame, _mapTitle);
+	public COTSMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {	
+		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame,_isBaryQuad, _mapTitle);
 		cots = new COTS_Similarity(mapTitle,basisVecs[0], basisVecs[2], basisVecs[1]);
 		updateMapFromCntlPtVals_Indiv(resetMapUpdateFlags);
 		finalizeValsAfterCntlPtsMod();
@@ -74,7 +74,7 @@ public class COTSMap extends baseQuadMap {
 	 */
 
 	@Override
-	public void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags) {
+	public void _updateMeWithQuadMapVals(baseMap otrMap, mapCntlFlags flags) {
 		//copy branching should only be set when this map(being a morph frame) is being copied from mapA in initial morph calculation
 		if ((((COTSMap)otrMap).shouldShareBranching) || (flags.getCopyBranching())){
 			cots.setBranching(((COTSMap)otrMap).cots.getBranching());
@@ -98,7 +98,6 @@ public class COTSMap extends baseQuadMap {
 		return cots.mapPoint(cntlPts[0], tx, ty);
 	}
 	
-
 	/**
 	 * update current branch sharing strategy
 	 * @param _currBranchShareStrategy strategy for sharing angle branching, for cots maps.  
@@ -204,7 +203,7 @@ public class COTSMap extends baseQuadMap {
 	}
 
 	@Override
-	protected float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+	protected float _drawQuadMapRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		yOff = cots.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
 		return yOff;
 	}
@@ -221,7 +220,7 @@ public class COTSMap extends baseQuadMap {
 	public final void setFlags(boolean[] flags) {	 if(flags[0]) {	cots.setAllBranchingZero();}}
 
 	@Override
-	protected final void setOtrMap_Indiv() {};
+	protected final void _setOtrQuadMap_Indiv() {};
 
 	/**
 	 * manage mouse/map movement for child-class specific fields
@@ -240,6 +239,13 @@ public class COTSMap extends baseQuadMap {
 	protected void moveCntlPtInPlane_Indiv(myVectorf defVec) {}
 	@Override
 	protected final void mseRelease_Indiv() {	}
+	
+	@Override
+	public final String toString() {
+		String res = super.toString() + " COTS : \n\t" + cots.getDebugStr() ;
+				
+		return res;		
+	}
 
 }//COTSMap
 

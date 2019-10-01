@@ -75,7 +75,6 @@ public class mapCntlFlags {
 	
 	public boolean getCopyBranching() {return getFlag(copyBranchingIDX);}
 	public void setCopyBranching(boolean val) {setFlag(copyBranchingIDX, val);}
-	
-	
+		
 	
 }//class mapCntlFlags

@@ -7,6 +7,7 @@ import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import base_UI_Objects.IRenderInterface;
 import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPointf;
 import processing.core.PConstants;
@@ -29,12 +30,48 @@ public abstract class baseQuadMap extends baseMap {
 //		shapeFile_IDX = 0,
 //		shapeWF_IDX = 1;
 //	private static final int numShapes = 2;
+	/**
+	 * whether or not this quad derives barycentric coordinates to determine 3rd control point on b-map
+	 */
+	protected boolean isBaryQuad = false;
+	/**
+	 * bary centric coordinates of control point d (idx 3), taken from map A, applied to map B
+	 */
+	protected float[] cntlPtD_baryCoords;
 
-	public baseQuadMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs,mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {
+	/**
+	 * 
+	 * @param _win
+	 * @param _mapMgr
+	 * @param _cntlPts
+	 * @param _mapIdx
+	 * @param _mapTypeIDX
+	 * @param _pClrs
+	 * @param _currUIVals
+	 * @param _isKeyFrame
+	 * @param _mapTitle
+	 */
+	public baseQuadMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs,mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {
 		super(_win, _mapMgr,  _cntlPts, _mapIdx, _mapTypeIDX, _pClrs, _currUIVals, _isKeyFrame, _mapTitle);	
+		isBaryQuad = _isBaryQuad;
+		if(isBaryQuad) {		
+			dispTitleOn2Lines = true;
+			cntlPtD_baryCoords = cntlPts[3].calcNormBaryCoords(cntlPts);
+			
+		}	
 	}
 
-	public baseQuadMap(String _mapTitle, baseMap _otr) {super(_mapTitle,  _otr);	}
+	public baseQuadMap(String _mapTitle, baseQuadMap _otr) {
+		super(_mapTitle,  _otr);	
+		isBaryQuad = _otr.isBaryQuad;
+		if(isBaryQuad) {		
+			cntlPtD_baryCoords = new float[_otr.cntlPtD_baryCoords.length];		
+			for(int i=0;i<_otr.cntlPtD_baryCoords.length;++i) {
+				cntlPtD_baryCoords[i]=_otr.cntlPtD_baryCoords[i];
+			}
+		}
+		dispTitleOn2Lines = false;	
+	}
 	
 	/**
 	 * build a set of edge points around the edge of this map
@@ -58,11 +95,51 @@ public abstract class baseQuadMap extends baseMap {
 	 */	
 	@Override
 	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+		if(isBaryQuad) {_updateCntrlPtDFromOtherMap(flags);}
 		_updateQuadMapFromCntlPtVals_Indiv(flags);
 		//rebuildCBandCircleGrid();
 	}
 	
 	protected abstract void _updateQuadMapFromCntlPtVals_Indiv(mapCntlFlags flags);
+	
+	
+	@Override
+	public final void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags) {
+		if(isBaryQuad) {_updateCntrlPtDFromOtherMap(flags);}
+		_updateMeWithQuadMapVals(otrMap, flags);		
+	}
+	protected abstract void _updateMeWithQuadMapVals(baseMap otrMap, mapCntlFlags flags);
+	
+	@Override
+	protected final void setOtrMap_Indiv() {
+		if(isBaryQuad) {_updateCntrlPtDFromOtherMap(resetMapUpdateFlags);}
+		_setOtrQuadMap_Indiv();
+		
+	}
+	protected abstract void _setOtrQuadMap_Indiv();
+
+	/**
+	 * update this map's control point D from barycentric coords, or update bary coords from contrl point d location
+	 * @param flags
+	 */
+	protected void _updateCntrlPtDFromOtherMap(mapCntlFlags flags) {
+		if((isKeyFrameMap) && (mapIdx == 1)){		///b map, 
+			if(this.otrMap !=null) {
+				baseQuadMap _otr = ((baseQuadMap)otrMap);
+				cntlPtD_baryCoords = new float[_otr.cntlPtD_baryCoords.length];
+				for(int i=0;i<_otr.cntlPtD_baryCoords.length;++i) {
+					cntlPtD_baryCoords[i]=_otr.cntlPtD_baryCoords[i];
+				}
+				cntlPts[3].set(myPointf.calcPointFromNormBaryCoords(cntlPts, cntlPtD_baryCoords));
+			} else {
+				win.getMsgObj().dispInfoMessage("baseQuadMap", "_updateCntrlPtDFromOtherMap", "Warning : " + this.mapTitle +" not properly calculating D control point due to otrMap == null");
+			}	
+		} else {		//a map or morph maps - recalc barycentric coords based on state of d
+			cntlPtD_baryCoords = cntlPts[3].calcNormBaryCoords(cntlPts);		
+		}
+		
+	}//_updateCntrlPtDFromOtherMap
+
 	
 	/**
 	 * whether this map is ready to execute
@@ -101,8 +178,8 @@ public abstract class baseQuadMap extends baseMap {
 	 * @param numPtsPerEdge # of points to interpolate between adjacent t values
 	 * @return
 	 */
-	protected ArrayList<myPointf> buildPolyPointAra(int i, int j, int numPtsPerEdge) {
-		float subDivPerPoly = 1.0f/numPtsPerEdge;
+	protected ArrayList<myPointf> buildPolyPointAra(int i, int j, int numPtsPerPolyEdge) {
+		float subDivPerPoly = 1.0f/numPtsPerPolyEdge;
 		ArrayList<myPointf> resList = new ArrayList<myPointf>();
 		float tx, ty = polyPointTVals[i][j][1];
 		for (tx = polyPointTVals[i][j][0]; tx<polyPointTVals[i+1][j][0];tx+=subDivPerPoly) {
@@ -203,7 +280,7 @@ public abstract class baseQuadMap extends baseMap {
 		pa.pushMatrix();pa.pushStyle();	
 		pa.noFill();
 		pa.noStroke();
-		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals[i].length-1;++j) {		_drawPolyTexture(imageToMap, i,j);		}}			
+		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals[i].length-1;++j) {		_drawPolyTexture(getImageToMap(), i,j);		}}			
 		pa.popStyle();pa.popMatrix();
 	}
 
@@ -290,4 +367,34 @@ public abstract class baseQuadMap extends baseMap {
 	
 		pa.popStyle();pa.popMatrix();		
 	}
-}
+	
+	@Override
+	protected final float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
+		if(this.isBaryQuad) {
+			pa.pushMatrix();pa.pushStyle();	
+			pa.translate(10.0f,0.0f, 0.0f);
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Cntl Pt D Bary : ");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "["+String.format(baseMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(baseMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(baseMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
+			pa.popStyle();pa.popMatrix();
+				
+			yOff += sideBarYDisp;pa.translate(0.0f,sideBarYDisp, 0.0f);
+		
+		}
+		yOff = _drawQuadMapRtSdMenuDescr_Indiv(yOff, sideBarYDisp);
+	
+		return yOff;
+	}
+
+	protected abstract float _drawQuadMapRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp);
+	
+	@Override
+	public String toString() {
+		String res = super.toString();
+		if(this.isBaryQuad) {
+			res +=  " BaryQuadMap :  Bary Coords of cntlPt[3] : ["+cntlPtD_baryCoords[0]+","+cntlPtD_baryCoords[1]+","+cntlPtD_baryCoords[2]+"]\n";
+		}		
+		return res;
+	}
+	
+	
+}//class baseQuadMap

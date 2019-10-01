@@ -8,17 +8,22 @@ import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class SpiralSimilarityWithTranslation extends baseSimilarity {
+/**
+ * similarity transform that is built using registration information
+ * @author john
+ *
+ */
+public class Reg_SpiralSimWithTranslation extends baseSimilarity {
 	
 	protected myVectorf translation;
 
-	public SpiralSimilarityWithTranslation(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {
-		super(_name+"_SpiralWithTrans",_n, _I, _J);
+	public Reg_SpiralSimWithTranslation(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {
+		super(_name+"_Reg_SprlWTrans",_n, _I, _J);
 		translation = new myVectorf();
 	}
 
-	public SpiralSimilarityWithTranslation(String _name, SpiralSimilarityWithTranslation _otr) {
-		super(_name+"_SpiralWithTrans_Cpy",_otr);
+	public Reg_SpiralSimWithTranslation(String _name, Reg_SpiralSimWithTranslation _otr) {
+		super(_name+"_Reg_SprlWTrans_Cpy",_otr);
 		translation = new myVectorf(_otr.translation);
 	}
 
@@ -38,10 +43,10 @@ public class SpiralSimilarityWithTranslation extends baseSimilarity {
 	 * ara idx 1 : new myPointf(angle,Scale,0.0f)},resetBranching);
 	 */
 	@Override
-	public void deriveSimilarityFromCntlPts(myPointf[] cntlPts,  mapCntlFlags flags) {
-		translation = new myVectorf(cntlPts[0]);
+	public void deriveSimilarityFromCntlPts(myPointf[] regVals,  mapCntlFlags flags) {
+		translation = new myVectorf(regVals[0]);
 		//float scale, float angle, myPointf A, myPointf B
-		trans[0].buildTransformation(cntlPts[1].x, cntlPts[1].y, cntlPts[2],cntlPts[3]);		
+		trans[0].buildTransformation(regVals[1].x, regVals[1].y, regVals[2],regVals[3]);		
 	}
 
 	/**

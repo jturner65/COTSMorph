@@ -17,7 +17,7 @@ public class SpiralTransform extends baseTransform {
 	/**
 	 * spiral angle
 	 */
-	protected float a = 0.0f, old_alpha = 0.0f, old_old_alpha = 0.0f;
+	protected float a = 0.0f, old_alpha = 0.0f;
 	/**
 	 * half-rotation values used to compensate for branching of atan2
 	 */
@@ -26,36 +26,28 @@ public class SpiralTransform extends baseTransform {
 	 * spiral center
 	 */
 	public myPointf F;
-	/**
-	 * whether branching should be reset
-	 */
-	//protected boolean resetBranching = false;
 	
-	protected static final String[] rtMenuDispType = new String[] {"Scale","Angle","Branch"};
+	//protected static final String[] rtMenuDispType = new String[] {"Scale","Angle","Branch"};
+	protected static final String[] rtMenuDispType = new String[] {"S","A","B"};
 
 
-	public SpiralTransform(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	super( _name+"_Spiral", _n, _I, _J);}
+	public SpiralTransform(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	super( _name+"_Sprl", _n, _I, _J);}
 	
 	public SpiralTransform(String _name, SpiralTransform _otr) {
 		super( _name+"_Spiral_Cpy",_otr);
-		m= _otr.m;
-		a= _otr.a;
-		old_old_alpha = _otr.old_old_alpha;
+		m= _otr.m;		a= _otr.a;		
 		old_alpha = _otr.old_alpha;
 		a_BranchDisp = _otr.a_BranchDisp;
 		F = new myPointf(_otr.F);
-		//resetBranching = _otr.resetBranching;
 	}
 	
 	@Override
 	protected final void reset_Indiv() {
 		 m = 1.0f;
 		 a = 0.0f; 
-		 old_alpha = 0.0f; 
-		 old_old_alpha = 0.0f;
+		 old_alpha = 0.0f;
 		 a_BranchDisp = 0.0f; 
 		 F = new myPointf();
-		// resetBranching = false;
 	}
 	
 	/**
@@ -66,7 +58,6 @@ public class SpiralTransform extends baseTransform {
 	 */
 	public final void buildTransformation(float angle, float scale, myPointf A, myPointf B) {
 		m=scale;
-		old_old_alpha = old_alpha;
 		old_alpha = a;
 		a=angle;
 		//no branching, since this angle will be set to be +/- PI
@@ -81,8 +72,10 @@ public class SpiralTransform extends baseTransform {
 	 */
 	private void calcOptimalAlpha(float alphaNew, mapCntlFlags flags) {	
 		//if((old_old_alpha != old_alpha) || (a != old_alpha)) {
-		if(flags.getDebug()) {// && ((old_old_alpha != old_alpha) || (a != old_alpha))) {
-			//System.out.println(name+" : Old Old alpha : " + old_old_alpha +" | Old alpha : " + old_alpha + " alphaNew : " + alphaNew + " | a : " + a + " | a_BranchDisp : " + a_BranchDisp);
+		if(flags.getDebug() && (name.contains("currMorphMap"))){//&& (!name.toLowerCase().contains("cpy"))) {// && ((old_old_alpha != old_alpha) || (a != old_alpha))) {
+			//System.out.println(name+" : Old alpha : " + old_alpha + " alphaNew : " + alphaNew + " | a : " + a + " | a_BranchDisp : " + a_BranchDisp);
+			//if(Math.abs(old_alpha - alphaNew)
+			
 		}
 		
 	}
@@ -100,7 +93,7 @@ public class SpiralTransform extends baseTransform {
 	    
 		boolean reset = flags.getResetBranching();
 		boolean optimizeAlpha = flags.getOptimizeAlpha();			//this is performed for morphing, to keep alpha close as possible to previous alpha
-		old_old_alpha = old_alpha;
+		
 		old_alpha = a;	    	
 		if(reset) {	    	
 	    	a_BranchDisp = 0.0f;
@@ -223,24 +216,27 @@ public class SpiralTransform extends baseTransform {
 	 */
 	@Override
 	public final float drawRightSideBarMenuDescr(my_procApplet pa, float yOff, float sideBarYDisp, String coordName) {
-		pa.translate(10.0f, 0.0f, 0.0f);
+		pa.translate(-10.0f, 0.0f, 0.0f);
 		String[] dispVals = new String[]{String.format(baseMap.strPointDispFrmt8,m),String.format(baseMap.strPointDispFrmt8,a),String.format(baseMap.strPointDispFrmt8,a_BranchDisp)};	
 		pa.pushMatrix();pa.pushStyle();
+		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, coordName + " :");
 		for(int j=0;j<rtMenuDispType.length;++j) {			
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, rtMenuDispType[j] + " " + coordName + " : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightGreen, 255), 6.0f, dispVals[j]);
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.0f, rtMenuDispType[j]+" :");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightGreen, 255), 5.7f, dispVals[j]);
 		}
-		pa.popStyle();pa.popMatrix();
-		yOff += sideBarYDisp;
-		pa.translate(0.0f,sideBarYDisp, 0.0f);
 		
-		pa.pushMatrix();pa.pushStyle();		
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
+//		pa.popStyle();pa.popMatrix();
+//		yOff += sideBarYDisp;
+//		pa.translate(0.0f,sideBarYDisp, 0.0f);
+//		pa.pushMatrix();pa.pushStyle();		
+		
+		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
 		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
 		pa.popStyle();pa.popMatrix();
 			
 		yOff += sideBarYDisp;
-		pa.translate(-10.0f,sideBarYDisp, 0.0f);
+		pa.translate(10.0f,sideBarYDisp, 0.0f);
+		//pa.translate(0.0f,sideBarYDisp, 0.0f);
 		return yOff;
 	};
 	
@@ -268,12 +264,9 @@ public class SpiralTransform extends baseTransform {
 		a += a_BranchDisp;
 	}//setBranching
 	
-	public final float getBranching() {return a_BranchDisp;}
-	
-	public final float[] getAnglesAndBranching() {return new float[] {a, a_BranchDisp};}
-	
+	public final float getBranching() {return a_BranchDisp;}	
+	public final float[] getAnglesAndBranching() {return new float[] {a, a_BranchDisp};}	
 	public final float get_Scale() {return m;}
-
 	public final float get_Angle() {return a;}
 	public final myPointf getCenterPoint() {return F;}
 

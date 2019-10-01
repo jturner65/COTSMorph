@@ -35,9 +35,9 @@ public class COTS_Similarity extends baseSimilarity {
 				e0Ortho = new myPointf[] {e0[0],e1[0]},
 				e1Ortho = new myPointf[] {e0[1],e1[1]};
 		trans[0].buildTransformation(e0,e1, flags);	
-		flags.setDebug(true);
+		//flags.setDebug(true);//set to true to debug branching
 		trans[1].buildTransformation(e0Ortho, e1Ortho, flags);
-		flags.setDebug(false);
+		//flags.setDebug(false);//set to true to debug branching
 	}
 	
 	/**
