@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.transform;
 
-import COTS_Morph_PKG.maps.base.baseMap;
+import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.transform.base.baseTransform;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.IRenderInterface;
@@ -275,7 +275,7 @@ public class SpiralTransform extends baseTransform {
 	public final myPointf getCenterPoint() {return F;}
 
 	@Override
-	protected String getDebugStr_Indiv() {
+	public String getDebugStr_Indiv() {
 		String dbgStr = " | a/s AB and DC : ";//old a : " +String.format(baseMap.strPointDispFrmt,old_a) +" |";
 		dbgStr += " Angle : " +String.format(baseMap.strPointDispFrmt8,a) +" | Brnch :  "+String.format(baseMap.strPointDispFrmt8,a_BranchDisp);
 		dbgStr += " | Scl : " + String.format(baseMap.strPointDispFrmt8,m) + " || F : " + F.toStrBrf();

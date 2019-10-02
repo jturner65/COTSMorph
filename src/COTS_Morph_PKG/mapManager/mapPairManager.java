@@ -3,20 +3,20 @@ package COTS_Morph_PKG.mapManager;
 
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.maps.quad.BiLinMap;
-import COTS_Morph_PKG.maps.quad.COTSMap;
-import COTS_Morph_PKG.maps.triangular.BiLinTriPolyMap;
-import COTS_Morph_PKG.maps.triangular.PointNormTriPolyMap;
-import COTS_Morph_PKG.morphs.CompoundMorph;
-import COTS_Morph_PKG.morphs.base.baseMorph;
-import COTS_Morph_PKG.morphs.multiTransform.DualCarrierSimMorph;
-import COTS_Morph_PKG.morphs.multiTransform.QuadKeyEdgeSpiralMorph;
-import COTS_Morph_PKG.morphs.simple.AffineMorph;
-import COTS_Morph_PKG.morphs.simple.CarrierSimDiagMorph;
-import COTS_Morph_PKG.morphs.simple.LERPMorph;
-import COTS_Morph_PKG.morphs.simple.LogPolarMorph;
-import COTS_Morph_PKG.morphs.simple.RigidMorph;
+import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.quad.BiLinMap;
+import COTS_Morph_PKG.map.quad.COTSMap;
+import COTS_Morph_PKG.map.triangular.BiLinTriPolyMap;
+import COTS_Morph_PKG.map.triangular.PointNormTriPolyMap;
+import COTS_Morph_PKG.morph.CompoundMorph;
+import COTS_Morph_PKG.morph.base.baseMorph;
+import COTS_Morph_PKG.morph.multiTransform.DualCarrierSimMorph;
+import COTS_Morph_PKG.morph.multiTransform.LogPolarMorph;
+import COTS_Morph_PKG.morph.multiTransform.QuadKeyEdgeSpiralMorph;
+import COTS_Morph_PKG.morph.singleTransform.AffineMorph;
+import COTS_Morph_PKG.morph.singleTransform.CarrierSimDiagMorph;
+import COTS_Morph_PKG.morph.singleTransform.LERPMorph;
+import COTS_Morph_PKG.morph.singleTransform.RigidMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -31,7 +31,7 @@ import processing.core.PImage;
 /**
  * this class will manage a pair of maps that are acting as key frames, controlling access to the maps
  * this class will serve to isolate and manage map->map interactions, including but not limited to morphing
- * there will be one map manager of each type for every type of map
+ * there will be one map manager for each type of map
  * @author john
  *
  */
@@ -43,7 +43,7 @@ public class mapPairManager {
 	/**
 	 * the maps this mapManager will manage
 	 */
-	public final baseMap[] maps;
+	private final baseMap[] maps;
 	/**
 	 * the types of maps this manager owns
 	 */
@@ -53,10 +53,9 @@ public class mapPairManager {
 	 */
 	public mapUpdFromUIData currUIVals;
 	/**
-	 * map being currently modified by mouse interaction - only a ref to a map, or null,
-	 * copy map to display if being copied or similarity mapped - only a copy of either mapA or mapB
+	 * map being currently modified by mouse interaction - only a ref to a map, or null
 	 */
-	public baseMap currMseModMap;//, copyMap;
+	public baseMap currMseModMap;
 	/**
 	 * idx's of maps to use for similarity mapping/registration between maps,
 	 * current morph being executed
@@ -71,18 +70,17 @@ public class mapPairManager {
 	 */
 	public mapRegDist mapRegDistCalc;
 	
-	
 	/**
 	 * types of morphs supported
 	 */
 	public static final String[] morphTypes = new String[] {
 		"LERP",						//linearly interpolate control points
+		"Log Polar",
 		"Rigid",
 		"Affine",
 		"Carrier Sim using Diagonal",
 		"Dual Carrier Similarity",
 		"Key edge->Key edge Spiral",
-		"Log Polar",
 		"Compound Morph"
 	};
 	/**
@@ -90,25 +88,24 @@ public class mapPairManager {
 	 */
 	public static final String[] cmpndMorphTypes = new String[] {
 		"LERP",						//linearly interpolate control points
+		"Log Polar",			
 		"Rigid",
 		"Affine",
 		"Carrier Sim using Diagonal",
 		"Dual Carrier Similarity",
 		"Key edge->Key edge Spiral",
-		"Log Polar",			
 	};
 	
 	//need an index per morph type
 	public static final int
 		LERPMorphIDX			= 0,
-		RigidMorphIDX			= 1,
-		AffineMorphIDX			= 2,
-		CarrierSimDiagIDX		= 3,
-		DualCarrierSimIDX		= 4,
-		QuadSpiralEdgeIDX		= 5,
-		LogPolarMorphIDX 		= 6,
-		CompoundMorphIDX		= 7;
-	
+		LogPolarMorphIDX 		= 1,
+		RigidMorphIDX			= 2,
+		AffineMorphIDX			= 3,
+		CarrierSimDiagIDX		= 4,
+		DualCarrierSimIDX		= 5,
+		QuadSpiralEdgeIDX		= 6,
+		CompoundMorphIDX		= 7;	
 	
 	/**
 	 * types of maps supported
@@ -134,6 +131,10 @@ public class mapPairManager {
 	 * array holding morphs
 	 */
 	protected baseMorph[] morphs;
+	/**
+	 * array holding morphs to use for distortion measurements
+	 */
+	protected baseMorph[] distMsrMorphs;
 
 	public static my_procApplet pa;
 	public COTS_MorphWin win;
@@ -160,12 +161,17 @@ public class mapPairManager {
 	 */
 	protected static final int[][][] mapGridColors = new int[][][] {
 		{{90,0,222,255},{0,225,10,255}},		//map grid 0 
-		{{255,200,0,255},{255,0,0,255}}		//map grid 1
+		{{255,200,0,255},{255,0,0,255}}			//map grid 1
 	};
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
 		win=_win; pa=myDispWindow.pa;
-		name = win.getWinName()+"::Mgr of " + mapTypes[_mapType] + " maps";
+		//for building registration copy
+		fromMapIDX = 0;
+		toMapIDX = 1;
+		lineUpMorphMaps = new TreeMap<Float, baseMap>();
+		mapType=_mapType;
+		name = win.getWinName()+"::Mgr of " + mapTypes[mapType] + " maps";
 		// necessary info to build map
 		bndPts = new myPointf[_bndPts.length][];
 		for(int i=0;i<bndPts.length;++i) {bndPts[i]=new myPointf[_bndPts[i].length];	for(int j=0;j<bndPts[i].length;++j) {		bndPts[i][j]=new myPointf(_bndPts[i][j]);	}}
@@ -173,33 +179,31 @@ public class mapPairManager {
 		
 		//build maps
 		maps = new baseMap[2];
-		for(int j=0;j<maps.length;++j) {	maps[j] = buildKeyFrameMapOfPassedType(_mapType,j, "");}		
+		for(int j=0;j<maps.length;++j) {	maps[j] = buildKeyFrameMapOfPassedType(mapType,j,  bndPts[j],"");}		
 		mapRegDistCalc = new mapRegDist(this, maps[0],maps[1]);
-		//copyMap = buildCopyMapOfPassedMapType(maps[0], maps[0].mapTitle+"_Copy");
 		
 		for(int j=0;j<maps.length;++j) {	maps[j].setImageToMap(_txtrImages[j]);	maps[j].setOtrMap(maps[(j+1)%maps.length]);}
-		//for building registration copy
-		fromMapIDX = 0;
-		toMapIDX = 1;
-		lineUpMorphMaps = new TreeMap<Float, baseMap>();
-		mapType=_mapType;
-		morphs = new baseMorph[morphTypes.length];
-		for(int i=0;i<morphs.length;++i) {	morphs[i]=buildMorph(i);}
 
+		morphs = new baseMorph[morphTypes.length];
+		for(int i=0;i<morphs.length;++i) {	morphs[i]=buildMorph(i, maps[0],maps[1]);}
+		
+		distMsrMorphs = new baseMorph[cmpndMorphTypes.length];
+		for(int i=0;i<distMsrMorphs.length;++i) {	distMsrMorphs[i]=buildMorph(i, maps[0],maps[1]);}
+		
 		setPopUpWins_RectDims();
 		updateMapValsFromUI(currUIVals);
 	}//ctor
 	
-	public baseMorph buildMorph(int typeIDX) {
+	public baseMorph buildMorph(int typeIDX, baseMap _mapA, baseMap _mapB) {
 		switch (typeIDX) {
-			case LERPMorphIDX 		: {		return new LERPMorph(win,this,morphTypes[typeIDX]); 		}
-			case RigidMorphIDX  	: {		return new RigidMorph(win,this,morphTypes[typeIDX]); 		}
-			case AffineMorphIDX 	: {		return new AffineMorph(win,this,morphTypes[typeIDX]);}
-			case CarrierSimDiagIDX 	: {		return new CarrierSimDiagMorph(win,this,morphTypes[typeIDX]);	}
-			case DualCarrierSimIDX 	: {		return new DualCarrierSimMorph(win,this,morphTypes[typeIDX]); }
-			case QuadSpiralEdgeIDX 	: {		return new QuadKeyEdgeSpiralMorph(win,this,morphTypes[typeIDX]);}
-			case LogPolarMorphIDX 	: {		return new LogPolarMorph(win,this,morphTypes[typeIDX]);}
-			case CompoundMorphIDX 	: {		return new CompoundMorph(win,this,morphTypes[typeIDX]);}
+			case LERPMorphIDX 		: {		return new LERPMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]); 		}
+			case RigidMorphIDX  	: {		return new RigidMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]); 		}
+			case AffineMorphIDX 	: {		return new AffineMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
+			case CarrierSimDiagIDX 	: {		return new CarrierSimDiagMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);	}
+			case DualCarrierSimIDX 	: {		return new DualCarrierSimMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]); }
+			case QuadSpiralEdgeIDX 	: {		return new QuadKeyEdgeSpiralMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
+			case LogPolarMorphIDX 	: {		return new LogPolarMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
+			case CompoundMorphIDX 	: {		return new CompoundMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
 		
 			default : {
 				win.getMsgObj().dispInfoMessage("mapPairManager", "buildMorph", "Unknown morph type idx : " + typeIDX + ". Returning null.");
@@ -225,30 +229,32 @@ public class mapPairManager {
 		}
 		return map;
 	}//buildCopyMapOfPassedMapType		
+
 	/**
 	 * build a map of the specified map type
 	 * @param _mapType type of map : Bilin, cots, etc
 	 * @param _mapValIdx : idx of map, either 0 or 1
+	 * @param _cntlPts : control points to use as initial points for map
 	 * @param _mapNameSuffix : descriptive string to add to end of map namme
 	 * @return
-	 */
-	public final baseMap buildKeyFrameMapOfPassedType(int _mapType, int _mapValIdx, String _mapNameSuffix) {
+	 */	
+	public final baseMap buildKeyFrameMapOfPassedType(int _mapType, int _mapValIdx, myPointf[] _cntlPts, String _mapNameSuffix) {
 		String mapName = mapTypes[_mapType] + ( _mapNameSuffix.length() == 0 ? "":  " " + _mapNameSuffix) + " Map"+ _mapValIdx;
 		switch (_mapType) {
 			case triangleMapIDX			:{
 				myPointf[] triBndPts = new myPointf[3];
-				for(int i=0;i<triBndPts.length;++i) {		triBndPts[i]=bndPts[_mapValIdx][i];		}
+				for(int i=0;i<triBndPts.length;++i) {		triBndPts[i]=_cntlPts[i];		}
 				return new BiLinTriPolyMap(win, this, triBndPts, _mapValIdx, _mapType, mapGridColors[_mapValIdx], currUIVals,true, mapName);}
 			case ptNormTriMapIDX		: {	
 				myPointf[] triBndPts = new myPointf[3];
-				for(int i=0;i<triBndPts.length;++i) {		triBndPts[i]=bndPts[_mapValIdx][i];		}
+				for(int i=0;i<triBndPts.length;++i) {		triBndPts[i]=_cntlPts[i];		}
 				return new PointNormTriPolyMap(win, this,triBndPts, _mapValIdx, _mapType, mapGridColors[_mapValIdx], currUIVals,true, mapName);}
-			case bilinearMapIDX 		: {	return new BiLinMap(win,this, bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, false, mapName);}
-			case COTSMapIDX 			: {	return new COTSMap(win,this,  bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, false, mapName);}
-		    case BaryBiLinQuadMapIDX	: { return new BiLinMap(win,this, bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
-		    case BaryCOTSQuadMapIDX		: { return new COTSMap(win,this,  bndPts[_mapValIdx], _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
+			case bilinearMapIDX 		: {	return new BiLinMap(win,this, _cntlPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, false, mapName);}
+			case COTSMapIDX 			: {	return new COTSMap(win,this,  _cntlPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, false, mapName);}
+		    case BaryBiLinQuadMapIDX	: { return new BiLinMap(win,this, _cntlPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
+		    case BaryCOTSQuadMapIDX		: { return new COTSMap(win,this,  _cntlPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
 			default		:{
-				win.getMsgObj().dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to build requested map due to unknown map type : " + _mapType + " : "  +mapTypes[_mapType] + ". Returning null.");
+				win.getMsgObj().dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to build requested map due to unknown map type : " + _mapType + " : "  +mapName + ". Returning null.");
 				return null;
 			}			
 		}
@@ -318,7 +324,174 @@ public class mapPairManager {
 	public final void findDifferenceBetweenMaps(boolean dispMod, boolean findBestDist) {	
 		mapRegDistCalc.setMapsAndCalc(maps[fromMapIDX], maps[toMapIDX], dispMod, findBestDist);
 	}//findDifferenceBetweenMaps
+	
+	/**
+	 * calculate the distortion in the current morph
+	 * @param _currDistTransformIDX index in morph list for transformatio to use to calculate distortion
+	 */
 
+	public final void calculateMorphDistortion() {
+			//this is index in morph list for type of morph to use to measure distortion
+		int currDistTransformIDX = currUIVals.getCurrDistTransformIDX();
+		
+		baseMorph currDistMsrMorphs = distMsrMorphs[currDistTransformIDX];
+		currDistMsrMorphs.updateMorphValsFromUI(this.currUIVals);
+			//this is # of morph slices already calculated
+		win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Begin calculating current morph distortion for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + cmpndMorphTypes[currDistTransformIDX]);
+			//ara 0 is k == slice, ara 1 is i, ara 2 is j, ara 3 is cntl pts		
+		myPointf[][][][] allPolyCntlPts = morphs[currMorphTypeIDX].buildAllSlicesAndCellsCntlPts();
+		int numKVals = allPolyCntlPts.length,
+			numIVals = allPolyCntlPts[0].length,
+			numJVals = allPolyCntlPts[0][0].length,
+			numPts = allPolyCntlPts[0][0][0].length;
+		win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", "Num K vals : " + numKVals + " Num I Vals : " + numIVals + " Num J Vals : " + numJVals + " Num Cntl Pts : " + numPts);
+		//measure per-map distortions @ each i,j
+		float[][][] distsPerMap = new float[allPolyCntlPts.length][][];
+		for(int k=0;k<numKVals;++k) {
+			myPointf[][][] mapK = allPolyCntlPts[k];
+			String tmp = "\t map ["+k+"] : ";
+			distsPerMap[k] = calcDistOnEntireMap(mapK, k, mapType, currDistMsrMorphs);
+			float ttlDistOnMap = 0.0f;
+			int count = 0;
+			for(int i=0;i<numIVals;++i) {
+				for(int j=0;j<numJVals;++j) {
+					//win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", "\t\t average distortion for poly ["+i+"]["+j+"] in layer "+k+" : "+ distOnMap[i][j]);
+					ttlDistOnMap+=distsPerMap[k][i][j];++count;
+				}
+			}
+			ttlDistOnMap/=count;
+			win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", tmp+ " Total distortion on map @ layer "+k+" : "+ ttlDistOnMap);
+		}
+		//measure of distortions over all slices at each i,j
+		float[][][] distsOverSlices = new float[allPolyCntlPts.length][allPolyCntlPts[0].length][allPolyCntlPts[0][0].length];
+		//initialize
+		for(int i=0;i<numIVals;++i) {for(int j=0;j<numJVals;++j) {distsOverSlices[0][i][j]=0.0f; distsOverSlices[distsOverSlices.length-1][i][j]=0.0f; }}
+		
+		myPointf[] stCntlPts, endCntlPts, midCntlPts;
+		int[][] idxs = new int[][] {{-1,-2, -3},{-4,-5,-6},{-7,-8,-9}};
+		
+		//calc "lateral" distortion
+		for(int k=1;k<numKVals-1;++k) {			
+			float ttlDistsForSlice = 0.0f;
+			int count = 0;
+			for(int i=0;i<numIVals;++i) {
+				for(int j=0;j<numJVals;++j) {
+					stCntlPts = allPolyCntlPts[k-1][i][j];
+					endCntlPts = allPolyCntlPts[k+1][i][j];
+					midCntlPts = allPolyCntlPts[k][i][j];
+					int id=0;
+					for(int l=-1;l<2;++l) {	idxs[id][0] = i;idxs[id][1]=j; idxs[id][2]=k+l;	++id;}
+					distsOverSlices[k][i][j] = calcDistortion(idxs, stCntlPts,endCntlPts, midCntlPts, mapType, currDistMsrMorphs);
+					ttlDistsForSlice +=distsOverSlices[k][i][j];++count;
+				}
+			}
+			ttlDistsForSlice/=count;
+			win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", "\tAverage Total distortion over adjacent slices on map @ layer "+k+" : "+ ttlDistsForSlice);
+		}
+		//aggregate all distortions
+		float[][][] distortionAtEachCell = new float[numKVals][numIVals][numJVals]; 
+		float ttlDistForEntireMorph = 0.0f;
+		int count = 0;
+		for(int k=0;k<numKVals;++k) {
+			for(int i=0;i<numIVals;++i) {
+				for(int j=0;j<numJVals;++j) {
+					distortionAtEachCell[k][i][j] = (2.0f*distsPerMap[k][i][j] + distsOverSlices[k][i][j])/3.0f;
+					ttlDistForEntireMorph +=distortionAtEachCell[k][i][j];
+					++count;
+				}
+			}
+		}
+		ttlDistForEntireMorph/=count;
+				
+		win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Finished calculating current morph distortion : Total average distortion across entire morph : " +ttlDistForEntireMorph +" for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + cmpndMorphTypes[currDistTransformIDX]);
+		
+	}//calculateMorphDistortion
+	/**
+	 * for all polys on same map, find array of i,j distances between adjacent polys
+	 * @param mapPolyCntlPts
+	 * @param _k slice in morph slices
+	 * @param _mapTypeIDX
+	 * @param currDistMsrMorphs
+	 * @return
+	 */
+	protected final float[][] calcDistOnEntireMap(myPointf[][][] mapPolyCntlPts, int _sliceIDX, int _mapTypeIDX, baseMorph currDistMsrMorphs){
+		float[][] res = new float[mapPolyCntlPts.length][mapPolyCntlPts[0].length];
+		int lastValIDX = mapPolyCntlPts.length-1;
+		
+		//for all adjacent skip 1 polys, treat each poly as a new map of type maptype, build morph between both
+		int[][] idxs = new int[][] {{-1,-2, -3},{-4,-5,-6},{-7,-8,-9}};
+		
+		//top and bottom row - horizontal diff
+		for(int i=1;i<lastValIDX;++i) {//top and bottom row
+			int id = 0;
+			for(int k=-1;k<2;++k) {	idxs[id][0] = i+k;idxs[id][1]=0;idxs[id][2]=_sliceIDX;	++id;} id=0;
+			res[i][0] = calcDistortion(idxs, mapPolyCntlPts[i-1][0],mapPolyCntlPts[i+1][0], mapPolyCntlPts[i][0], _mapTypeIDX, currDistMsrMorphs);
+			for(int k=-1;k<2;++k) {	idxs[id][0] = i+k;idxs[id][1]=lastValIDX;idxs[id][2]=_sliceIDX;	++id;} id=0;
+			res[i][lastValIDX] = calcDistortion(idxs, mapPolyCntlPts[i-1][lastValIDX],mapPolyCntlPts[i+1][lastValIDX], mapPolyCntlPts[i][lastValIDX], _mapTypeIDX, currDistMsrMorphs);		
+		}
+		//left and right side - vertical diff
+		for(int j=1;j<lastValIDX;++j) {
+			int id = 0;
+			for(int k=-1;k<2;++k) {	idxs[id][0] = 0;idxs[id][1]=j+k;idxs[id][2]=_sliceIDX;	++id;} id=0;
+
+			res[0][j] = calcDistortion(idxs, mapPolyCntlPts[0][j-1],mapPolyCntlPts[0][j+1], mapPolyCntlPts[0][j], _mapTypeIDX, currDistMsrMorphs);
+			for(int k=-1;k<2;++k) {	idxs[id][0] = lastValIDX;idxs[id][1]=j+k;idxs[id][2]=_sliceIDX;	++id;} id=0;
+			res[lastValIDX][j] = calcDistortion(idxs, mapPolyCntlPts[lastValIDX][j-1],mapPolyCntlPts[lastValIDX][j+1], mapPolyCntlPts[lastValIDX][j], _mapTypeIDX, currDistMsrMorphs);
+		}
+		//interior
+		for(int i=1; i<lastValIDX;++i) {
+			for(int j=1;j<lastValIDX;++j) {
+				int id = 0; 
+				for(int k=-1;k<2;++k) {	idxs[id][0] = i+k;idxs[id][1]=j;idxs[id][2]=_sliceIDX;	++id;} id=0;
+				float horizDist = calcDistortion(idxs, mapPolyCntlPts[i-1][j],mapPolyCntlPts[i+1][j], mapPolyCntlPts[i][j], _mapTypeIDX, currDistMsrMorphs);
+				for(int k=-1;k<2;++k) {	idxs[id][1] = j+k;idxs[id][0]=i;idxs[id][2]=_sliceIDX;	++id;} id=0;
+				float vertDist = calcDistortion(idxs, mapPolyCntlPts[i][j-1],mapPolyCntlPts[i][j+1], mapPolyCntlPts[i][j], _mapTypeIDX, currDistMsrMorphs);
+				res[i][j]=(horizDist + vertDist)/2.0f;
+			}
+		}
+		return res;
+	}
+	
+	/**
+	 * calculate distortion between stPoly and endPoly - measure how far their average varies from middlePoly - square distance
+	 * @param idxs 3 x 3 array, idx 0 is st, end, or middle poly, idx 1 is i, j and k value
+	 * @param stPoly start poly control points
+	 * @param endPoly end poly control points
+	 * @param middlePoly middle poly, to be compared to
+	 * @param _mapTypeIDX type of map
+	 * @param currDistMsrMorphs morph to use to calculate transformation
+	 * @return squared distance between given middle map and morph map at t = .5f
+	 */
+	protected final float calcDistortion(int[][] idxs, myPointf[] stPoly, myPointf[] endPoly, myPointf[] middlePoly, int _mapTypeIDX, baseMorph currDistMsrMorphs) {
+		
+		baseMap[] keyFrames = new baseMap[2];
+		myPointf[][] polys = new myPointf[][] {stPoly,endPoly};
+		for(int i=0;i<keyFrames.length;++i) {
+			keyFrames[i] = this.buildKeyFrameMapOfPassedType(_mapTypeIDX, i, polys[i], " for Dist Measure : poly @ ["+idxs[i][0]+", "+idxs[i][1]+"]");
+		}
+		baseMap compareMap = this.buildCopyMapOfPassedMapType(keyFrames[0], "Copy For dist Measure @ ["+idxs[2][0]+", "+idxs[2][1]+"]");
+		compareMap.resetCntlPts(middlePoly);
+		
+		currDistMsrMorphs.setNewKeyFrameMaps(keyFrames[0], keyFrames[1]);
+		currDistMsrMorphs.setMorphT(.5f);
+		baseMap currMorphMap = currDistMsrMorphs.getCurMorphMap();
+		
+		float res = findSqDistBetween2MapVerts(compareMap, currMorphMap);
+		return res;
+	}
+	
+	/**
+	 * find the square distance between two maps
+	 * @param aMap
+	 * @param bMap
+	 * @return
+	 */
+	public float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
+		float res = 0.0f;
+		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
+		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
+		return res;
+	}
 
 	/**
 	 * build oriented lineup of specific # of frames (default 5) where each frame is registered to keyframe A, and then displayed side-by-side
@@ -330,7 +503,8 @@ public class mapPairManager {
 		for(Float t : rawMorphMaps.keySet()) {
 			baseMap tmpMorphMap = rawMorphMaps.get(t);
 			lineUpMorphMaps.put(t, mapRegDistCalc.calcDifferenceBetweenMaps(tmpMorphMap, maps[0]));
-		}		
+		}	
+		
 	}
 
 	//////////////
@@ -592,6 +766,7 @@ public class mapPairManager {
 		
 		setPopUpWins_RectDims();
 		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphValsFromUI(upd);}
+		for(int i=0;i<this.distMsrMorphs.length;++i) {distMsrMorphs[i].updateMorphValsFromUI(upd);}
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true, true);
 	}

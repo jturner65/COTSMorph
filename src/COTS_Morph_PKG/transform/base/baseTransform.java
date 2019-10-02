@@ -100,5 +100,5 @@ public abstract class baseTransform {
 		res += getDebugStr_Indiv()+"\n";
 		return res;		
 	};
-	protected abstract String getDebugStr_Indiv();
+	public abstract String getDebugStr_Indiv();
 }//class baseTransform

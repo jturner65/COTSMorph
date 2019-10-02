@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.utils;
 
+import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
-import COTS_Morph_PKG.maps.base.baseMap;
 import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;

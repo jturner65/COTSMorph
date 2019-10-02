@@ -86,6 +86,8 @@ public class mapUpdFromUIData {
 	public int getCurrMorphType_ShapeIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphTypeShape);}
 	public int getCurrMorphType_COVPathIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphTypeCOVPath);}
 	
+	public int getCurrDistTransformIDX() {return intValues.get(COTS_MorphWin.gIDX_DistTestTransform);}
+	
 	/**
 	 * access bools
 	 */
