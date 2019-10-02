@@ -1,12 +1,14 @@
-package COTS_Morph_PKG.morphs.analysis;
+package COTS_Morph_PKG.analysis.morphs;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.morphs.analysis.base.baseMorphAnalyzer;
-import COTS_Morph_PKG.morphs.analysis.base.baseProbSummary;
+import COTS_Morph_PKG.analysis.morphs.base.baseMorphAnalyzer;
+import COTS_Morph_PKG.analysis.prob.myProbSummary_Flts;
+import COTS_Morph_PKG.analysis.prob.base.baseProbSummary;
 import COTS_Morph_PKG.morphs.base.baseMorph;
 import base_UI_Objects.IRenderInterface;
+import base_UI_Objects.my_procApplet;
 
 public class morphAreaTrajAnalyzer extends baseMorphAnalyzer {
 	/**
@@ -40,13 +42,13 @@ public class morphAreaTrajAnalyzer extends baseMorphAnalyzer {
 	}
 
 	@Override
-	protected boolean drawSingleSummary(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult) {
+	protected boolean drawSingleSummary(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult) {
 		myProbSummary_Flts smry = ((myProbSummary_Flts)smryRaw);
 		TreeMap<String,String> smryStrings = smry.summaryStringAra("A");
 		pa.pushMatrix();pa.pushStyle();
 		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), ltrMult*.3f, smryStrings.get("summaryName"));
 		for(int i=0;i<mmntDispLabels.length;++i) {
-			showOffsetText_RightSideMenuAbs(pa.getClr(IRenderInterface.gui_DarkBlue, 255), ltrMult*3.5f, smryStrings.get(mmntDispLabels[i]));
+			showOffsetText_RightSideMenuAbs(pa, pa.getClr(IRenderInterface.gui_DarkBlue, 255), ltrMult*3.5f, smryStrings.get(mmntDispLabels[i]));
 		}			
 		pa.popStyle();pa.popMatrix();
 		pa.translate(0.0f,txtLineYDisp,0.0f);	
@@ -55,7 +57,7 @@ public class morphAreaTrajAnalyzer extends baseMorphAnalyzer {
 	}//drawSingleSummary
 
 	@Override
-	protected boolean drawSingleSmryGraph(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp,float ltrMult) {
+	protected boolean drawSingleSmryGraph(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp,float ltrMult) {
 		
 		return true;
 	}

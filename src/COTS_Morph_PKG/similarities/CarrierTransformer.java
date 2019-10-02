@@ -1,18 +1,23 @@
 package COTS_Morph_PKG.similarities;
 
-import COTS_Morph_PKG.similarities.base.baseSimilarity;
+import COTS_Morph_PKG.similarities.base.baseTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class CarrierSimilarity extends baseSimilarity {
+/**
+ * calculate carrier-based transform 
+ * @author john
+ *
+ */
+public class CarrierTransformer extends baseTransformer {
 
-	public CarrierSimilarity(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {
+	public CarrierTransformer(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {
 		super(_name + "_Carrier_Sim", _n, _I, _J);
 	}
 
-	public CarrierSimilarity(String _name, CarrierSimilarity _otr) {
+	public CarrierTransformer(String _name, CarrierTransformer _otr) {
 		super(_name + "_Carrier_Sim_Cpy",_otr);
 	}
 	

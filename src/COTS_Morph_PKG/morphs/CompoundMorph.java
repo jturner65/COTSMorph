@@ -2,10 +2,9 @@ package COTS_Morph_PKG.morphs;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.morphs.base.baseMorph;
-import COTS_Morph_PKG.morphs.base.baseSimpleMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -42,7 +41,7 @@ public class CompoundMorph extends baseMorph {
 	 * array of current morphs to use - 1st index is type of morph, 2nd idx is 
 	 */
 
-	protected baseSimpleMorph[][] morphsAvailable;
+	protected baseMorph[][] morphsAvailable;
 	
 	/**
 	 * class to perform registrations and reg-related calculations, if necessary for a particular morph, for each type of constituent morph
@@ -75,17 +74,18 @@ public class CompoundMorph extends baseMorph {
 		mapRegDistCalcs = new mapRegDist[numMorphFeatures];
 		currMorphToUseIDX = new int[numMorphFeatures];
 		_currPerMorphMaps = new baseMap[numMorphFeatures];
-		morphsAvailable = new baseSimpleMorph[numMorphFeatures][mapPairManager.morphTypes.length-1];//don't allow for compound of compound morphs
+		morphsAvailable = new baseMorph[numMorphFeatures][mapPairManager.morphTypes.length-1];//don't allow for compound of compound morphs
 		for(int i=0;i<numMorphFeatures;++i) {
 			currMorphToUseIDX[i]=0;
 			_currPerMorphMaps[i]=getCopyOfMap(mapA, "Map for "+morphFtrNames[i]);
 			mapRegDistCalcs[i]=new mapRegDist(mapMgr, mapA, mapB);
-			ArrayList<baseSimpleMorph> tmpNewMorphs = new ArrayList<baseSimpleMorph>();
+			ArrayList<baseMorph> tmpNewMorphs = new ArrayList<baseMorph>();
 			for(int j=0;j<mapPairManager.morphTypes.length;++j) {
 				if(j==mapPairManager.CompoundMorphIDX) {continue;}
-				tmpNewMorphs.add((baseSimpleMorph) mapMgr.buildMorph(j));
+				//tmpNewMorphs.add((baseSimpleMorph) mapMgr.buildMorph(j));
+				tmpNewMorphs.add(mapMgr.buildMorph(j));
 			}
-			morphsAvailable[i] = tmpNewMorphs.toArray(new baseSimpleMorph[0]);
+			morphsAvailable[i] = tmpNewMorphs.toArray(new baseMorph[0]);
 		}
 	}
 

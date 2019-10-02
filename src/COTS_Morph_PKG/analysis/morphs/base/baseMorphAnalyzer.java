@@ -1,8 +1,9 @@
-package COTS_Morph_PKG.morphs.analysis.base;
+package COTS_Morph_PKG.analysis.morphs.base;
 
 import java.util.ArrayList;
+
+import COTS_Morph_PKG.analysis.prob.base.baseProbSummary;
 import COTS_Morph_PKG.morphs.base.baseMorph;
-import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -11,8 +12,7 @@ import base_Utils_Objects.vectorObjs.myVectorf;
 public abstract class baseMorphAnalyzer {
 	public final int ID;
 	protected static int idGen = 0;
-	protected my_procApplet pa;
-	protected COTS_MorphWin win;
+	//protected my_procApplet pa;
 	protected baseMorph ownrMorph;
 	/**
 	 * current morph trajectory summary
@@ -31,7 +31,7 @@ public abstract class baseMorphAnalyzer {
 
 	public baseMorphAnalyzer(baseMorph _ownrMorph) {
 		ID = idGen++;
-		ownrMorph=_ownrMorph; pa=ownrMorph.pa; win=ownrMorph.win;
+		ownrMorph=_ownrMorph; 
 	}
 		
 	@SuppressWarnings("rawtypes")
@@ -42,7 +42,7 @@ public abstract class baseMorphAnalyzer {
 	 * @param tclr
 	 * @param txt
 	 */
-	protected final void showOffsetText_RightSideMenuAbs(int[] tclr, float dist,  String txt) {
+	protected final void showOffsetText_RightSideMenuAbs(my_procApplet pa, int[] tclr, float dist,  String txt) {
 		pa.setFill(tclr,tclr[3]);pa.setStroke(tclr,tclr[3]);
 		pa.text(txt,0.0f,0.0f,0.0f);
 		pa.translate(dist, 0.0f,0.0f);	
@@ -50,7 +50,7 @@ public abstract class baseMorphAnalyzer {
 	
 	
 	
-	public void drawAnalyzerData(String[] mmntDispLabels, float[] trajWinDims, String name) {
+	public void drawAnalyzerData(my_procApplet pa, String[] mmntDispLabels, float[] trajWinDims, String name) {
 		float yDisp = trajWinDims[3];
 		pa.pushMatrix();pa.pushStyle();		
 		pa.translate(5.0f, yDisp, 0.0f);
@@ -58,14 +58,14 @@ public abstract class baseMorphAnalyzer {
 		pa.popStyle();pa.popMatrix();
 		pa.pushMatrix();pa.pushStyle();
 			pa.translate(5.0f, 2*yDisp, 0.0f);			
-			drawAllSummaryInfo(mmntDispLabels, yDisp, trajWinDims[0]);
+			drawAllSummaryInfo(pa,mmntDispLabels, yDisp, trajWinDims[0]);
 		pa.popStyle();pa.popMatrix();
 		
 		pa.translate(trajWinDims[0], 0.0f, 0.0f);
 		pa.line(0.0f,trajWinDims[2], 0.0f, 0.0f, trajWinDims[0]+ trajWinDims[2], 0.0f );
 	}//_drawAnalyzerData
 	
-	public void drawAnalyzerGraphs(String[] mmntDispLabels, float[] trajWinDims, String name) {
+	public void drawAnalyzerGraphs(my_procApplet pa, String[] mmntDispLabels, float[] trajWinDims, String name) {
 		float yDisp = trajWinDims[3];
 		pa.pushMatrix();pa.pushStyle();		
 		pa.translate(5.0f, yDisp, 0.0f);
@@ -73,7 +73,7 @@ public abstract class baseMorphAnalyzer {
 		pa.popStyle();pa.popMatrix();
 		pa.pushMatrix();pa.pushStyle();
 			pa.translate(5.0f, 2*yDisp, 0.0f);			
-			drawAllGraphInfo(mmntDispLabels, yDisp, trajWinDims[0]);
+			drawAllGraphInfo(pa,mmntDispLabels, yDisp, trajWinDims[0]);
 		pa.popStyle();pa.popMatrix();
 		
 		pa.translate(trajWinDims[0], 0.0f, 0.0f);
@@ -82,7 +82,7 @@ public abstract class baseMorphAnalyzer {
 	
 	
 	
-	public final void drawAllSummaryInfo(String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {//
+	public final void drawAllSummaryInfo(my_procApplet pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {//
 		float mult = (perDispBlockWidth)/((mmntDispLabels.length + 1) * 3.1f);
 		//System.out.println("perDispBlockWidth: " + perDispBlockWidth + " | mult : " + mult);
 		pa.pushMatrix();pa.pushStyle();
@@ -91,17 +91,17 @@ public abstract class baseMorphAnalyzer {
 			//title of each summary 
 			pa.pushMatrix();pa.pushStyle();
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255),1.4f* mult, statDispLabels[i]);
-				for(int j=0;j<mmntDispLabels.length;++j) {		showOffsetText_RightSideMenuAbs(pa.getClr(IRenderInterface.gui_DarkBlue, 255), mult*3.5f, mmntDispLabels[j]);}
+				for(int j=0;j<mmntDispLabels.length;++j) {		showOffsetText_RightSideMenuAbs(pa,pa.getClr(IRenderInterface.gui_DarkBlue, 255), mult*3.5f, mmntDispLabels[j]);}
 			pa.popStyle();pa.popMatrix();			
 			pa.translate(0.0f,txtLineYDisp,0.0f);
 
 			
-			drawSingleSummary( mmntDispLabels, summaries[i],txtLineYDisp,mult);
+			drawSingleSummary(pa,mmntDispLabels, summaries[i],txtLineYDisp,mult);
 			pa.translate(0.0f,.8f*txtLineYDisp,0.0f);
 		}
 		pa.popStyle();pa.popMatrix();
 	}
-	protected abstract boolean drawSingleSummary(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
+	protected abstract boolean drawSingleSummary(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
 	
 	/**
 	 * draw stats graph info
@@ -109,7 +109,7 @@ public abstract class baseMorphAnalyzer {
 	 * @param txtLineYDisp
 	 * @param perDispBlockWidth
 	 */
-	public final void drawAllGraphInfo(String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {
+	public final void drawAllGraphInfo(my_procApplet pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {
 		float mult = (perDispBlockWidth)/((mmntDispLabels.length + 1) * 3.1f);
 		pa.pushMatrix();pa.pushStyle();
 		if(mult < 17) {pa.scale(1.0f,.93f,1.0f);}
@@ -121,12 +121,12 @@ public abstract class baseMorphAnalyzer {
 			pa.translate(0.0f,txtLineYDisp,0.0f);
 
 			
-			drawSingleSmryGraph( mmntDispLabels, summaries[i],txtLineYDisp,mult);
+			drawSingleSmryGraph(pa,mmntDispLabels, summaries[i],txtLineYDisp,mult);
 			pa.translate(0.0f,.8f*txtLineYDisp,0.0f);
 		}
 		pa.popStyle();pa.popMatrix();
 	}//drawAllGraphInfo
-	protected abstract boolean drawSingleSmryGraph(String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
+	protected abstract boolean drawSingleSmryGraph(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
 	
 	
 	protected myPointf[][] buildPtTrajVals(ArrayList<myPointf> pts){

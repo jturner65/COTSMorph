@@ -3,7 +3,7 @@ package COTS_Morph_PKG.maps.base;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -85,6 +85,7 @@ public abstract class baseMap {
 	protected float[] polyPointTVals;	
 		//# of subdivisions per poly for checkerboard
 	protected float subDivLenPerPoly;
+	
 		//# of total points for edge of map
 	protected static final float numTtlPtsPerEdge = 300.0f;
 		//array of 2 poly colors
@@ -96,8 +97,8 @@ public abstract class baseMap {
 	private static final float rotScl = .0025f;
 		//base radius of drawn sphere
 	public static final float sphereRad = 5.0f;
-	protected static my_procApplet pa;
-	protected COTS_MorphWin win;
+	public static my_procApplet pa;
+	public COTS_MorphWin win;
 		//title of map for display	
 	public final String mapTitle;
 	public final float mapTtlXOff;	
@@ -195,59 +196,6 @@ public abstract class baseMap {
 		resetMapUpdateFlags = new mapCntlFlags();
 		resetMapUpdateFlags.setResetBranching(true);	
 	}//initCntlPtsBasisVecsMapUpdateFlags
-
-
-	/**
-	 * register another map to this map - this will transform the passed map to be as close as possible to this map and return the changes as parameters
-	 * forces correspondence between vertices in both maps  - will orient maps to have there vertices closest to one another
-	 * @param otrMap the other map to register to this one
-	 * @param dispBetweenMaps displacement vector between maps
-	 * @param angleAndScale array holding angle (idx 0) and scale (idx 1)
-	 */
-	public void findDifferenceToMe(baseMap otrMap, myVectorf dispBetweenMaps, float[] angleAndScale) {
-		myPointf A = cntlPtCOV, B = otrMap.cntlPtCOV; 
-		myVectorf AP, BP,rBP;
-		float sin = 0.0f, cos = 0.0f;
-		//geometric avg of vector lengths from cov to cntlpts
-		double scl = 1.0;
-		for(int i=0;i<cntlPts.length;++i) {
-		  AP = new myVectorf(A, cntlPts[i]);
-		  BP = new myVectorf(B, otrMap.cntlPts[i]);
-		  scl *= AP.magn/BP.magn;
-		  //don't need to normalize since atan2 takes care of this (arctan(y/x))
-		  rBP = BP.rotMeAroundAxis(otrMap.basisVecs[0], MyMathUtils.halfPi_f);
-		  cos += AP._dot(BP);
-		  sin += AP._dot(rBP);
-		}
-		angleAndScale[0] = (float) Math.atan2(sin,cos);
-		dispBetweenMaps.set(new myVectorf(B,A));
-		angleAndScale[1] = (float) Math.pow(scl, 1.0/cntlPts.length);
-	}
-	/**
-	 * register another map to this map - this will transform the passed map to be as close as possible to this map and return the changes as parameters
-	 * @param otrMap the other map to register to this one
-	 * @param _idxOffset offset in cntl point array - use this to orient other control points for closer fit
-	 * @param dispBetweenMaps displacement vector between maps
-	 * @param angleAndScale array holding angle (idx 0) and scale (idx 1)
-	 */
-	public void findDifferenceToMe(baseMap otrMap, int _idxOffset, myVectorf dispBetweenMaps, float[] angleAndScale) {  
-		myPointf A = cntlPtCOV, B = otrMap.cntlPtCOV; 
-		myVectorf AP, BP,rBP;
-		float sin = 0.0f, cos = 0.0f;
-		//geometric avg of vector lengths from cov to cntlpts
-		double scl = 1.0;
-		for(int i=0;i<cntlPts.length;++i) {
-		  AP = new myVectorf(A, cntlPts[(i+_idxOffset)%cntlPts.length]);
-		  BP = new myVectorf(B, otrMap.cntlPts[i]);
-		  scl *= AP.magn/BP.magn;
-		  rBP = BP.rotMeAroundAxis(otrMap.basisVecs[0], MyMathUtils.halfPi_f);
-		  cos += AP._dot(BP);
-		  sin += AP._dot(rBP);
-		}
-		angleAndScale[0] = (float) Math.atan2(sin,cos);// + (_idxOffset * (MyMathUtils.twoPi_f/cntlPts.length));
-		dispBetweenMaps.set(new myVectorf(B,A));
-		angleAndScale[1] = (float) Math.pow(scl, 1.0/cntlPts.length);
-	}//findDifferenceToMe
 
 	
 	/**

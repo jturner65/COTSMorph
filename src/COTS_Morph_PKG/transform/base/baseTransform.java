@@ -46,14 +46,6 @@ public abstract class baseTransform {
 		I=new myVectorf(_I);
 		J=new myVectorf(_J);
 	}
-	
-//	/**
-//	 * build this transformation from control point array
-//	 * 		 cntl pts expected to be in circle so that 0 maps to 3 and 1 maps to 2
-//	 * @param cntlPts
-//	 * @param flags any instance-specific flags to use to build transformation 
-//	 */	
-//	public abstract void buildTransformation(myPointf[] cntlPts,  mapCntlFlags flags);
 	/**
 	 * build this transformation from two edge pt arrays
 	 * 		 cntl pts expected to be in circle so that 0 maps to 3 and 1 maps to 2

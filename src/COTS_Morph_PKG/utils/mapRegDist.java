@@ -1,7 +1,8 @@
 package COTS_Morph_PKG.utils;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
+import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
@@ -67,7 +68,64 @@ public class mapRegDist {
 			copyMap = calcDifferenceBetweenMaps(fromMap, toMap, dispMod);
 		}
 				
+	}	
+	
+	/**
+	 * register "from" map to "to" map - this will transform the from map to be as close as possible to the "to" map and return the changes as parameters
+	 * forces correspondence between vertices in both maps  - will orient maps to have there vertices closest to one another
+	 * @param dispBetweenMaps displacement vector between maps
+	 * @param angleAndScale array holding angle (idx 0) and scale (idx 1)
+	 */
+	protected void findDifferenceBetweenMaps(myVectorf dispBetweenMaps, float[] angleAndScale) {
+		myPointf A = toMap.getCOV(), B = fromMap.getCOV();
+		myPointf[] cntlPtsA = toMap.getCntlPts(), cntlPtsB = fromMap.getCntlPts();
+		
+		myVectorf AP, BP,rBP;
+		float sin = 0.0f, cos = 0.0f;
+		//geometric avg of vector lengths from cov to cntlpts
+		double scl = 1.0;
+		for(int i=0;i<cntlPtsA.length;++i) {
+		  AP = new myVectorf(A, cntlPtsA[i]);
+		  BP = new myVectorf(B, cntlPtsB[i]);
+		  scl *= AP.magn/BP.magn;
+		  //don't need to normalize since atan2 takes care of this (arctan(y/x))
+		  rBP = BP.rotMeAroundAxis(fromMap.basisVecs[0], MyMathUtils.halfPi_f);
+		  cos += AP._dot(BP);
+		  sin += AP._dot(rBP);
+		}
+		angleAndScale[0] = (float) Math.atan2(sin,cos);
+		dispBetweenMaps.set(new myVectorf(B,A));
+		angleAndScale[1] = (float) Math.pow(scl, 1.0/cntlPtsA.length);
 	}
+	/**
+	 * register "from" map to "to" map - this will transform the from map to be as close as possible to the "to" map and return the changes as parameters
+	 * @param _idxOffset offset in cntl point array - use this to orient other control points for closer fit
+	 * @param dispBetweenMaps displacement vector between maps
+	 * @param angleAndScale array holding angle (idx 0) and scale (idx 1)
+	 */
+	protected void findDifferenceBetweenMaps(int _idxOffset, myVectorf dispBetweenMaps, float[] angleAndScale) {  
+		myPointf A = toMap.getCOV(), B = fromMap.getCOV();
+		myPointf[] cntlPtsA = toMap.getCntlPts(), cntlPtsB = fromMap.getCntlPts();
+		
+		myVectorf AP, BP,rBP;
+		float sin = 0.0f, cos = 0.0f;
+		//geometric avg of vector lengths from cov to cntlpts
+		double scl = 1.0;
+		for(int i=0;i<cntlPtsA.length;++i) {
+		  AP = new myVectorf(A, cntlPtsA[(i+_idxOffset)%cntlPtsA.length]);
+		  BP = new myVectorf(B, cntlPtsB[i]);
+		  scl *= AP.magn/BP.magn;
+		  rBP = BP.rotMeAroundAxis(fromMap.basisVecs[0], MyMathUtils.halfPi_f);
+		  cos += AP._dot(BP);
+		  sin += AP._dot(rBP);
+		}
+		angleAndScale[0] = (float) Math.atan2(sin,cos);// + (_idxOffset * (MyMathUtils.twoPi_f/cntlPts.length));
+		dispBetweenMaps.set(new myVectorf(B,A));
+		angleAndScale[1] = (float) Math.pow(scl, 1.0/cntlPtsA.length);
+	}//findDifferenceToMe
+	
+	
+	
 	/**
 	 * need this to return map 
 	 * @param fromMap
@@ -78,14 +136,13 @@ public class mapRegDist {
 	private baseMap calcDifferenceBetweenMaps(baseMap fromMap, baseMap toMap, boolean dispMod) {
 		dispBetweenMaps = new myVectorf();
 		angleAndScale = new float[2];
-		toMap.findDifferenceToMe(fromMap, dispBetweenMaps, angleAndScale);
+		//toMap.findDifferenceToMe(fromMap, dispBetweenMaps, angleAndScale);
+		findDifferenceBetweenMaps(dispBetweenMaps, angleAndScale);
 		if(dispMod) {
 			mapMgr.win.getMsgObj().dispInfoMessage("mapRegDist", "calcDifferenceBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
 		}
-		//System.out.println("Building copy of from map : " + fromMap.mapTitle);
 		baseMap tmpMap = mapMgr.buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
 		tmpMap.registerMeToVals(dispBetweenMaps, angleAndScale);
-		//System.out.println("Done Building copy of from map : " + fromMap.mapTitle);
 		return tmpMap;	
 	}	
 	
@@ -105,7 +162,8 @@ public class mapRegDist {
 		for(int i=0;i<fromMap.getNumCntlPts();++i) {
 			myVectorf tmpDispBetweenMaps = new myVectorf();
 			float[] tmpAngleAndScale = new float[2];
-			toMap.findDifferenceToMe(fromMap, i, tmpDispBetweenMaps, tmpAngleAndScale);
+			//toMap.findDifferenceToMe(fromMap, i, tmpDispBetweenMaps, tmpAngleAndScale);
+			findDifferenceBetweenMaps(i, tmpDispBetweenMaps, tmpAngleAndScale);
 			baseMap tmpMap = mapMgr.buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
 			tmpMap.shiftCntlPtIDXs(i);
 			tmpMap.registerMeToVals(tmpDispBetweenMaps, tmpAngleAndScale);

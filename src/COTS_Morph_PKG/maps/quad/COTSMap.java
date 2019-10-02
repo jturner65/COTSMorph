@@ -3,10 +3,10 @@ package COTS_Morph_PKG.maps.quad;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.maps.quad.base.baseQuadMap;
-import COTS_Morph_PKG.similarities.COTS_Similarity;
+import COTS_Morph_PKG.similarities.COTS_Transformer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -24,7 +24,7 @@ public class COTSMap extends baseQuadMap {
 	/**
 	 * data holding COTS map control values
 	 */
-	public COTS_Similarity cots;
+	public COTS_Transformer cots;
 	/**
 	 * currently set branch sharing strategy, for maps that use angle branching (i.e. COTS)
 	 * 0 : do not share branching; 1: force all branching to be map A's branching; 2 : force all branching to be map B's branching; 3 : force all branching to be most recently edited map's branching
@@ -37,7 +37,7 @@ public class COTSMap extends baseQuadMap {
 	
 	public COTSMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {	
 		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame,_isBaryQuad, _mapTitle);
-		cots = new COTS_Similarity(mapTitle,basisVecs[0], basisVecs[2], basisVecs[1]);
+		cots = new COTS_Transformer(mapTitle,basisVecs[0], basisVecs[2], basisVecs[1]);
 		updateMapFromCntlPtVals_Indiv(resetMapUpdateFlags);
 		finalizeValsAfterCntlPtsMod();
 		edgePts = buildEdgePoints();
@@ -45,7 +45,7 @@ public class COTSMap extends baseQuadMap {
 	
 	public COTSMap(String _mapTitle, COTSMap _otrMap) {
 		super(_mapTitle,  _otrMap);
-		cots = new COTS_Similarity(_mapTitle, _otrMap.cots);
+		cots = new COTS_Transformer(_mapTitle, _otrMap.cots);
 		//updateMapFromCntlPtVals_Indiv(regMapUpdateFlags);
 		edgePts = buildEdgePoints();
 		//currBranchShareStrategy = _otrMap.currBranchShareStrategy;

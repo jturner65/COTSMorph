@@ -7,11 +7,11 @@ import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
 /**
- * this class describes a proper similarity transformation driven by one or more spirals
+ * this class describes a proper similarity transformation driven by one or more spiral transforms 
  * @author john
  *
  */
-public abstract class baseSimilarity {
+public abstract class baseTransformer {
 	public final String name;
 	/**
 	 * basis of plane similarity is working in
@@ -23,7 +23,7 @@ public abstract class baseSimilarity {
 	protected SpiralTransform[] trans;
 
 	
-	public baseSimilarity(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	
+	public baseTransformer(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	
 		name=_name;
 		norm=new myVectorf(_n);
 		I=new myVectorf(_I);
@@ -31,7 +31,7 @@ public abstract class baseSimilarity {
 		trans = initTransform();
 	}
 	
-	public baseSimilarity(String _name, baseSimilarity _otr) {
+	public baseTransformer(String _name, baseTransformer _otr) {
 		name=_name;
 		norm=new myVectorf(_otr.norm);
 		I=new myVectorf(_otr.I);
@@ -114,9 +114,10 @@ public abstract class baseSimilarity {
 	 * @return
 	 */
 	public final float drawRightSideBarMenuDescr(my_procApplet pa, float yOff, float sideBarYDisp) {
-		for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, transLbls[i]);}
-		yOff = drawRightSideBarMenuDescr_Indiv(pa, yOff, sideBarYDisp);
-		return yOff;
+		return drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, transLbls);
+//		for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, transLbls[i]);}
+//		yOff = drawRightSideBarMenuDescr_Indiv(pa, yOff, sideBarYDisp);
+//		return yOff;
 	}
 	public final float drawRightSideBarMenuDescr(my_procApplet pa, float yOff, float sideBarYDisp, String[] _transLbls) {
 		for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, _transLbls[i]);}

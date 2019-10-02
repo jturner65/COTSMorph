@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.similarities;
 
 import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.similarities.base.baseSimilarity;
+import COTS_Morph_PKG.similarities.base.baseTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
@@ -13,7 +13,7 @@ import base_Utils_Objects.vectorObjs.myVectorf;
  * @author john
  *
  */
-public class Reg_SpiralSimWithTranslation extends baseSimilarity {
+public class Reg_SpiralSimWithTranslation extends baseTransformer {
 	
 	protected myVectorf translation;
 

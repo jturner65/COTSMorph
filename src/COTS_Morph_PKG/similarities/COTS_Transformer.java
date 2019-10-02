@@ -1,15 +1,19 @@
 package COTS_Morph_PKG.similarities;
 
-import COTS_Morph_PKG.similarities.base.baseSimilarity;
+import COTS_Morph_PKG.similarities.base.baseTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
+/**
+ * calculate COTS transformation : spiral of spiral
+ * @author john
+ *
+ */
+public class COTS_Transformer extends baseTransformer {
 
-public class COTS_Similarity extends baseSimilarity {
-
-	public COTS_Similarity(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	super(_name + "_COTS_Sim",_n, _I, _J);	}
-	public COTS_Similarity(String _name, COTS_Similarity _otr) {	super(_name + "_COTS_Sim_Cpy",_otr);}
+	public COTS_Transformer(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	super(_name + "_COTS_Sim",_n, _I, _J);	}
+	public COTS_Transformer(String _name, COTS_Transformer _otr) {	super(_name + "_COTS_Sim_Cpy",_otr);}
 	
 	
 	/**

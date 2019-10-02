@@ -1,25 +1,25 @@
-package COTS_Morph_PKG.morphs.carrier;
+package COTS_Morph_PKG.morphs.multiTransform;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
-import COTS_Morph_PKG.morphs.base.baseSimpleMorph;
-import COTS_Morph_PKG.similarities.CarrierSimilarity;
-import COTS_Morph_PKG.similarities.base.baseSimilarity;
+import COTS_Morph_PKG.mapManager.mapPairManager;
+import COTS_Morph_PKG.morphs.multiTransform.base.baseMultiTransformMorphs;
+import COTS_Morph_PKG.similarities.CarrierTransformer;
+import COTS_Morph_PKG.similarities.base.baseTransformer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class DualCarrierSimMorph extends baseSimpleMorph {
+public class DualCarrierSimMorph extends baseMultiTransformMorphs {
 
 	public DualCarrierSimMorph(COTS_MorphWin _win, mapPairManager _mapMgr, String _morphTitle) {super(_win, _mapMgr, _morphTitle);}
 
 	@Override
-	protected final baseSimilarity buildSimilarity(int i) {
-		return new CarrierSimilarity(morphTitle+"_"+i,mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);		
+	protected final baseTransformer buildSimilarity(int i) {
+		return new CarrierTransformer(morphTitle+"_"+i,mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);		
 	};
 		
 	@Override
-	protected final myPointf[][] getDiagPtsAras(){
+	protected final myPointf[][] getCornerPtAras(){
 		myPointf[][] res = new myPointf[2][];
 		myPointf[] mapADiag = mapA.getCntlPtDiagonal(),mapBDiag = mapB.getCntlPtDiagonal(); 
 		res[0] = new myPointf[] {mapADiag[0],mapADiag[1],mapBDiag[0],mapBDiag[1]};
@@ -65,7 +65,7 @@ public class DualCarrierSimMorph extends baseSimpleMorph {
 	@Override
 	public final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
 		if(null==transforms) {
-			for(int i=0;i<Apts.length;++i) {	destPts[i]=myPointf._add(new myPointf(Apts[i]),myVectorf._mult(normDispTimeVec, tB));}
+			for(int i=0;i<Apts.length;++i) {	destPts[i]=  myPointf._add(myPointf._mult(Apts[i], tA), myPointf._mult(Bpts[i], tB));}	//forces to lerp calc - only use if not yet properly initialized
 		} else {
 			int carrierIdx = 0;
 			for(int i=0;i<Apts.length;++i) {	

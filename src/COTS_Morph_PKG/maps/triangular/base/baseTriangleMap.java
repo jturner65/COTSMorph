@@ -3,7 +3,7 @@ package COTS_Morph_PKG.maps.triangular.base;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;

@@ -1,4 +1,4 @@
-package COTS_Morph_PKG.morphs.analysis.base;
+package COTS_Morph_PKG.analysis.prob.base;
 
 import java.util.TreeMap;
 

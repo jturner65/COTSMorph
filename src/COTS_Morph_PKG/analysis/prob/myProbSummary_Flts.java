@@ -1,8 +1,8 @@
-package COTS_Morph_PKG.morphs.analysis;
+package COTS_Morph_PKG.analysis.prob;
 
 import java.util.*;
 
-import COTS_Morph_PKG.morphs.analysis.base.baseProbSummary;
+import COTS_Morph_PKG.analysis.prob.base.baseProbSummary;
 
 
 

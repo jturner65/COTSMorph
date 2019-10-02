@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;

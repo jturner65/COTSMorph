@@ -9,6 +9,11 @@ import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
+/**
+ * this is a transformation between two edges using a spiral
+ * @author john
+ *
+ */
 public class SpiralTransform extends baseTransform {
 	/**
 	 * Spiral scaling factor
@@ -76,8 +81,7 @@ public class SpiralTransform extends baseTransform {
 			//System.out.println(name+" : Old alpha : " + old_alpha + " alphaNew : " + alphaNew + " | a : " + a + " | a_BranchDisp : " + a_BranchDisp);
 			//if(Math.abs(old_alpha - alphaNew)
 			
-		}
-		
+		}		
 	}
 	
 	/**
@@ -87,7 +91,7 @@ public class SpiralTransform extends baseTransform {
 	 * @param flags any instance-specific flags to use to build transformation 
 	 */	
 	@Override
-	public final void buildTransformation(myPointf[] e0,myPointf[] e1,  mapCntlFlags flags) {
+	public final void buildTransformation(myPointf[] e0, myPointf[] e1,  mapCntlFlags flags) {
 	    m = spiralScale(e0[0],e0[1],e1[0],e1[1]); 	
 	    float alphaNew = spiralAngle(e0[0],e0[1],e1[0],e1[1]); // new values	
 	    

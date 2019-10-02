@@ -1,4 +1,4 @@
-package COTS_Morph_PKG.managers.mapManagers;
+package COTS_Morph_PKG.mapManager;
 
 
 import java.util.TreeMap;
@@ -10,13 +10,13 @@ import COTS_Morph_PKG.maps.triangular.BiLinTriPolyMap;
 import COTS_Morph_PKG.maps.triangular.PointNormTriPolyMap;
 import COTS_Morph_PKG.morphs.CompoundMorph;
 import COTS_Morph_PKG.morphs.base.baseMorph;
-import COTS_Morph_PKG.morphs.carrier.CarrierSimDiagMorph;
-import COTS_Morph_PKG.morphs.carrier.CarrierSimTransformMorph;
-import COTS_Morph_PKG.morphs.carrier.DualCarrierSimMorph;
-import COTS_Morph_PKG.morphs.carrier.QuadKeyEdgeSpiralMorph;
-import COTS_Morph_PKG.morphs.direct.LERPMorph;
-import COTS_Morph_PKG.morphs.direct.LogPolarMorph;
-import COTS_Morph_PKG.morphs.direct.RigidMorph;
+import COTS_Morph_PKG.morphs.multiTransform.DualCarrierSimMorph;
+import COTS_Morph_PKG.morphs.multiTransform.QuadKeyEdgeSpiralMorph;
+import COTS_Morph_PKG.morphs.simple.AffineMorph;
+import COTS_Morph_PKG.morphs.simple.CarrierSimDiagMorph;
+import COTS_Morph_PKG.morphs.simple.LERPMorph;
+import COTS_Morph_PKG.morphs.simple.LogPolarMorph;
+import COTS_Morph_PKG.morphs.simple.RigidMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -78,8 +78,8 @@ public class mapPairManager {
 	public static final String[] morphTypes = new String[] {
 		"LERP",						//linearly interpolate control points
 		"Rigid",
+		"Affine",
 		"Carrier Sim using Diagonal",
-		"Carrier Sim w/Transformation",
 		"Dual Carrier Similarity",
 		"Key edge->Key edge Spiral",
 		"Log Polar",
@@ -91,8 +91,8 @@ public class mapPairManager {
 	public static final String[] cmpndMorphTypes = new String[] {
 		"LERP",						//linearly interpolate control points
 		"Rigid",
+		"Affine",
 		"Carrier Sim using Diagonal",
-		"Carrier Sim w/Transformation",
 		"Dual Carrier Similarity",
 		"Key edge->Key edge Spiral",
 		"Log Polar",			
@@ -102,8 +102,8 @@ public class mapPairManager {
 	public static final int
 		LERPMorphIDX			= 0,
 		RigidMorphIDX			= 1,
-		CarrierSimDiagIDX		= 2,
-		CarrierSimRegTransIDX	= 3,
+		AffineMorphIDX			= 2,
+		CarrierSimDiagIDX		= 3,
 		DualCarrierSimIDX		= 4,
 		QuadSpiralEdgeIDX		= 5,
 		LogPolarMorphIDX 		= 6,
@@ -192,21 +192,21 @@ public class mapPairManager {
 	
 	public baseMorph buildMorph(int typeIDX) {
 		switch (typeIDX) {
-			case LERPMorphIDX : {			return new LERPMorph(win,this,morphTypes[typeIDX]); 		}
-			case RigidMorphIDX  : {			return new RigidMorph(win,this,morphTypes[typeIDX]); 		}
-			case CarrierSimDiagIDX : {		return new CarrierSimDiagMorph(win,this,morphTypes[typeIDX]);	}
-			case CarrierSimRegTransIDX : {	return new CarrierSimTransformMorph(win,this,morphTypes[typeIDX]);}
-			case DualCarrierSimIDX : {		return new DualCarrierSimMorph(win,this,morphTypes[typeIDX]); }
-			case QuadSpiralEdgeIDX : {		return new QuadKeyEdgeSpiralMorph(win,this,morphTypes[typeIDX]);}
-			case LogPolarMorphIDX : {		return new LogPolarMorph(win,this,morphTypes[typeIDX]);}
-			case CompoundMorphIDX : {		return new CompoundMorph(win,this,morphTypes[typeIDX]);}
+			case LERPMorphIDX 		: {		return new LERPMorph(win,this,morphTypes[typeIDX]); 		}
+			case RigidMorphIDX  	: {		return new RigidMorph(win,this,morphTypes[typeIDX]); 		}
+			case AffineMorphIDX 	: {		return new AffineMorph(win,this,morphTypes[typeIDX]);}
+			case CarrierSimDiagIDX 	: {		return new CarrierSimDiagMorph(win,this,morphTypes[typeIDX]);	}
+			case DualCarrierSimIDX 	: {		return new DualCarrierSimMorph(win,this,morphTypes[typeIDX]); }
+			case QuadSpiralEdgeIDX 	: {		return new QuadKeyEdgeSpiralMorph(win,this,morphTypes[typeIDX]);}
+			case LogPolarMorphIDX 	: {		return new LogPolarMorph(win,this,morphTypes[typeIDX]);}
+			case CompoundMorphIDX 	: {		return new CompoundMorph(win,this,morphTypes[typeIDX]);}
 		
 			default : {
 				win.getMsgObj().dispInfoMessage("mapPairManager", "buildMorph", "Unknown morph type idx : " + typeIDX + ". Returning null.");
 				return null;
 			}
 		}
-	}
+	}//buildMorph
 
 	
 	public final baseMap buildCopyMapOfPassedMapType(baseMap oldMap, String _mapName) {	
@@ -601,7 +601,7 @@ public class mapPairManager {
 	 * @return
 	 */
 	public final boolean checkCurrMorphUsesReg() {
-		return CarrierSimRegTransIDX==currMorphTypeIDX;
+		return AffineMorphIDX==currMorphTypeIDX;
 	}	
 	
 	////////////////////

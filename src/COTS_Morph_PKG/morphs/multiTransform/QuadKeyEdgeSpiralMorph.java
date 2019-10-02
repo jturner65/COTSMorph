@@ -1,16 +1,16 @@
-package COTS_Morph_PKG.morphs.carrier;
+package COTS_Morph_PKG.morphs.multiTransform;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.morphs.base.baseSimpleMorph;
-import COTS_Morph_PKG.similarities.SpiralSimilarity;
-import COTS_Morph_PKG.similarities.base.baseSimilarity;
+import COTS_Morph_PKG.morphs.multiTransform.base.baseMultiTransformMorphs;
+import COTS_Morph_PKG.similarities.SpiralTransformer;
+import COTS_Morph_PKG.similarities.base.baseTransformer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public class QuadKeyEdgeSpiralMorph extends baseSimpleMorph {
+public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 
 	public QuadKeyEdgeSpiralMorph(COTS_MorphWin _win, mapPairManager _mapMgr, String _morphTitle) {	super(_win, _mapMgr, _morphTitle);}
 	
@@ -21,7 +21,7 @@ public class QuadKeyEdgeSpiralMorph extends baseSimpleMorph {
 	 * called in baseSimpleMorph in _endCtorInit - since we override that method, we can ignore these functions
 	 */
 	@Override
-	protected myPointf[][] getDiagPtsAras() {
+	protected myPointf[][] getCornerPtAras() {
 		myPointf[] aPts = mapA.getCntlPts(),bPts = mapB.getCntlPts();
 		myPointf[][] tmpPtAra = new myPointf[aPts.length][];		
 		for(int i=0;i<aPts.length;++i) {	
@@ -32,8 +32,8 @@ public class QuadKeyEdgeSpiralMorph extends baseSimpleMorph {
 	}
 
 	@Override
-	protected baseSimilarity buildSimilarity(int i) {
-		return new SpiralSimilarity("4EdgSprlMrph_["+i+","+((i+1)%transforms.length)+"]", mapA.basisVecs[0], mapA.basisVecs[2],mapA.basisVecs[1]);		
+	protected baseTransformer buildSimilarity(int i) {
+		return new SpiralTransformer("4EdgSprlMrph_["+i+","+((i+1)%transforms.length)+"]", mapA.basisVecs[0], mapA.basisVecs[2],mapA.basisVecs[1]);		
 	}
 	
 	
@@ -73,21 +73,22 @@ public class QuadKeyEdgeSpiralMorph extends baseSimpleMorph {
 	 */
 	@Override
 	public final void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] Apts, myPointf[] Bpts, myPointf[] destPts, float tA, float tB) {
-		if(transforms == null) {return;}		
-		myPointf[] edgeStPts = new myPointf[transforms.length];
-		myPointf[] edgeEndPts = new myPointf[transforms.length];
-		//build points based on averages of endpoints from transformations				
-		for(int i=0;i<transforms.length; ++i) {
-			myVectorf I = myVectorf._mult(normDispTimeVec,tB);  	     
-		    edgeStPts[i] = (myPointf._add(transforms[i].transformPoint(crnrPtAras[i][0], tB), I));
-		    edgeEndPts[i] = (myPointf._add(transforms[i].transformPoint(crnrPtAras[i][1], tB),I));		     
-		}  		
-		//average edge points to equate to transform
-		for(int i=0;i<edgeStPts.length;++i) {
-			destPts[i]= new myPointf(edgeStPts[i],.5f, edgeEndPts[((i-1)+edgeEndPts.length)%edgeEndPts.length]);
+		if(transforms == null) {
+			for(int i=0;i<Apts.length;++i) {	destPts[i]=  myPointf._add(myPointf._mult(Apts[i], tA), myPointf._mult(Bpts[i], tB));}	//forces to lerp calc - only use if not yet properly initialized
+		} else {		
+			myPointf[] edgeStPts = new myPointf[transforms.length];
+			myPointf[] edgeEndPts = new myPointf[transforms.length];
+			//build points based on averages of endpoints from transformations				
+			for(int i=0;i<transforms.length; ++i) {
+				myVectorf I = myVectorf._mult(normDispTimeVec,tB);  	     
+			    edgeStPts[i] = (myPointf._add(transforms[i].transformPoint(crnrPtAras[i][0], tB), I));
+			    edgeEndPts[i] = (myPointf._add(transforms[i].transformPoint(crnrPtAras[i][1], tB),I));		     
+			}  		
+			//average edge points to equate to transform
+			for(int i=0;i<edgeStPts.length;++i) {
+				destPts[i]= new myPointf(edgeStPts[i],.5f, edgeEndPts[((i-1)+edgeEndPts.length)%edgeEndPts.length]);
+			}	
 		}
-		//now set morph
-		
 	}//calcMorphBetweenTwoSetsOfPoints
 	
 	private static final String[] transLbls = {"AB","BC","CD","DA"};

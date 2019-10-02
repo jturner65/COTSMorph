@@ -2,7 +2,7 @@ package COTS_Morph_PKG.maps.quad;
 
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
 import COTS_Morph_PKG.maps.quad.base.baseQuadMap;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;

@@ -3,13 +3,13 @@ package COTS_Morph_PKG.morphs.base;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.managers.mapManagers.mapPairManager;
+import COTS_Morph_PKG.analysis.morphs.morphAreaTrajAnalyzer;
+import COTS_Morph_PKG.analysis.morphs.morphCntlPtTrajAnalyzer;
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.maps.base.baseMap;
-import COTS_Morph_PKG.morphs.analysis.morphAreaTrajAnalyzer;
-import COTS_Morph_PKG.morphs.analysis.morphCntlPtTrajAnalyzer;
-import COTS_Morph_PKG.morphs.analysis.base.baseMorphAnalyzer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
@@ -74,6 +74,10 @@ public abstract class baseMorph {
 	 */
 	protected TreeMap<Float, myPointf[][][]> edgePtTrajs;
 	/**
+	 * class to perform registrations and reg-related calculations, if necessary for a particular morph
+	 */
+	protected mapRegDist mapRegDistCalc;
+	/**
 	 * analyzers for each morph trajectory - keyed by traj name
 	 */
 	protected TreeMap<String, morphCntlPtTrajAnalyzer> trajAnalyzers;
@@ -121,6 +125,7 @@ public abstract class baseMorph {
 		}
 
 		//initialize essential data before calcMorph is called
+		mapRegDistCalc = new mapRegDist(this.mapMgr, mapA, mapB);
 		_endCtorInit();
 		mapCalcsAfterCntlPointsSet(morphTitle + "::ctor",false, false);	
 
@@ -143,7 +148,7 @@ public abstract class baseMorph {
 	}
 	
 	/**
-	 * this should be called whenever map A's values have changed
+	 * this should be called whenever map A's values have changed (??)
 	 */
 	private float oldMorphT = 0.0f;
 	public final void updateMorphMapWithMapVals() {	updateMorphMapWithMapVals(true);}
@@ -170,8 +175,8 @@ public abstract class baseMorph {
 	protected final void calcMorph() {
 		if(morphT == 0.0f) {
 			curMorphMap = getCopyOfMap(mapA,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
-		} else if(morphT == 1.0f) {
-			curMorphMap = getCopyOfMap(mapB,mapB.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
+//		} else if(morphT == 1.0f) {
+//			curMorphMap = getCopyOfMap(mapB,mapB.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
 		} else if(morphT != oldMorphT){
 
 			curMorphMap = getCopyOfMap(curMorphMap,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
@@ -428,9 +433,9 @@ public abstract class baseMorph {
 		for(String key : trajAnalyzers.keySet()) {//per control point	
 			if(key.equals(baseMap.COV_Label) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_IDX)){continue;}
 			if(key.equals(baseMap.SpiralCtrLbl) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX)){continue;}
-			trajAnalyzers.get(key).drawAnalyzerData( mmntDispLabels,trajWinDims, "Cntl Pt Traj : " + key);
+			trajAnalyzers.get(key).drawAnalyzerData(pa, mmntDispLabels,trajWinDims, "Cntl Pt Traj : " + key);
 		}
-		areaTrajAnalyzer.drawAnalyzerData( mmntDispLabels,trajWinDims, "Area :");
+		areaTrajAnalyzer.drawAnalyzerData(pa, mmntDispLabels,trajWinDims, "Area :");
 		pa.popStyle();pa.popMatrix();
 		
 	}
@@ -445,9 +450,9 @@ public abstract class baseMorph {
 		for(String key : trajAnalyzers.keySet()) {//per control point
 			if(key.equals(baseMap.COV_Label) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_IDX)){continue;}
 			if(key.equals(baseMap.SpiralCtrLbl) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX)){continue;}
-			trajAnalyzers.get(key).drawAnalyzerGraphs( mmntDispLabels,trajWinDims, "Cntl Pt Traj : " + key);
+			trajAnalyzers.get(key).drawAnalyzerGraphs(pa, mmntDispLabels,trajWinDims, "Cntl Pt Traj : " + key);
 		}
-		areaTrajAnalyzer.drawAnalyzerGraphs( mmntDispLabels,trajWinDims, "Area :");
+		areaTrajAnalyzer.drawAnalyzerGraphs(pa, mmntDispLabels,trajWinDims, "Area :");
 		pa.popStyle();pa.popMatrix();
 		
 	}
