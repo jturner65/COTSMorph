@@ -87,7 +87,7 @@ public class mapUpdFromUIData {
 	public int getCurrMorphType_COVPathIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphTypeCOVPath);}
 	
 	public int getCurrDistTransformIDX() {return intValues.get(COTS_MorphWin.gIDX_DistTestTransform);}
-	
+	public int getDistDimToShow() {return intValues.get(COTS_MorphWin.gIDX_DistDimToShow);}
 	/**
 	 * access bools
 	 */
@@ -98,6 +98,7 @@ public class mapUpdFromUIData {
 	 */
 	public float getMorphProgress() {return floatValues.get(COTS_MorphWin.gIDX_MorphTVal);}
 	public float getMorphSpeed() {return floatValues.get(COTS_MorphWin.gIDX_MorphSpeed);}
+	public float getMorphDistMult() {return floatValues.get(COTS_MorphWin.gIDX_MorphDistMult);}
 	/**
 	 * set morph progress and update win ui object
 	 * @param _prog

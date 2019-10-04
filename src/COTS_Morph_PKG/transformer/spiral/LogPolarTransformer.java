@@ -48,7 +48,9 @@ public class LogPolarTransformer extends baseSpiralTransformer {
 			scale *= ((SpiralTransform) trans[i]).get_Scale();
 		}
 		angle/=trans.length;
+		if(scale < 0) {System.out.println("Negative scale!");}
 		scale = (float) Math.pow(scale, 1.0f/trans.length);		
+		
 		AggregateTransform.buildTransformation(angle, scale, cntlPts[baseAPt], cntlPts[baseBPt]);
 	}
 

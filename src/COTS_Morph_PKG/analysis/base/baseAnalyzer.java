@@ -1,24 +1,21 @@
-package COTS_Morph_PKG.analysis.morph.base;
+package COTS_Morph_PKG.analysis.base;
 
 import java.util.ArrayList;
 
 import COTS_Morph_PKG.analysis.prob.base.baseProbSummary;
-import COTS_Morph_PKG.morph.base.baseMorph;
+import COTS_Morph_PKG.map.base.baseMap;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
-public abstract class baseMorphAnalyzer {
+public abstract class baseAnalyzer {
 	public final int ID;
 	protected static int idGen = 0;
-	//protected my_procApplet pa;
-	protected baseMorph ownrMorph;
 	/**
-	 * current morph trajectory summary
+	 * current trajectory summary
 	 */
 	public baseProbSummary[] summaries;	
-
 	public static final int
 		posIDX		= 0,
 		velIDX		= 1,
@@ -29,13 +26,48 @@ public abstract class baseMorphAnalyzer {
 	
 	public static final String[] statDispLabels = new String[]{"P","V","X","J"};
 
-	public baseMorphAnalyzer(baseMorph _ownrMorph) {
+	protected boolean debug = false;
+	
+	public baseAnalyzer() {
 		ID = idGen++;
-		ownrMorph=_ownrMorph; 
 	}
-		
-	@SuppressWarnings("rawtypes")
+	
+	public void setDebug(boolean val) {debug=val;}
+	
+	/**
+	 * find the average value, ROC, rate of ROC, etc of the passed trajectory of areas of morph maps
+	 * assumes each area sample is uniformly spaced in time
+	 * @param pts
+	 */
 	public abstract void analyzeTrajectory(ArrayList pts, String name);
+	
+
+	
+	/**
+	 * find the square distance between two maps' vertices
+	 * @param aMap
+	 * @param bMap
+	 * @return
+	 */
+	public final float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
+		float res = 0.0f;
+		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
+		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
+		return res;
+	}
+
+//	
+//	/**
+//	 * find the distance between two maps' vertices
+//	 * @param aMap
+//	 * @param bMap
+//	 * @return
+//	 */
+//	public final float findDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
+//		float res = findSqDistBetween2MapVerts(aMap, bMap);
+//		return (float) Math.sqrt(res);
+//	}
+
 	
 	/**
 	 * this will properly format and display a string of text, and will translate the width, so multiple strings can be displayed on the same line with different colors
@@ -82,7 +114,7 @@ public abstract class baseMorphAnalyzer {
 	
 	
 	
-	public final void drawAllSummaryInfo(my_procApplet pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {//
+	protected void drawAllSummaryInfo(my_procApplet pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {//
 		float mult = (perDispBlockWidth)/((mmntDispLabels.length + 1) * 3.1f);
 		//System.out.println("perDispBlockWidth: " + perDispBlockWidth + " | mult : " + mult);
 		pa.pushMatrix();pa.pushStyle();
@@ -101,7 +133,7 @@ public abstract class baseMorphAnalyzer {
 		}
 		pa.popStyle();pa.popMatrix();
 	}
-	protected abstract boolean drawSingleSummary(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
+	protected abstract void drawSingleSummary(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
 	
 	/**
 	 * draw stats graph info
@@ -109,7 +141,7 @@ public abstract class baseMorphAnalyzer {
 	 * @param txtLineYDisp
 	 * @param perDispBlockWidth
 	 */
-	public final void drawAllGraphInfo(my_procApplet pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {
+	protected final void drawAllGraphInfo(my_procApplet pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {
 		float mult = (perDispBlockWidth)/((mmntDispLabels.length + 1) * 3.1f);
 		pa.pushMatrix();pa.pushStyle();
 		if(mult < 17) {pa.scale(1.0f,.93f,1.0f);}
@@ -118,18 +150,15 @@ public abstract class baseMorphAnalyzer {
 			pa.pushMatrix();pa.pushStyle();
 				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255),1.4f* mult, statDispLabels[i]);				
 			pa.popStyle();pa.popMatrix();			
-			pa.translate(0.0f,txtLineYDisp,0.0f);
-
-			
+			pa.translate(0.0f,txtLineYDisp,0.0f);			
 			drawSingleSmryGraph(pa,mmntDispLabels, summaries[i],txtLineYDisp,mult);
 			pa.translate(0.0f,.8f*txtLineYDisp,0.0f);
 		}
 		pa.popStyle();pa.popMatrix();
 	}//drawAllGraphInfo
-	protected abstract boolean drawSingleSmryGraph(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
+	protected abstract void drawSingleSmryGraph(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
 	
-	
-	protected myPointf[][] buildPtTrajVals(ArrayList<myPointf> pts){
+	protected final myPointf[][] buildPtTrajVals(ArrayList<myPointf> pts){
 		int numVals = pts.size();
 		myPointf[][] res = new myPointf[numStatsToMeasure][];
 		res[posIDX]=new myPointf[numVals];
@@ -143,7 +172,21 @@ public abstract class baseMorphAnalyzer {
 		return res;
 	}
 	
-	protected float[][] buildFloatTrajVals(ArrayList<Float> vals){
+	protected final myVectorf[][] buildVecTrajVals(ArrayList<myVectorf> vecs){
+		int numVals = vecs.size();
+		myVectorf[][] res = new myVectorf[numStatsToMeasure][];
+		res[posIDX]=new myVectorf[numVals];
+		res[velIDX]=new myVectorf[numVals-1];
+		res[accelIDX]=new myVectorf[numVals-2];
+		res[jerkIDX]=new myVectorf[numVals-3];
+		for(int i=0;i<res[posIDX].length;++i) {		res[posIDX][i] = new myVectorf(vecs.get(i));}
+		for(int i=0;i<res[velIDX].length;++i) {		res[velIDX][i]=myVectorf._sub(res[posIDX][i+1], res[posIDX][i]);}
+		for(int i=0;i<res[accelIDX].length;++i) {	res[accelIDX][i]=myVectorf._sub(res[velIDX][i+1], res[velIDX][i]);}
+		for(int i=0;i<res[jerkIDX].length;++i) {	res[jerkIDX][i]=myVectorf._sub(res[accelIDX][i+1], res[accelIDX][i]);}		
+		return res;
+	}
+	
+	protected final float[][] buildFloatTrajVals(ArrayList<Float> vals){
 		int numVals = vals.size();
 		float[][] res = new float[numStatsToMeasure][];
 		res[posIDX]=new float[numVals];
@@ -157,7 +200,7 @@ public abstract class baseMorphAnalyzer {
 		return res;
 	}
 	
-	protected double[][] buildDoubleTrajVals(ArrayList<Double> vals){
+	protected final double[][] buildDoubleTrajVals(ArrayList<Double> vals){
 		int numVals = vals.size();
 		double[][] res = new double[numStatsToMeasure][];
 		res[posIDX]=new double[numVals];
@@ -170,6 +213,5 @@ public abstract class baseMorphAnalyzer {
 		for(int i=0;i<res[jerkIDX].length;++i) {	res[jerkIDX][i] = res[accelIDX][i+1]- res[accelIDX][i];}		
 		return res;
 	}
-	
 
-}//class baseMorphAnalyzer
+}//class baseAnalyzer

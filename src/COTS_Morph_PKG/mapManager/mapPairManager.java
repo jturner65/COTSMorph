@@ -149,7 +149,13 @@ public class mapPairManager {
 	 * array holding upper left corner x,y, width, height of rectangle to use for displaying graphs of trajectory analysis
 	 */
 	protected float[] trajAnalysisRectDims;
-	protected float perTragAnalysisImageWidth;
+	protected float perTrajAnalysisImageWidth;
+	
+	/**
+	 * array holding upper left corner x,y, width, height of rectangle to use for displaying graphs of morph stack distortion analysis
+	 */
+	protected float[] mStckDistAnalysisRectDims;
+	protected float perMStckDistAnalysisImageWidth;
 	
 	/**
 	 * morph animation variables
@@ -163,6 +169,9 @@ public class mapPairManager {
 		{{90,0,222,255},{0,225,10,255}},		//map grid 0 
 		{{255,200,0,255},{255,0,0,255}}			//map grid 1
 	};
+
+
+	protected boolean morphStackAnalysisDone = false;
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
 		win=_win; pa=myDispWindow.pa;
@@ -189,6 +198,7 @@ public class mapPairManager {
 		
 		distMsrMorphs = new baseMorph[cmpndMorphTypes.length];
 		for(int i=0;i<distMsrMorphs.length;++i) {	distMsrMorphs[i]=buildMorph(i, maps[0],maps[1]);}
+		
 		
 		setPopUpWins_RectDims();
 		updateMapValsFromUI(currUIVals);
@@ -238,7 +248,7 @@ public class mapPairManager {
 	 * @param _mapNameSuffix : descriptive string to add to end of map namme
 	 * @return
 	 */	
-	public final baseMap buildKeyFrameMapOfPassedType(int _mapType, int _mapValIdx, myPointf[] _cntlPts, String _mapNameSuffix) {
+	public synchronized final baseMap buildKeyFrameMapOfPassedType(int _mapType, int _mapValIdx, myPointf[] _cntlPts, String _mapNameSuffix) {
 		String mapName = mapTypes[_mapType] + ( _mapNameSuffix.length() == 0 ? "":  " " + _mapNameSuffix) + " Map"+ _mapValIdx;
 		switch (_mapType) {
 			case triangleMapIDX			:{
@@ -331,167 +341,22 @@ public class mapPairManager {
 	 */
 
 	public final void calculateMorphDistortion() {
+//		if((mapType==triangleMapIDX) || ( mapType==ptNormTriMapIDX)) {	
+//			//need to find better way of calculating triangle map cell corner points so indexing isn't broken
+//			win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Calculating morph distortion for maps of type " + mapTypes[mapType] + " not yet supported.");
+//			return;
+//		}
 			//this is index in morph list for type of morph to use to measure distortion
-		int currDistTransformIDX = currUIVals.getCurrDistTransformIDX();
+		int currDistTransformIDX = currUIVals.getCurrDistTransformIDX();		
+		baseMorph currDistMsrMorph = distMsrMorphs[currDistTransformIDX];
+		currDistMsrMorph.updateMorphValsFromUI(this.currUIVals);
 		
-		baseMorph currDistMsrMorphs = distMsrMorphs[currDistTransformIDX];
-		currDistMsrMorphs.updateMorphValsFromUI(this.currUIVals);
-			//this is # of morph slices already calculated
-		win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Begin calculating current morph distortion for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + cmpndMorphTypes[currDistTransformIDX]);
-			//ara 0 is k == slice, ara 1 is i, ara 2 is j, ara 3 is cntl pts		
-		myPointf[][][][] allPolyCntlPts = morphs[currMorphTypeIDX].buildAllSlicesAndCellsCntlPts();
-		int numKVals = allPolyCntlPts.length,
-			numIVals = allPolyCntlPts[0].length,
-			numJVals = allPolyCntlPts[0][0].length,
-			numPts = allPolyCntlPts[0][0][0].length;
-		win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", "Num K vals : " + numKVals + " Num I Vals : " + numIVals + " Num J Vals : " + numJVals + " Num Cntl Pts : " + numPts);
-		//measure per-map distortions @ each i,j
-		float[][][] distsPerMap = new float[allPolyCntlPts.length][][];
-		for(int k=0;k<numKVals;++k) {
-			myPointf[][][] mapK = allPolyCntlPts[k];
-			String tmp = "\t map ["+k+"] : ";
-			distsPerMap[k] = calcDistOnEntireMap(mapK, k, mapType, currDistMsrMorphs);
-			float ttlDistOnMap = 0.0f;
-			int count = 0;
-			for(int i=0;i<numIVals;++i) {
-				for(int j=0;j<numJVals;++j) {
-					//win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", "\t\t average distortion for poly ["+i+"]["+j+"] in layer "+k+" : "+ distOnMap[i][j]);
-					ttlDistOnMap+=distsPerMap[k][i][j];++count;
-				}
-			}
-			ttlDistOnMap/=count;
-			win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", tmp+ " Total distortion on map @ layer "+k+" : "+ ttlDistOnMap);
-		}
-		//measure of distortions over all slices at each i,j
-		float[][][] distsOverSlices = new float[allPolyCntlPts.length][allPolyCntlPts[0].length][allPolyCntlPts[0][0].length];
-		//initialize
-		for(int i=0;i<numIVals;++i) {for(int j=0;j<numJVals;++j) {distsOverSlices[0][i][j]=0.0f; distsOverSlices[distsOverSlices.length-1][i][j]=0.0f; }}
-		
-		myPointf[] stCntlPts, endCntlPts, midCntlPts;
-		int[][] idxs = new int[][] {{-1,-2, -3},{-4,-5,-6},{-7,-8,-9}};
-		
-		//calc "lateral" distortion
-		for(int k=1;k<numKVals-1;++k) {			
-			float ttlDistsForSlice = 0.0f;
-			int count = 0;
-			for(int i=0;i<numIVals;++i) {
-				for(int j=0;j<numJVals;++j) {
-					stCntlPts = allPolyCntlPts[k-1][i][j];
-					endCntlPts = allPolyCntlPts[k+1][i][j];
-					midCntlPts = allPolyCntlPts[k][i][j];
-					int id=0;
-					for(int l=-1;l<2;++l) {	idxs[id][0] = i;idxs[id][1]=j; idxs[id][2]=k+l;	++id;}
-					distsOverSlices[k][i][j] = calcDistortion(idxs, stCntlPts,endCntlPts, midCntlPts, mapType, currDistMsrMorphs);
-					ttlDistsForSlice +=distsOverSlices[k][i][j];++count;
-				}
-			}
-			ttlDistsForSlice/=count;
-			win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion", "\tAverage Total distortion over adjacent slices on map @ layer "+k+" : "+ ttlDistsForSlice);
-		}
-		//aggregate all distortions
-		float[][][] distortionAtEachCell = new float[numKVals][numIVals][numJVals]; 
-		float ttlDistForEntireMorph = 0.0f;
-		int count = 0;
-		for(int k=0;k<numKVals;++k) {
-			for(int i=0;i<numIVals;++i) {
-				for(int j=0;j<numJVals;++j) {
-					distortionAtEachCell[k][i][j] = (2.0f*distsPerMap[k][i][j] + distsOverSlices[k][i][j])/3.0f;
-					ttlDistForEntireMorph +=distortionAtEachCell[k][i][j];
-					++count;
-				}
-			}
-		}
-		ttlDistForEntireMorph/=count;
-				
+		float ttlDistForEntireMorph = morphs[currMorphTypeIDX].calculateMorphDistortion(currDistMsrMorph, currDistTransformIDX);
+		morphStackAnalysisDone = true;
 		win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Finished calculating current morph distortion : Total average distortion across entire morph : " +ttlDistForEntireMorph +" for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + cmpndMorphTypes[currDistTransformIDX]);
 		
 	}//calculateMorphDistortion
-	/**
-	 * for all polys on same map, find array of i,j distances between adjacent polys
-	 * @param mapPolyCntlPts
-	 * @param _k slice in morph slices
-	 * @param _mapTypeIDX
-	 * @param currDistMsrMorphs
-	 * @return
-	 */
-	protected final float[][] calcDistOnEntireMap(myPointf[][][] mapPolyCntlPts, int _sliceIDX, int _mapTypeIDX, baseMorph currDistMsrMorphs){
-		float[][] res = new float[mapPolyCntlPts.length][mapPolyCntlPts[0].length];
-		int lastValIDX = mapPolyCntlPts.length-1;
-		
-		//for all adjacent skip 1 polys, treat each poly as a new map of type maptype, build morph between both
-		int[][] idxs = new int[][] {{-1,-2, -3},{-4,-5,-6},{-7,-8,-9}};
-		
-		//top and bottom row - horizontal diff
-		for(int i=1;i<lastValIDX;++i) {//top and bottom row
-			int id = 0;
-			for(int k=-1;k<2;++k) {	idxs[id][0] = i+k;idxs[id][1]=0;idxs[id][2]=_sliceIDX;	++id;} id=0;
-			res[i][0] = calcDistortion(idxs, mapPolyCntlPts[i-1][0],mapPolyCntlPts[i+1][0], mapPolyCntlPts[i][0], _mapTypeIDX, currDistMsrMorphs);
-			for(int k=-1;k<2;++k) {	idxs[id][0] = i+k;idxs[id][1]=lastValIDX;idxs[id][2]=_sliceIDX;	++id;} id=0;
-			res[i][lastValIDX] = calcDistortion(idxs, mapPolyCntlPts[i-1][lastValIDX],mapPolyCntlPts[i+1][lastValIDX], mapPolyCntlPts[i][lastValIDX], _mapTypeIDX, currDistMsrMorphs);		
-		}
-		//left and right side - vertical diff
-		for(int j=1;j<lastValIDX;++j) {
-			int id = 0;
-			for(int k=-1;k<2;++k) {	idxs[id][0] = 0;idxs[id][1]=j+k;idxs[id][2]=_sliceIDX;	++id;} id=0;
 
-			res[0][j] = calcDistortion(idxs, mapPolyCntlPts[0][j-1],mapPolyCntlPts[0][j+1], mapPolyCntlPts[0][j], _mapTypeIDX, currDistMsrMorphs);
-			for(int k=-1;k<2;++k) {	idxs[id][0] = lastValIDX;idxs[id][1]=j+k;idxs[id][2]=_sliceIDX;	++id;} id=0;
-			res[lastValIDX][j] = calcDistortion(idxs, mapPolyCntlPts[lastValIDX][j-1],mapPolyCntlPts[lastValIDX][j+1], mapPolyCntlPts[lastValIDX][j], _mapTypeIDX, currDistMsrMorphs);
-		}
-		//interior
-		for(int i=1; i<lastValIDX;++i) {
-			for(int j=1;j<lastValIDX;++j) {
-				int id = 0; 
-				for(int k=-1;k<2;++k) {	idxs[id][0] = i+k;idxs[id][1]=j;idxs[id][2]=_sliceIDX;	++id;} id=0;
-				float horizDist = calcDistortion(idxs, mapPolyCntlPts[i-1][j],mapPolyCntlPts[i+1][j], mapPolyCntlPts[i][j], _mapTypeIDX, currDistMsrMorphs);
-				for(int k=-1;k<2;++k) {	idxs[id][1] = j+k;idxs[id][0]=i;idxs[id][2]=_sliceIDX;	++id;} id=0;
-				float vertDist = calcDistortion(idxs, mapPolyCntlPts[i][j-1],mapPolyCntlPts[i][j+1], mapPolyCntlPts[i][j], _mapTypeIDX, currDistMsrMorphs);
-				res[i][j]=(horizDist + vertDist)/2.0f;
-			}
-		}
-		return res;
-	}
-	
-	/**
-	 * calculate distortion between stPoly and endPoly - measure how far their average varies from middlePoly - square distance
-	 * @param idxs 3 x 3 array, idx 0 is st, end, or middle poly, idx 1 is i, j and k value
-	 * @param stPoly start poly control points
-	 * @param endPoly end poly control points
-	 * @param middlePoly middle poly, to be compared to
-	 * @param _mapTypeIDX type of map
-	 * @param currDistMsrMorphs morph to use to calculate transformation
-	 * @return squared distance between given middle map and morph map at t = .5f
-	 */
-	protected final float calcDistortion(int[][] idxs, myPointf[] stPoly, myPointf[] endPoly, myPointf[] middlePoly, int _mapTypeIDX, baseMorph currDistMsrMorphs) {
-		
-		baseMap[] keyFrames = new baseMap[2];
-		myPointf[][] polys = new myPointf[][] {stPoly,endPoly};
-		for(int i=0;i<keyFrames.length;++i) {
-			keyFrames[i] = this.buildKeyFrameMapOfPassedType(_mapTypeIDX, i, polys[i], " for Dist Measure : poly @ ["+idxs[i][0]+", "+idxs[i][1]+"]");
-		}
-		baseMap compareMap = this.buildCopyMapOfPassedMapType(keyFrames[0], "Copy For dist Measure @ ["+idxs[2][0]+", "+idxs[2][1]+"]");
-		compareMap.resetCntlPts(middlePoly);
-		
-		currDistMsrMorphs.setNewKeyFrameMaps(keyFrames[0], keyFrames[1]);
-		currDistMsrMorphs.setMorphT(.5f);
-		baseMap currMorphMap = currDistMsrMorphs.getCurMorphMap();
-		
-		float res = findSqDistBetween2MapVerts(compareMap, currMorphMap);
-		return res;
-	}
-	
-	/**
-	 * find the square distance between two maps
-	 * @param aMap
-	 * @param bMap
-	 * @return
-	 */
-	public float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
-		float res = 0.0f;
-		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
-		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
-		return res;
-	}
 
 	/**
 	 * build oriented lineup of specific # of frames (default 5) where each frame is registered to keyframe A, and then displayed side-by-side
@@ -531,6 +396,7 @@ public class mapPairManager {
 		pa.popStyle();pa.popMatrix();	
 	}
 	
+	
 	/**
 	 * main map drawing - dependent on wireframe/filled flag
 	 * @param fillOrWf
@@ -538,9 +404,11 @@ public class mapPairManager {
 	 * @param drawCircles
 	 * @param drawCopy
 	 */
-	public final void drawMaps_Main(boolean debug, boolean drawMap, boolean fillOrWf, boolean drawCircles, boolean drawCopy) {
+	public final void drawMaps_Main(boolean debug, boolean drawMap, boolean _showDistColors,boolean fillOrWf, boolean drawCircles, boolean drawCopy) {
 		if(drawMap) {
-			if(fillOrWf) {		for(int i=0;i<maps.length;++i) {maps[i].drawMap_Fill();}}
+			if(fillOrWf) {		
+				if(_showDistColors){for(int i=0;i<maps.length;++i) {maps[i].drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}}
+				else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Fill();}}}
 			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Wf();}}
 		}
 		if(drawCircles) {
@@ -575,7 +443,7 @@ public class mapPairManager {
 	 */
 	protected float morphSign = 1.0f;
 
-	public final void drawAndAnimMorph(boolean debug, float animTimeMod, boolean drawMap, boolean drawMorphMap, boolean morphMapFillOrWf,  boolean drawSlices, boolean morphSlicesFillOrWf,boolean drawCircles, boolean drawCntlPts, boolean sweepMaps, boolean showLbls, int _detail) {
+	public final void drawAndAnimMorph(boolean debug, float animTimeMod, boolean drawMap, boolean drawMorphMap, boolean _showDistColors, boolean morphMapFillOrWf,  boolean drawSlices, boolean morphSlicesFillOrWf,boolean drawCircles, boolean drawCntlPts, boolean sweepMaps, boolean showLbls, int _detail) {
 		morphs[currMorphTypeIDX].setMorphT(morphProgress);//sets t value and calcs morph
 		pa.pushMatrix();pa.pushStyle();	
 			pa.fill(0,0,0,255);
@@ -586,10 +454,10 @@ public class mapPairManager {
 		pa.popStyle();pa.popMatrix();	
 		
 		if(drawSlices) {
-			morphs[currMorphTypeIDX].drawMorphSlices(morphSlicesFillOrWf, drawMap, drawCircles, drawCntlPts, showLbls, _detail);			
+			morphs[currMorphTypeIDX].drawMorphSlices((!drawMorphMap && _showDistColors), morphSlicesFillOrWf, drawMap, drawCircles, drawCntlPts, showLbls, _detail);			
 		}
 		if(drawMorphMap) {
-			morphs[currMorphTypeIDX].drawMorphedMap(morphMapFillOrWf, drawMap, drawCircles);	
+			morphs[currMorphTypeIDX].drawMorphedMap(_showDistColors, morphMapFillOrWf, drawMap, drawCircles);	
 			if(drawCntlPts){morphs[currMorphTypeIDX].drawMorphedMap_CntlPts(_detail);}
 			morphs[currMorphTypeIDX].drawHeaderAndLabels(showLbls,_detail);
 		}
@@ -600,7 +468,7 @@ public class mapPairManager {
 		}
 	}
 	
-	public final void drawMaps_AnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, int dispDetail, float sideBarYDisp) {
+	public final void drawMaps_MorphAnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, int dispDetail, float sideBarYDisp) {
 		int alpha = 120;
 		int mod=0;
 		if(dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) { mod+=2;}
@@ -610,28 +478,58 @@ public class mapPairManager {
 		pa.setStroke(new int[] {0, 0,0}, 255);
 		pa.setStrokeWt(2.0f);
 		int numWinBarsToDraw = 1;
-		pa.translate(0.0f,win.rectDim[3],0.0f);//perTragAnalysisImageWidth up from bottom
+		pa.translate(0.0f,win.rectDim[3],0.0f);//perTrajAnalysisImageWidth up from bottom
 		if(drawAnalysisGraphs) {
 			pa.pushMatrix();pa.pushStyle();	
 			pa.setFill(new int[] {255, 235,255},alpha);
-			pa.translate(0.0f,-perTragAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTragAnalysisImageWidth up from bottom
+			pa.translate(0.0f,-perTrajAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
 			pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
-			morphs[currMorphTypeIDX].drawTrajAnalyzerGraphs(mmntDispLabels,  dispDetail, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
+			morphs[currMorphTypeIDX].drawTrajAnalyzerGraphs(mmntDispLabels,  dispDetail, new float[] {perTrajAnalysisImageWidth,perTrajAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
 			++numWinBarsToDraw;
 			pa.popStyle();pa.popMatrix();
 		}
 		if(drawTrajAnalysis) {
 			pa.pushMatrix();pa.pushStyle();	
 			pa.setFill(new int[] {235, 252,255},alpha);
-			pa.translate(0.0f,-perTragAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTragAnalysisImageWidth up from bottom
+			pa.translate(0.0f,-perTrajAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
 			pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
-			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels,  dispDetail, new float[] {perTragAnalysisImageWidth,perTragAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
+			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels,  dispDetail, new float[] {perTrajAnalysisImageWidth,perTrajAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
 			
 			pa.popStyle();pa.popMatrix();
 			
 		}
 		pa.popStyle();pa.popMatrix();
 	}
+
+	public final void drawMaps_MrphStackDistAnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, float sideBarYDisp) {
+		if(!morphStackAnalysisDone) {calculateMorphDistortion();}
+		int alpha = 120;
+		recalcMrphStckAnalysisDims(0);
+		pa.pushMatrix();pa.pushStyle();	
+		pa.setStroke(new int[] {0, 0,0}, 255);
+		pa.setStrokeWt(2.0f);
+		int numWinBarsToDraw = 1;
+		pa.translate(0.0f,win.rectDim[3],0.0f);
+		if(drawAnalysisGraphs) {
+			pa.pushMatrix();pa.pushStyle();	
+			pa.setFill(new int[] {255, 235,255},alpha);
+			pa.translate(0.0f,-perMStckDistAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
+			pa.rect(mStckDistAnalysisRectDims[0],mStckDistAnalysisRectDims[1],mStckDistAnalysisRectDims[2],mStckDistAnalysisRectDims[3]);	
+			//mrphStackDistAnalyzer.drawAnalyzerGraphs(pa, mmntDispLabels, new float[] {perMStckDistAnalysisImageWidth,perMStckDistAnalysisImageWidth,mStckDistAnalysisRectDims[1], sideBarYDisp}, "");
+			++numWinBarsToDraw;
+			pa.popStyle();pa.popMatrix();
+		}
+		if(drawTrajAnalysis) {
+			pa.pushMatrix();pa.pushStyle();	
+			pa.setFill(new int[] {235, 252,255},alpha);
+			pa.translate(0.0f,-perMStckDistAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
+			pa.rect(mStckDistAnalysisRectDims[0],mStckDistAnalysisRectDims[1],mStckDistAnalysisRectDims[2],mStckDistAnalysisRectDims[3]);
+			//mrphStackDistAnalyzer.drawAnalyzerData(pa, mmntDispLabels, new float[] {perMStckDistAnalysisImageWidth,perMStckDistAnalysisImageWidth,mStckDistAnalysisRectDims[1], sideBarYDisp}, "");
+			pa.popStyle();pa.popMatrix();			
+		}
+		pa.popStyle();pa.popMatrix();
+	}//drawMaps_MrphStackDistAnalysisWins
+
 
 	/**
 	 * draw oriented frames of map morph, side by side, at bottom of screen - should be called by drawHeader_Priv, which is already 2d
@@ -705,10 +603,7 @@ public class mapPairManager {
 		if(drawMorphSlicesRtSideInfo) {	_yOff = _drawRightSideMorphSlices(_yOff, sideBarYDisp);}
 
 		return _yOff;
-	}
-	
-
-	
+	}	
 	/**
 	 * draw current morph values on right side menu/display
 	 * @param _yOff
@@ -733,13 +628,22 @@ public class mapPairManager {
 		lineupRectDims[3] = perLineupImageWidth;
 		//traj analysis window
 		recalcTrajAnalysisDims(0);
+		//morph stack distortion analysis
+		recalcMrphStckAnalysisDims(0);
+
 	}
 	
 	private final void recalcTrajAnalysisDims(int mod) {
 		//traj analysis window
 		trajAnalysisRectDims = win.getOrientedDims();
-		perTragAnalysisImageWidth = trajAnalysisRectDims[2]/(1.0f* morphs[currMorphTypeIDX].getNumAnalysisBoxes() - mod);
-		trajAnalysisRectDims[3] = perTragAnalysisImageWidth;
+		perTrajAnalysisImageWidth = trajAnalysisRectDims[2]/(1.0f* morphs[currMorphTypeIDX].getNumAnalysisBoxes() - mod);
+		trajAnalysisRectDims[3] = perTrajAnalysisImageWidth;
+	}
+	
+	private final void recalcMrphStckAnalysisDims(int mod) {
+		mStckDistAnalysisRectDims = win.getOrientedDims();
+		perMStckDistAnalysisImageWidth = mStckDistAnalysisRectDims[2]/5.0f;
+		mStckDistAnalysisRectDims[3] = perMStckDistAnalysisImageWidth;
 	}
 	
 	public final void setFromAndToCopyIDXs(int _fromIdx, int _toIdx) {	fromMapIDX = _fromIdx;		toMapIDX = _toIdx;	}
@@ -766,6 +670,7 @@ public class mapPairManager {
 		
 		setPopUpWins_RectDims();
 		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphValsFromUI(upd);}
+		morphStackAnalysisDone = false;		//set to recalculate on update
 		for(int i=0;i<this.distMsrMorphs.length;++i) {distMsrMorphs[i].updateMorphValsFromUI(upd);}
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true, true);
@@ -874,6 +779,7 @@ public class mapPairManager {
 	public final void hndlMouseRelIndiv() {
 		for(int i=0;i<maps.length;++i) {	maps[i].mseRelease();}
 		if(currMseModMap != null) {
+			morphStackAnalysisDone = false;
 			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::hndlMouseRelIndiv", true, true);
 			currMseModMap = null;
 		}

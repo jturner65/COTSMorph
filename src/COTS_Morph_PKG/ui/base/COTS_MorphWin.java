@@ -20,23 +20,24 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	
 	//ui vars
 	public static final int
-		gIDX_MorphTVal 				= 0,
-		gIDX_MorphSpeed				= 1,
-		gIDX_NumCellsPerSide    	= 2,
-		gIDX_MapType				= 3,	
-		gIDX_MorphType				= 4,			//overall morphtype to use - can be overridden		
-		gIDX_MorphTypeOrient		= 5,			//morph types to use for each characteristic of morph frames
-		gIDX_MorphTypeSize			= 6,
-		gIDX_MorphTypeShape			= 7,
-		gIDX_MorphTypeCOVPath		= 8,				
-		gIDX_SetBrnchStrat			= 9,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
-		gIDX_NumLineupFrames		= 10,			//# of frames to use for lineup
-		gIDX_NumMorphSlices 		= 11,			//# of slices in morph
-		gIDX_CntlPtDispDetail		= 12,			//how much detail the cntrol point display will show
-		gIDX_AnalysisMmmntsDetail 	= 13,
-		gIDX_DistTestTransform		= 14;			//transformation to use to measure distortion
-		
-	protected static final int numBaseCOTSWinUIObjs = 15;
+		gIDX_MorphTVal 					= 0,
+		gIDX_MorphSpeed					= 1,
+		gIDX_NumCellsPerSide    		= 2,
+		gIDX_MapType					= 3,	
+		gIDX_MorphType					= 4,			//overall morphtype to use - can be overridden		
+		gIDX_MorphTypeOrient			= 5,			//morph types to use for each characteristic of morph frames
+		gIDX_MorphTypeSize				= 6,
+		gIDX_MorphTypeShape				= 7,
+		gIDX_MorphTypeCOVPath			= 8,				
+		gIDX_SetBrnchStrat				= 9,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
+		gIDX_NumLineupFrames			= 10,			//# of frames to use for lineup
+		gIDX_NumMorphSlices 			= 11,			//# of slices in morph
+		gIDX_CntlPtDispDetail			= 12,			//how much detail the cntrol point display will show
+		gIDX_MorphAnalysisMmmntsDetail 	= 13,
+		gIDX_DistTestTransform			= 14,			//transformation to use to measure distortion
+		gIDX_DistDimToShow				= 15,			//which distortion dimension should be colored
+		gIDX_MorphDistMult 				= 16;			//distortion multiplier to use to control colors for 
+	protected static final int numBaseCOTSWinUIObjs = 17;
 	/**
 	 * structure to facilitate communicating UI changes with functional code
 	 */
@@ -46,7 +47,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 */
 	protected static final String[] branchShareStrategies = new String[] {"No Branch Sharing", "Force from A", "Force from B", "Force from Edit"};
 	protected static final String[] cntlPtDispDetail = new String[] {"Cntl Pts Only", "Cntl Pts & COV", "Cntl Pts, COV & Edge Pts", "All Pts"};
-	protected static final String[] analysisMmmntsDetail = new String[] {"Mean & STD", "First 4 moments", "Mean & STD + Min & Max", "4 Mmnts + Min & Max"};
+	protected static final String[] analysisMmmntsDetail = new String[] {"Mean & STD", "First 4 moments", "Mean & STD + Min & Max", "4 Mmnts + Min & Max"};	
+	protected static final String[] distDimToShow  = new String[] {"Map Rows", "Map Columns", "Morph Slices"};
 	
 	public static final int 
 		drawMapDet_CntlPtsOnlyIDX  				= 0,
@@ -85,57 +87,59 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	
 	//boolean priv flags
 	public static final int 
-		debugAnimIDX 					= 0,				//debug
-		resetMapCrnrsIDX				= 1,
+		debugAnimIDX 						= 0,				//debug
+		resetMapCrnrsIDX					= 1,
 		
-		resetMapCrnrs_0IDX				= 2,				//reset map corners to start positions
-		resetMapCrnrs_1IDX				= 3,
+		resetMapCrnrs_0IDX					= 2,				//reset map corners to start positions
+		resetMapCrnrs_1IDX					= 3,
 				
-		matchMapCrnrs_0IDX				= 4,				//match map corners - map 1 will get corners set from map 0
-		matchMapCrnrs_1IDX				= 5,				//match map corners - map 0 will get corners set from map 1
+		matchMapCrnrs_0IDX					= 4,				//match map corners - map 1 will get corners set from map 0
+		matchMapCrnrs_1IDX					= 5,				//match map corners - map 0 will get corners set from map 1
 		                        		
-		findDiffFromAtoBIDX				= 6,				//find angle, scale and displacement from A to B
-		findDiffFromBToAIDX				= 7,				//find angle, scale and displacement from B to A
-		findBestOrRegDistIDX			= 8,				//find best distance between quad verts - potentially reassigning verts, or find registration distance
+		findDiffFromAtoBIDX					= 6,				//find angle, scale and displacement from A to B
+		findDiffFromBToAIDX					= 7,				//find angle, scale and displacement from B to A
+		findBestOrRegDistIDX				= 8,				//find best distance between quad verts - potentially reassigning verts, or find registration distance
 		
-		calcMorphDistIDX				= 9,				//calculate the current morph distortion
+		calcMorphDistIDX					= 9,				//calculate the current morph distortion
 		
-		setCurrCOTSBranchShareStratIDX 	= 10,				//send currently set COTS branch sharing strategy to map managers and update
+		setCurrCOTSBranchShareStratIDX 		= 10,				//send currently set COTS branch sharing strategy to map managers and update
 		
-		resetAllBranchingIDX			= 11,
-		resetMapBranch_0IDX				= 12,				//reset map's branching to 0
-		resetMapBranch_1IDX				= 13,
+		resetAllBranchingIDX				= 11,
+		resetMapBranch_0IDX					= 12,				//reset map's branching to 0
+		resetMapBranch_1IDX					= 13,
 		
 		//////////////////////
 		// drawing map flags
-		drawMapIDX						= 14,				//draw map grid
-		drawMap_CntlPtsIDX				= 15,				//draw map control poin
-		drawMap_FillOrWfIDX				= 16,				//draw either filled checkerboards or wireframe for mapping grid
-		drawMap_CellCirclesIDX 			= 17,				//draw inscribed circles within checkerboard cells
-		drawMap_ImageIDX				= 18,				//draw the map's image
-		drawMap_OrthoFrameIDX 			= 19, 				//draw orthogonal frame at map's center
-		drawMap_CntlPtLblsIDX			= 20,				//draw labels for control points
-		drawMap_RegCopyIDX				= 21,				//draw the registration copy map of the similarity between A and B
-		drawMap_EdgeLinesIDX			= 22,				//draw the edge lines linking map A and B
+		drawMapIDX							= 14,				//draw map grid
+		drawMap_CntlPtsIDX					= 15,				//draw map control poin
+		drawMap_FillOrWfIDX					= 16,				//draw either filled checkerboards or wireframe for mapping grid
+		drawMap_CellCirclesIDX 				= 17,				//draw inscribed circles within checkerboard cells
+		drawMap_ImageIDX					= 18,				//draw the map's image
+		drawMap_OrthoFrameIDX 				= 19, 				//draw orthogonal frame at map's center
+		drawMap_CntlPtLblsIDX				= 20,				//draw labels for control points
+		drawMap_RegCopyIDX					= 21,				//draw the registration copy map of the similarity between A and B
+		drawMap_EdgeLinesIDX				= 22,				//draw the edge lines linking map A and B
 		
 		//////////////////////
 		// calc/drawing morph flags
 		//usePerFtrMorph_IDX				= 22,				//whether to use per feature morphs or global morphs
-		drawMorph_MapIDX				= 23,				//draw morph frame
-		drawMorph_SlicesIDX				= 24,
-		drawMorph_Slices_FillOrWfIDX	= 25,				//draw either filled checkerboards or wireframe for morph slices
-		drawMorph_Slices_RtSideInfoIDX  = 26,				//draw info about morph slices on right side menu
-		drawMorph_CntlPtTrajIDX 		= 27,				//show trajectory of COV and control pts
-		drawMorph_FillOrWfIDX 			= 28,
-		
+		drawMorph_MapIDX					= 23,				//draw morph frame
+		drawMorph_SlicesIDX					= 24,
+		drawMorph_Slices_FillOrWfIDX		= 25,				//draw either filled checkerboards or wireframe for morph slices
+		drawMorph_Slices_RtSideInfoIDX  	= 26,				//draw info about morph slices on right side menu
+		drawMorph_CntlPtTrajIDX 			= 27,				//show trajectory of COV and control pts
+		drawMorph_FillOrWfIDX 				= 28,
+		drawMorph_DistColorsIDX				= 29,
 		//////////////////////
 		// animating morph flags		
-		sweepMapsIDX					= 29,				//sweep from one mapping to other mapping
-		showTrajAnalysisWinIDX			= 30,				//show display of graphs of trajectory analysis - either this or oriented lineup should be shown, not both
-		showAnalysisGraphsIDX			= 31,
-		showOrientedLineupIDX			= 32;				//show keyframe display of morph, all registered and displayed side by side
+		sweepMapsIDX						= 30,				//sweep from one mapping to other mapping
+		showTrajAnalysisWinIDX				= 31,				//show display of graphs of trajectory analysis - either this or oriented lineup should be shown, not both
+		showMorphAnalysisGraphsIDX			= 32,
+		showMrphStackDistAnalysisWinIDX		= 33,
+		showMrphStackDistAnalysisGraphsIDX	= 34,
+		showOrientedLineupIDX				= 35;				//show keyframe display of morph, all registered and displayed side by side
 	
-	protected static final int numBaseCOTSWinPrivFlags = 33;
+	protected static final int numBaseCOTSWinPrivFlags = 36;
 	/**
 	 * # of priv flags from base class and instancing class
 	 */
@@ -221,10 +225,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		intValues.put(gIDX_NumLineupFrames,	(int) guiObjs[gIDX_NumLineupFrames].getVal()); 
 		intValues.put(gIDX_NumMorphSlices, (int) guiObjs[gIDX_NumMorphSlices].getVal()); 
 		intValues.put(gIDX_CntlPtDispDetail, (int) guiObjs[gIDX_CntlPtDispDetail].getVal()); 
-		intValues.put(gIDX_AnalysisMmmntsDetail, (int) guiObjs[gIDX_AnalysisMmmntsDetail].getVal());  
+		intValues.put(gIDX_MorphAnalysisMmmntsDetail, (int) guiObjs[gIDX_MorphAnalysisMmmntsDetail].getVal());  
 		intValues.put(gIDX_DistTestTransform, (int) guiObjs[gIDX_DistTestTransform].getVal());  
-		
-		
+		intValues.put(gIDX_DistDimToShow, (int) guiObjs[gIDX_DistDimToShow].getVal());  
 		
 		TreeMap<Integer, String> strValues = new TreeMap<Integer, String>();
 		
@@ -232,6 +235,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 		floatValues.put(gIDX_MorphTVal, (float)guiObjs[gIDX_MorphTVal].getVal()); 	
 		floatValues.put(gIDX_MorphSpeed, (float)guiObjs[gIDX_MorphSpeed].getVal());
+		floatValues.put(gIDX_MorphDistMult, (float) Math.pow(Math.E,guiObjs[gIDX_MorphDistMult].getVal()));
 	
 		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>(); 	
 		
@@ -301,14 +305,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpBtnNamesArray.add(new Object[] { "Show Morph Checkerboard", "Show Morph Wireframe",drawMorph_FillOrWfIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Morph Slices", "Show Morph Slices",drawMorph_SlicesIDX});
 		tmpBtnNamesArray.add(new Object[] { "Show Morph Slices CB", "Show Morph Slices WF",drawMorph_Slices_FillOrWfIDX});
+		
+		tmpBtnNamesArray.add(new Object[] { "Showing Distortion Colors", "Show Distortion Colors",drawMorph_DistColorsIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Morph Slice Info", "Show Morph Slice Info",drawMorph_Slices_RtSideInfoIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj",drawMorph_CntlPtTrajIDX});
 		
-		
 		tmpBtnNamesArray.add(new Object[] { "Showing Reg Map Lineup", "Show Reg Map Lineup", showOrientedLineupIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Traj Analysis", "Show Traj Analysis", showTrajAnalysisWinIDX});
 		
-		tmpBtnNamesArray.add(new Object[] { "Showing Analysis Graphs", "Show Analysis Graphs", showAnalysisGraphsIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Traj Analysis", "Show Traj Analysis", showTrajAnalysisWinIDX});		
+		tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis", "Show Distortion Analysis", showMrphStackDistAnalysisWinIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Traj Analysis Graphs", "Show Traj Analysis Graphs", showMorphAnalysisGraphsIDX});
+		tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs", showMrphStackDistAnalysisGraphsIDX});
 		//instance-specific buttons
 		numPrivFlags = initAllPrivBtns_Indiv(tmpBtnNamesArray);
 		
@@ -335,9 +342,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpListObjVals.put(gIDX_MorphTypeCOVPath, mapPairManager.cmpndMorphTypes); 
 		tmpListObjVals.put(gIDX_SetBrnchStrat, branchShareStrategies);
 		tmpListObjVals.put(gIDX_CntlPtDispDetail, cntlPtDispDetail);
-		tmpListObjVals.put(gIDX_AnalysisMmmntsDetail, analysisMmmntsDetail);
+		tmpListObjVals.put(gIDX_MorphAnalysisMmmntsDetail, analysisMmmntsDetail);
 		tmpListObjVals.put(gIDX_DistTestTransform, mapPairManager.cmpndMorphTypes);
-		
+		tmpListObjVals.put(gIDX_DistDimToShow, distDimToShow);
 		
 		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 	
 		tmpUIObjArray.put(gIDX_MorphSpeed,new Object[] { new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", new boolean[] { false, false, true } }); 	
@@ -358,9 +365,11 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpUIObjArray.put(gIDX_NumMorphSlices,new Object[] { new double[]{5.0, 20.0, 1.0},11.0, "# of Slices in Morph", new boolean[]{true, false, true}}); 
 		
 		tmpUIObjArray.put(gIDX_CntlPtDispDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_CntlPtDispDetail).length-1, 1},1.0*drawMapDetail, "Cntl Pt Disp Detail", new boolean[]{true, true, true}});
-		tmpUIObjArray.put(gIDX_AnalysisMmmntsDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_AnalysisMmmntsDetail).length-1, 1},1.0*currMmntDispIDX, "Traj Analysis Moments Detail", new boolean[]{true, true, true}});
+		tmpUIObjArray.put(gIDX_MorphAnalysisMmmntsDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphAnalysisMmmntsDetail).length-1, 1},1.0*currMmntDispIDX, "Traj Analysis Detail", new boolean[]{true, true, true}});
 		tmpUIObjArray.put(gIDX_DistTestTransform,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_DistTestTransform).length-1, 1},0.0, "Distortion Analysis Transform", new boolean[]{true, true, true}});
+		tmpUIObjArray.put(gIDX_DistDimToShow,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_DistDimToShow).length-1, 1},2.0, "Distortion Dimension to Show In Colors", new boolean[]{true, true, true}});
 		
+		tmpUIObjArray.put(gIDX_MorphDistMult,new Object[] { new double[] { 0.0, 10.0, 0.1 }, 0.0,"Distortion Mult For Vis(log)", new boolean[] { false, false, true } }); 	
 		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
 	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
@@ -418,13 +427,19 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			case gIDX_CntlPtDispDetail : {
 				if(ival != drawMapDetail) {drawMapDetail=ival;}
 				break;}				
-			case gIDX_AnalysisMmmntsDetail : {
+			case gIDX_MorphAnalysisMmmntsDetail : {
 				if(ival != currMmntDispIDX) {currMmntDispIDX=ival;}
 				break;}	
 			case gIDX_DistTestTransform : {
 				//if(ival != currDistTransformIDX) {currDistTransformIDX=ival;uiUpdateData.setIntValue(UIidx, currDistTransformIDX);}
 				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
 				break;}
+			case gIDX_DistDimToShow :{
+				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
+				break;}
+			case gIDX_MorphDistMult : {
+				if(checkAndSetFloatVal(UIidx, (float) Math.pow(Math.E,val))) {updateMapVals(); }
+				break;		}
 			default : {setUIWinVals_Indiv(UIidx, val);}
 		}
 
@@ -506,9 +521,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				if (val) {			mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(true, getPrivFlags(findBestOrRegDistIDX));}
 				break;		}
 			
-//			case usePerFtrMorph_IDX				: {//if true then each of 4 feature-specified morph types are used for each feature of the morphing frames
-//				if((mapManagers!= null) && (mapManagers[currMapTypeIDX] != null)) {mapManagers[currMapTypeIDX].setGlobalOrPerFeatureMorphs(val);}
-//				break;}
+			case drawMorph_DistColorsIDX		: {			break;		}
 			case drawMorph_MapIDX				: {			break;		}	
 			case drawMorph_SlicesIDX			: {			break;		}	
 			case drawMorph_Slices_FillOrWfIDX	: {			break;		}	
@@ -520,20 +533,40 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			case showOrientedLineupIDX			: {			
 				if(val) {			
 					setPrivFlags(showTrajAnalysisWinIDX, false);
-					setPrivFlags(showAnalysisGraphsIDX, false);
+					setPrivFlags(showMorphAnalysisGraphsIDX, false);
+					setPrivFlags(showMrphStackDistAnalysisWinIDX, false);
+					setPrivFlags(showMrphStackDistAnalysisGraphsIDX, false);
 					mapManagers[currMapTypeIDX].buildOrientedLineup();	
 				}
 				break;		}
 			case showTrajAnalysisWinIDX			: {
 				if(val) {
 					setPrivFlags(showOrientedLineupIDX, false);
+					setPrivFlags(showMrphStackDistAnalysisWinIDX, false);
+					setPrivFlags(showMrphStackDistAnalysisGraphsIDX, false);
 				}
 				break;		}
-			case showAnalysisGraphsIDX 			:{
+			case showMorphAnalysisGraphsIDX 			:{
 				if(val) {
 					setPrivFlags(showOrientedLineupIDX, false);
+					setPrivFlags(showMrphStackDistAnalysisWinIDX, false);
+					setPrivFlags(showMrphStackDistAnalysisGraphsIDX, false);
 				}
-			}
+				break;	}
+			case showMrphStackDistAnalysisWinIDX		:{
+				if(val) {
+					setPrivFlags(showTrajAnalysisWinIDX, false);
+					setPrivFlags(showMorphAnalysisGraphsIDX, false);
+					setPrivFlags(showOrientedLineupIDX, false);
+				}			
+				break; }
+			case showMrphStackDistAnalysisGraphsIDX  :{
+				if(val) {
+					setPrivFlags(showTrajAnalysisWinIDX, false);
+					setPrivFlags(showMorphAnalysisGraphsIDX, false);
+					setPrivFlags(showOrientedLineupIDX, false);
+				}			
+				break; }
 			default 			: {setPrivFlags_Indiv(idx,val);}
 		}
 	}
@@ -608,8 +641,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		boolean debug = getPrivFlags(debugAnimIDX), showLbls = getPrivFlags(drawMap_CntlPtLblsIDX), drawCircles = getPrivFlags(drawMap_CellCirclesIDX);
 		boolean drawMorphMap = getPrivFlags(drawMorph_MapIDX), drawMorphSlices = getPrivFlags(drawMorph_SlicesIDX), drawCntlPts = getPrivFlags(drawMap_CntlPtsIDX);
 		boolean drawMap = getPrivFlags(drawMapIDX), drawMorphCntlPtTraj = getPrivFlags(drawMorph_CntlPtTrajIDX), drawCopy = getPrivFlags(drawMap_RegCopyIDX);
+		boolean _showDistColors = getPrivFlags(drawMorph_DistColorsIDX);
 		//draw maps with dependenc on wireframe/filled setting
-		mapManagers[currMapTypeIDX].drawMaps_Main(debug, getPrivFlags(drawMapIDX), getPrivFlags(drawMap_FillOrWfIDX), drawCircles, drawCopy);
+		mapManagers[currMapTypeIDX].drawMaps_Main(debug, getPrivFlags(drawMapIDX), _showDistColors, getPrivFlags(drawMap_FillOrWfIDX), drawCircles, drawCopy);
 		//drawMaps_Aux(boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines) {
 		mapManagers[currMapTypeIDX].drawMaps_Aux(debug, getPrivFlags(drawMap_ImageIDX), getPrivFlags(drawMap_OrthoFrameIDX), getPrivFlags(drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
 		
@@ -617,7 +651,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 		if(drawMorphMap || drawMorphSlices || drawCircles || getPrivFlags(drawMorph_CntlPtTrajIDX) || getPrivFlags(drawMorph_Slices_RtSideInfoIDX)) {		
 			mapManagers[currMapTypeIDX].drawAndAnimMorph(debug, animTimeMod, drawMap,
-					drawMorphMap, getPrivFlags(drawMorph_FillOrWfIDX), 
+					drawMorphMap, _showDistColors, getPrivFlags(drawMorph_FillOrWfIDX), 
 					drawMorphSlices, getPrivFlags(drawMorph_Slices_FillOrWfIDX), 
 					drawCircles, drawCntlPts, getPrivFlags(sweepMapsIDX), showLbls,drawMapDetail);	
 		}
@@ -625,7 +659,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		_drawMe_Indiv(animTimeMod);
 		pa.popStyle();pa.popMatrix();	
 	}
-	
+	protected abstract int[] getRowColSliceIDXs();
 
 	protected abstract void _drawMe_Indiv(float animTimeMod);
 	
@@ -652,10 +686,11 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final void drawOnScreenStuffPriv(float modAmtMillis) {
 		if(getPrivFlags(showOrientedLineupIDX)) {
 			mapManagers[currMapTypeIDX].drawMaps_LineupFrames(getPrivFlags(drawMap_FillOrWfIDX), getPrivFlags(drawMap_CellCirclesIDX), getPrivFlags(drawMap_ImageIDX));
-		} else if(getPrivFlags(showTrajAnalysisWinIDX) || getPrivFlags(showAnalysisGraphsIDX)) { 
-			mapManagers[currMapTypeIDX].drawMaps_AnalysisWins(getPrivFlags(showTrajAnalysisWinIDX),getPrivFlags(showAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],drawMapDetail,sideBarYDisp) ;
-		}
-		
+		} else if(getPrivFlags(showTrajAnalysisWinIDX) || getPrivFlags(showMorphAnalysisGraphsIDX)) { 
+			mapManagers[currMapTypeIDX].drawMaps_MorphAnalysisWins(getPrivFlags(showTrajAnalysisWinIDX),getPrivFlags(showMorphAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],drawMapDetail,sideBarYDisp) ;
+		} else if(getPrivFlags(showMrphStackDistAnalysisWinIDX) || getPrivFlags(showMrphStackDistAnalysisGraphsIDX)) { 
+			mapManagers[currMapTypeIDX].drawMaps_MrphStackDistAnalysisWins(getPrivFlags(showMrphStackDistAnalysisWinIDX),getPrivFlags(showMrphStackDistAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],sideBarYDisp) ;
+		}		
 	}		
 	
 	/**

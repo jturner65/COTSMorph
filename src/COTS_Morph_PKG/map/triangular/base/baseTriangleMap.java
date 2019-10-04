@@ -49,8 +49,8 @@ public abstract class baseTriangleMap extends baseMap {
 	 * will return 2*cntlPts.length for certain polys - need to query size when processing
 	 */
 	@Override
-	public final myPointf[][][] buildPolyCorners(){
-		myPointf[][][] res = new myPointf[numCellsPerSide][numCellsPerSide][];		
+	protected final myPointf[][][] buildPolyCorners(){
+		myPointf[][][] res = new myPointf[numCellsPerSide][numCellsPerSide][3];		
 		
 //		pt = calcMapPt(polyPointTVals[i], polyPointTVals[j]);
 //		pa.vertex(pt.x,pt.y,pt.z);
@@ -59,30 +59,38 @@ public abstract class baseTriangleMap extends baseMap {
 //		pt = calcMapPt(polyPointTVals[i],polyPointTVals[j+1]);
 //		pa.vertex(pt.x,pt.y,pt.z);
 			
-//			pt = calcMapPt(polyPointTVals[i], polyPointTVals[j]);
-//			pa.vertex(pt.x,pt.y,pt.z);
-//			pt = calcMapPt(polyPointTVals[i],polyPointTVals[j+1]);		
-//			pa.vertex(pt.x,pt.y,pt.z);
-//			pt = calcMapPt(polyPointTVals[i-1],polyPointTVals[j+1]);
-//			pa.vertex(pt.x,pt.y,pt.z);		
 		
-		for(int i=0;i<numCellsPerSide;++i) {
-			for(int j=0;j<numCellsPerSide;++j) {
-				ArrayList<myPointf> tmpAra = new ArrayList<myPointf>();
-				if(i+j < polyPointTVals.length-1) {					
-					tmpAra.add(calcMapPt(polyPointTVals[i], polyPointTVals[j]));
-					tmpAra.add(calcMapPt(polyPointTVals[i+1], polyPointTVals[j]));
-					tmpAra.add(calcMapPt(polyPointTVals[i], polyPointTVals[j+1]));				
+		for(int row=0;row<numCellsPerSide;++row) {
+			//String tmpStr = "Row "+row+ " : ";
+			int newRow = (numCellsPerSide - 1) - row; 
+			for(int col=0;col<numCellsPerSide;++col) {
+				int built = 0;
+				if(col+row < polyPointTVals.length-1) {		
+					++built;
+					res[col][row][0]=(calcMapPt(polyPointTVals[col], polyPointTVals[row]));
+					res[col][row][1]=(calcMapPt(polyPointTVals[col+1], polyPointTVals[row]));
+					res[col][row][2]=(calcMapPt(polyPointTVals[col], polyPointTVals[row+1]));				
 				}
-				if(i>j) {//lower triangle of triangle pair
-					int newI = (i > j ? i - j : i);
-					int newJ = (i > j ? j : j-i);					
-					tmpAra.add(calcMapPt(polyPointTVals[newI], polyPointTVals[newJ]));
-					tmpAra.add(calcMapPt(polyPointTVals[newI], polyPointTVals[newJ+1]));	
-					tmpAra.add(calcMapPt(polyPointTVals[newI-1], polyPointTVals[newJ+1]));
+				if(col>row) {//lower triangle of triangle pair
+					//++built;
+					int newI = (col > row ? col - row : col);
+					int newJ = (col > row ? row : row-col);	
+					if(built == 1) {						
+						res[col][newRow][0]=(calcMapPt(polyPointTVals[newI], polyPointTVals[newJ]));
+						res[col][newRow][1]=(calcMapPt(polyPointTVals[newI], polyPointTVals[newJ+1]));	
+						res[col][newRow][2]=(calcMapPt(polyPointTVals[newI-1], polyPointTVals[newJ+1]));
+						
+					} else {
+						res[col][row][0]=(calcMapPt(polyPointTVals[newI], polyPointTVals[newJ]));
+						res[col][row][1]=(calcMapPt(polyPointTVals[newI], polyPointTVals[newJ+1]));	
+						res[col][row][2]=(calcMapPt(polyPointTVals[newI-1], polyPointTVals[newJ+1]));
+					}
 				} 
-				res[i][j] = tmpAra.toArray(new myPointf[0]);
+				//tmpStr += built + "|";
+					
+				//res[col][row] = tmpAra.toArray(new myPointf[0]);
 			}
+			//if(mapTitle.contains("t=0.000")) {System.out.println("buildPolyCorners : @ "+tmpStr);}
 		}
 		return res;	
 	}	

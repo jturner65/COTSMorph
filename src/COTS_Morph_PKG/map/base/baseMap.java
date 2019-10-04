@@ -93,6 +93,9 @@ public abstract class baseMap {
 		//color for grid ISO lines
 	protected int[] gridColor;
 	
+		//currently computed distortion colors
+	protected float[][][] distCellColors;
+	
 		//rotational UI mod scale value
 	private static final float rotScl = .0025f;
 		//base radius of drawn sphere
@@ -410,9 +413,28 @@ public abstract class baseMap {
 	
 	
 	/**
-	 * build corners of all polys
+	 * build maps of all polys
 	 */
-	public abstract myPointf[][][] buildPolyCorners();
+	public final baseMap[][] buildPolyMaps(){
+		myPointf[][][] allPolyCntlPts = buildPolyCorners();
+		baseMap[][] resMaps = new baseMap[numCellsPerSide][numCellsPerSide];
+		myPointf[] tmpCntlPts;
+			
+		for(int i=0;i<resMaps.length;++i) {
+			for(int j=0;j<resMaps[i].length;++j) {				
+				tmpCntlPts = allPolyCntlPts[i][j];		
+				if(tmpCntlPts.length == cntlPts.length) {
+					resMaps[i][j]=mgr.buildCopyMapOfPassedMapType(this, "polyMap_"+i+"_"+j);
+					resMaps[i][j].resetCntlPts(tmpCntlPts);		
+				} else {
+					
+				}
+			}
+		}
+		return resMaps;			
+	}
+	
+	protected abstract myPointf[][][] buildPolyCorners();
 	
 	/**
 	 * build single tile points
@@ -546,7 +568,6 @@ public abstract class baseMap {
 	
 	protected abstract void mseRelease_Indiv();
 
-	
 
 	///////////////////////
 	// draw routines
@@ -564,8 +585,7 @@ public abstract class baseMap {
 			pa.stroke(255,0,0,255);
 			mgr._drawPt(cntlPtCOM, sphereRad*1.5f);	
 			pa.stroke(0,0,0,255);
-		}
-		
+		}		
 		//instance specific 
 		_drawCntlPoints_Indiv(isCurMap, detail);
 		
@@ -627,10 +647,31 @@ public abstract class baseMap {
 		pa.popStyle();pa.popMatrix();
 	}//drawMap_Wf
 	
+	/**
+	 * draw maps with distortion color
+	 * @param colorWts
+	 * @param mult
+	 * @param dimIDX
+	 */
+	public void drawMap_DistColor(float mult, int dimIDX) {
+		if(distCellColors==null) {return;}
+		pa.pushMatrix();pa.pushStyle();	
+		pa.stroke(255,255,255,255);
+		pa.setStrokeWt(1.0f);		
+		for(int i=0;i<polyPointTVals.length-1;++i) {			
+			for(int j=0;j<polyPointTVals.length-1;++j) {
+				float redMult = mult*distCellColors[i][j][dimIDX],
+					greenMult = (redMult == 0 ? 1.0f : 1.0f/redMult);
+				pa.fill((int)(redMult* 255), (int)(greenMult * 255),0,255);
+				_drawPoly(i,j);					
+			}				
+		}	
+		pa.popStyle();pa.popMatrix();
+	}//drawMap_Fill
+	
+	
 	protected abstract void _drawPoly(int i, int j);
 	
-//	public abstract void drawMap_Fill();	
-//	public abstract void drawMap_Wf();	
 	public abstract void drawMap_PolyCircles_Fill();		
 	public abstract void drawMap_PolyCircles_Wf();
 	public abstract void drawMap_Texture();
@@ -864,6 +905,8 @@ public abstract class baseMap {
 
 	
 	public final mapPairManager getMapManager() {return mgr;}
+	
+	public final void setDistCellColors(float[][][] _distCellColors){distCellColors=_distCellColors;}
 	
 	//////////////
 	// utils

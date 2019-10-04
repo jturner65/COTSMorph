@@ -149,7 +149,7 @@ public abstract class baseQuadMap extends baseMap {
 	 * build corners of all polys - return a column/row indexed list of cntrl points for map cells
 	 */
 	@Override
-	public final myPointf[][][] buildPolyCorners(){
+	protected final myPointf[][][] buildPolyCorners(){
 		myPointf[][][] res = new myPointf[numCellsPerSide][numCellsPerSide][cntlPts.length];		
 		for(int i=0;i<res.length;++i) {
 			for(int j=0;j<res[i].length;++j) {

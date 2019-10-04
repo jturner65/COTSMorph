@@ -57,7 +57,14 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 		
 		return _numPrivButtons;
 	}//initAllPrivBtns
+	/**
+	 * which indexes are for rows, columns and slices
+	 */
+	protected final int[] getRowColSliceIDXs() {
+		return new int[] {1,2,3};
+	}
 
+	
 	/**
 	 * init ui objects from maps, keyed by ui object idx, with value being data
 	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    

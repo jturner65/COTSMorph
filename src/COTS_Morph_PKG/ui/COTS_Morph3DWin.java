@@ -59,6 +59,13 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		
 		return _numPrivButtons;
 	}//initAllPrivBtns
+	
+	/**
+	 * which indexes are for rows, columns and slices
+	 */
+	protected final int[] getRowColSliceIDXs() {
+		return new int[] {3,-1,-2};
+	}
 
 	/**
 	 * init ui objects from maps, keyed by ui object idx, with value being data

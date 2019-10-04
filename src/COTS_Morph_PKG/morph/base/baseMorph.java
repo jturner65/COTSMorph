@@ -3,8 +3,9 @@ package COTS_Morph_PKG.morph.base;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.analysis.morph.morphAreaTrajAnalyzer;
-import COTS_Morph_PKG.analysis.morph.morphCntlPtTrajAnalyzer;
+import COTS_Morph_PKG.analysis.floatTrajAnalyzer;
+import COTS_Morph_PKG.analysis.morphStackDistAnalyzer;
+import COTS_Morph_PKG.analysis.myPointfTrajAnalyzer;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
@@ -26,7 +27,7 @@ public abstract class baseMorph {
 	/**
 	 * current map manager, managing key frames of a specific type that this morph is working on
 	 */
-	protected mapPairManager mapMgr;
+	protected final mapPairManager mapMgr;
 	/**
 	 * maps this morph is working on
 	 */
@@ -80,8 +81,8 @@ public abstract class baseMorph {
 	/**
 	 * analyzers for each morph trajectory - keyed by traj name
 	 */
-	protected TreeMap<String, morphCntlPtTrajAnalyzer> trajAnalyzers;
-	protected morphAreaTrajAnalyzer areaTrajAnalyzer;
+	protected TreeMap<String, myPointfTrajAnalyzer> trajAnalyzers;
+	protected floatTrajAnalyzer areaTrajAnalyzer;
 	/**
 	 * map holding name of traj component and index in cntl point ara
 	 */
@@ -91,6 +92,10 @@ public abstract class baseMorph {
 	
 		//ref to UI object from map manager
 	protected mapUpdFromUIData currUIVals;
+	
+	protected morphStackDistAnalyzer mrphStackDistAnalyzer;
+	//currently calculated distortion cell colors
+	protected float[][][][] distCellColors;
 
 	/**
 	 * 
@@ -102,6 +107,7 @@ public abstract class baseMorph {
 		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;
 		mapA = _mapA;
 		mapB = _mapB;	
+		mrphStackDistAnalyzer = new morphStackDistAnalyzer(mapMgr);
 		_ctorFinalize();
 	}
 	
@@ -123,7 +129,7 @@ public abstract class baseMorph {
 		cntlPtTrajs = new TreeMap<Float, myPointf[][]>();
 		edgePtTrajs = new TreeMap<Float, myPointf[][][]>();
 		mapFlags = new mapCntlFlags[numMapFlags];
-		trajAnalyzers = new TreeMap<String, morphCntlPtTrajAnalyzer>();
+		trajAnalyzers = new TreeMap<String, myPointfTrajAnalyzer>();
 		trajAnalyzeKeys = mapA.getTrajAnalysisKeys();
 		reCalcTrajsAndAnalysis = true;
 		initTrajAnalyzers();
@@ -204,7 +210,8 @@ public abstract class baseMorph {
 		//mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(morphT != oldMorphT);
 		
 		_calcMorphOnMap(curMorphMap, true, morphT);
-		
+		morphMapDistColorsSet = false;
+		setMorphMapAndSliceColors();
 		//oldMorphT = morphT;
 		//mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(true);
 		
@@ -269,11 +276,9 @@ public abstract class baseMorph {
 		//update map with current morph calc
 		calcMorphAndApplyToMap(_curMorphMap, tA, tB);
 		//get relevant points from map, based on what kind of map, to build trajectories from
-		myPointf[] newPts = _curMorphMap.getAllMorphCntlPts();
-		
+		myPointf[] newPts = _curMorphMap.getAllMorphCntlPts();		
 		return newPts;
-	}
-	
+	}	
 	
 	/**
 	 * use currently set t value to calculate morph and apply to passed morph map
@@ -306,15 +311,53 @@ public abstract class baseMorph {
 	public abstract void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom);
 	
 	/**
+	 * calculate morph stack distortion
+	 */
+	public final float calculateMorphDistortion(baseMorph currDistMsrMorph, int currDistTransformIDX) {
+			//retrieve all control points of all cells in all maps of morph.  ara 0 is k == slice, ara 1 is i, ara 2 is j, ara 3 is cntl pts	
+		baseMap[][][] allPolyCntlPts = buildAllSliceCellMaps();		
+		win.getMsgObj().dispInfoMessage("baseMorph", "calculateMorphDistortion",  "allPolyCntlPts has : " + allPolyCntlPts.length + " slices with : "+ allPolyCntlPts[0].length +" columns and " + allPolyCntlPts[0][0].length + " rows ");
+		
+			//now calculate distortion
+		mrphStackDistAnalyzer.calculateAllDistortions(currDistMsrMorph, allPolyCntlPts);
+		
+		distCellColors = mrphStackDistAnalyzer.getTtlDistPerCell();
+		mapA.setDistCellColors(distCellColors[0]);
+		mapB.setDistCellColors(distCellColors[distCellColors.length-1]);
+		morphSliceAraDistColorsSet = false;
+		morphMapDistColorsSet = false;
+		setMorphMapAndSliceColors();
+		return mrphStackDistAnalyzer.getTtlDistForEntireMrphStck();
+		
+	}//calculateMorphDistortion
+	
+	protected void setMorphMapAndSliceColors() {
+		if((distCellColors != null) && (morphSliceAra.size()==distCellColors.length)) {
+			if(!morphSliceAraDistColorsSet) {	_setMorphMapDistColors();	morphSliceAraDistColorsSet = true;}
+			if(!morphMapDistColorsSet) {			_morphMapSetDistColors();morphMapDistColorsSet=true;}
+		}
+	}
+	
+	private boolean morphSliceAraDistColorsSet = false;
+	private final void _setMorphMapDistColors() {
+		int kIdx = 0;
+		for(float key : morphSliceAra.keySet()) {morphSliceAra.get(key).setDistCellColors(distCellColors[kIdx++]);}
+	}
+	private boolean morphMapDistColorsSet = false;
+	private final void _morphMapSetDistColors() {	
+		int kIDX = (int)((distCellColors.length-1) * morphT);
+		curMorphMap.setDistCellColors(distCellColors[kIDX]);		
+	}
+	/**
 	 * call only once
 	 */
 	protected final void initTrajAnalyzers() {
 		trajAnalyzers.clear();		//1 per control point
 		for(String key : trajAnalyzeKeys.keySet()) {
-			trajAnalyzers.put(key, new morphCntlPtTrajAnalyzer(this));
+			trajAnalyzers.put(key, new myPointfTrajAnalyzer());
 		}
 		//analyzer for areas
-		areaTrajAnalyzer = new morphAreaTrajAnalyzer(this);
+		areaTrajAnalyzer = new floatTrajAnalyzer();
 	}
 	
 	/**
@@ -467,25 +510,9 @@ public abstract class baseMorph {
 		pa.popStyle();pa.popMatrix();
 		
 	}
-//	
-//	private void _drawAnalyzerData(String[] mmntDispLabels, float[] trajWinDims, String name, baseMorphAnalyzer analyzer) {
-//		float yDisp = trajWinDims[3];
-//		pa.pushMatrix();pa.pushStyle();		
-//		pa.translate(5.0f, yDisp, 0.0f);
-//			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, name);
-//		pa.popStyle();pa.popMatrix();
-//		pa.pushMatrix();pa.pushStyle();
-//			pa.translate(5.0f, 2*yDisp, 0.0f);			
-//			analyzer.drawAllSummaryInfo(mmntDispLabels, yDisp, trajWinDims[0]);
-//		pa.popStyle();pa.popMatrix();
-//		
-//		pa.translate(trajWinDims[0], 0.0f, 0.0f);
-//		pa.line(0.0f,trajWinDims[2], 0.0f, 0.0f, trajWinDims[0]+ trajWinDims[2], 0.0f );
-//	}//_drawAnalyzerData
+
 	
-	public final float drawMapRtSdMenuDescr(float yOff, float sideBarYDisp) {
-		//if(null == curMorphMap) {return yOff;}	
-		
+	public final float drawMapRtSdMenuDescr(float yOff, float sideBarYDisp) {		
 		pa.pushMatrix();pa.pushStyle();
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, morphTitle);
 			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.6f, " Morph Frame @ Time : ");
@@ -582,13 +609,14 @@ public abstract class baseMorph {
 		pa.popStyle();pa.popMatrix();	
 	}
 	
-	public final void drawMorphedMap(boolean _isFill, boolean _drawMap, boolean _drawCircles) {
-		_drawMorphMap(curMorphMap, _isFill, _drawMap, _drawCircles);
+	public final void drawMorphedMap(boolean _showDistColors, boolean _isFill, boolean _drawMap, boolean _drawCircles) {
+		_drawMorphMap(curMorphMap, _showDistColors,_isFill, _drawMap, _drawCircles);
 	}
 	
-	public final void drawMorphSlices(boolean _isFill, boolean _drawMorphSliceMap, boolean _drawCircles, boolean _drawCntlPts, boolean _showLabels, int _detail) {
+	public final void drawMorphSlices( boolean _showDistColors, boolean _isFill, boolean _drawMorphSliceMap, boolean _drawCircles, boolean _drawCntlPts, boolean _showLabels, int _detail) {
 		if(_drawMorphSliceMap) {
-			if(_isFill) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Fill();}} 
+			if(_showDistColors) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}} 
+			else if(_isFill) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Fill();}} 
 			else {			for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Wf();}}
 		}
 		if(_drawCircles) {
@@ -606,9 +634,10 @@ public abstract class baseMorph {
 		}	
 	}
 	
-	protected final void _drawMorphMap(baseMap _map, boolean _isFill, boolean _drawMap, boolean _drawCircles) {
+	protected final void _drawMorphMap(baseMap _map, boolean _showDistColors, boolean _isFill, boolean _drawMap, boolean _drawCircles) {
 		if(_drawMap) {
-			if(_isFill) {	_map.drawMap_Fill();}
+			if(_showDistColors) {_map.drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}
+			else if(_isFill) {	_map.drawMap_Fill();}
 			else {			_map.drawMap_Wf();}	
 		}
 		if(_drawCircles) {
@@ -629,12 +658,13 @@ public abstract class baseMorph {
 	 * this will return an array of k, i,j control point arrays, where i and j are map column and row, and k is slice idx
 	 * @return
 	 */
-	public final myPointf[][][][] buildAllSlicesAndCellsCntlPts(){
-		myPointf[][][][] res = new myPointf[numMorphSlices][][][];
+	public final baseMap[][][] buildAllSliceCellMaps(){
+		setMorphSliceAra();
+		baseMap[][][] res = new baseMap[numMorphSlices][][];
 		int i = 0;
-		for(Float key : morphSliceAra.keySet()) {
-			res[i++] = morphSliceAra.get(key).buildPolyCorners();
-		}
+		for(Float key : morphSliceAra.keySet()) {res[i++] = morphSliceAra.get(key).buildPolyMaps();}
+		
+		
 		return res;
 	}
 	
@@ -646,6 +676,7 @@ public abstract class baseMorph {
 	//public final void setMorphScope(int _mScope) {	morphScope = _mScope;	calcMorph();}
 	
 	public final void setMorphSlices(int _num) {
+		if(_num < 3) {_num =3;}//allow no fewer than 3 slices
 		int oldNumMorphSlices = numMorphSlices; 
 		numMorphSlices=_num;
 		if(oldNumMorphSlices != numMorphSlices) {setMorphSliceAra();}
@@ -653,6 +684,8 @@ public abstract class baseMorph {
 
 	protected final void setMorphSliceAra() {
 		morphSliceAra = buildArrayOfMorphMaps(numMorphSlices, "_MrphSlc");
+		morphSliceAraDistColorsSet = false;
+		setMorphMapAndSliceColors();
 	}//setMorphMapAra()	
 	
 	protected final TreeMap<Float, baseMap> buildArrayOfMorphMaps(int numMaps, String _name) {
@@ -691,6 +724,8 @@ public abstract class baseMorph {
 	
 	public baseMap getCurMorphMap() {return curMorphMap;}	
 	public myPointf[] getCurMorphMap_CntlPts() {return curMorphMap.getCntlPts();}
+	
+	public mapPairManager getMapPairManager() {return mapMgr;}
 
 	public final String toStringEdge(myPointf[] e) {
 		return "0:["+e[0].toStrCSV(baseMap.strPointDispFrmt8)+"] | 1:["+e[1].toStrCSV(baseMap.strPointDispFrmt8)+"]";
