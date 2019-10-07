@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.analysis.base.baseAnalyzer;
-import COTS_Morph_PKG.analysis.prob.myProbSummary_Flts;
-import COTS_Morph_PKG.analysis.prob.base.baseProbSummary;
+import COTS_Morph_PKG.analysis.stats.myProbSummary_Flts;
+import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 

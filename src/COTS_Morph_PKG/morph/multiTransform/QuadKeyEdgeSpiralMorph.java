@@ -11,8 +11,8 @@ import base_Utils_Objects.vectorObjs.myVectorf;
 
 public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 
-	public QuadKeyEdgeSpiralMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {	super(_win, _mapMgr,_mapA, _mapB, _morphTitle);}
-	
+	public QuadKeyEdgeSpiralMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);}
+	public QuadKeyEdgeSpiralMorph(QuadKeyEdgeSpiralMorph _otr) {super(_otr);}
 	//////////////////
 	// map construction	
 

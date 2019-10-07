@@ -11,8 +11,8 @@ import base_Utils_Objects.vectorObjs.myVectorf;
 
 public class DualCarrierSimMorph extends baseMultiTransformMorphs {
 
-	public DualCarrierSimMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTitle);}
-
+	public DualCarrierSimMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);}
+	public DualCarrierSimMorph(DualCarrierSimMorph _otr) {super(_otr);}
 	@Override
 	protected final baseSpiralTransformer buildSimilarity(int i) {
 		return new CarrierTransformer(morphTitle+"_"+i,mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);		

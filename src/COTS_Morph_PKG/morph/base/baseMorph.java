@@ -29,6 +29,10 @@ public abstract class baseMorph {
 	 */
 	protected final mapPairManager mapMgr;
 	/**
+	 * type index of this morph
+	 */
+	public final int morphTypeIDX;
+	/**
 	 * maps this morph is working on
 	 */
 	protected baseMap mapA, mapB;
@@ -103,12 +107,20 @@ public abstract class baseMorph {
 	 * @param _mapMgr
 	 * @param _morphTitle
 	 */
-	public baseMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {
-		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;
+	public baseMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {
+		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
 		mapA = _mapA;
 		mapB = _mapB;	
 		mrphStackDistAnalyzer = new morphStackDistAnalyzer(mapMgr);
 		_ctorFinalize();
+	}
+	
+	public baseMorph(baseMorph _otr) {//copy ctor
+		win=_otr.win; pa=myDispWindow.pa;morphTitle=_otr.morphTitle+"_cpy";mapMgr=_otr.mapMgr;morphTypeIDX=_otr.morphTypeIDX;
+		mapA = getCopyOfMap(_otr.mapA, "cpyOfMapA");
+		mapB = getCopyOfMap(_otr.mapB, "cpyOfMapB");
+		mrphStackDistAnalyzer = new morphStackDistAnalyzer(mapMgr);
+		_ctorFinalize();		
 	}
 	
 	public void setNewKeyFrameMaps(baseMap _mapA, baseMap _mapB) {
@@ -152,7 +164,7 @@ public abstract class baseMorph {
 	/**
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */
-	public abstract void _endCtorInit();
+	protected abstract void _endCtorInit();
 		
 	private final void _morphColors(baseMap _curMorphMap, float tA, float tB) {
 		//calculate checker board and grid color morphs
@@ -314,17 +326,20 @@ public abstract class baseMorph {
 	 * calculate morph stack distortion
 	 */
 	public final float calculateMorphDistortion(baseMorph currDistMsrMorph, int currDistTransformIDX) {
+		setMorphSliceAra();
 			//retrieve all control points of all cells in all maps of morph.  ara 0 is k == slice, ara 1 is i, ara 2 is j, ara 3 is cntl pts	
-		baseMap[][][] allPolyCntlPts = buildAllSliceCellMaps();		
-		win.getMsgObj().dispInfoMessage("baseMorph", "calculateMorphDistortion",  "allPolyCntlPts has : " + allPolyCntlPts.length + " slices with : "+ allPolyCntlPts[0].length +" columns and " + allPolyCntlPts[0][0].length + " rows ");
+		//baseMap[][][] allPolyCntlPts = buildAllSliceCellMaps();		
+		//win.getMsgObj().dispInfoMessage("baseMorph", "calculateMorphDistortion",  "allPolyCntlPts has : " + allPolyCntlPts.length + " slices with : "+ allPolyCntlPts[0].length +" columns and " + allPolyCntlPts[0][0].length + " rows ");
 		
 			//now calculate distortion
-		mrphStackDistAnalyzer.calculateAllDistortions(currDistMsrMorph, allPolyCntlPts);
+		//mrphStackDistAnalyzer.calculateAllDistortions(currDistMsrMorph, allPolyCntlPts);
+		mrphStackDistAnalyzer.calculateAllDistortions(currDistMsrMorph, morphSliceAra.values().toArray(new baseMap[0]));
+		
 		
 		distCellColors = mrphStackDistAnalyzer.getTtlDistPerCell();
 		mapA.setDistCellColors(distCellColors[0]);
 		mapB.setDistCellColors(distCellColors[distCellColors.length-1]);
-		morphSliceAraDistColorsSet = false;
+		//morphSliceAraDistColorsSet = false;
 		morphMapDistColorsSet = false;
 		setMorphMapAndSliceColors();
 		return mrphStackDistAnalyzer.getTtlDistForEntireMrphStck();
@@ -659,7 +674,7 @@ public abstract class baseMorph {
 	 * @return
 	 */
 	public final baseMap[][][] buildAllSliceCellMaps(){
-		setMorphSliceAra();
+		
 		baseMap[][][] res = new baseMap[numMorphSlices][][];
 		int i = 0;
 		for(Float key : morphSliceAra.keySet()) {res[i++] = morphSliceAra.get(key).buildPolyMaps();}

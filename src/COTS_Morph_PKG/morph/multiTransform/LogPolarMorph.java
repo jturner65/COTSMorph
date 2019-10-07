@@ -24,8 +24,8 @@ public class LogPolarMorph extends baseMultiTransformMorphs {
 	 * offset index for where map b points start in morph - should == # of cntl points in map
 	 */
 	private int bPointOffsetIDX;
-	public LogPolarMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTitle);}
-
+	public LogPolarMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);}
+	public LogPolarMorph(LogPolarMorph _otr) {super(_otr);}
 	//////////////////
 	// map construction	
 

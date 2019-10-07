@@ -1,8 +1,8 @@
-package COTS_Morph_PKG.analysis.prob;
+package COTS_Morph_PKG.analysis.stats;
 
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.analysis.prob.base.baseProbSummary;
+import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 

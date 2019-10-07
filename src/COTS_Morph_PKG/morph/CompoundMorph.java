@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.base.baseMorph;
+import COTS_Morph_PKG.morph.multiTransform.base.baseMultiTransformMorphs;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -65,7 +66,8 @@ public class CompoundMorph extends baseMorph {
 	 * @param _mapMgr
 	 * @param _morphTitle
 	 */	
-	public CompoundMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTitle);}
+	public CompoundMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}
+	public CompoundMorph(CompoundMorph _otr) {super(_otr);}
 
 	@Override
 	public void _endCtorInit() {

@@ -19,8 +19,8 @@ public abstract class baseMultiTransformMorphs extends baseMorph {
 	protected myPointf[][] crnrPtAras;
 
 
-	public baseMultiTransformMorphs(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {	super(_win, _mapMgr,_mapA, _mapB, _morphTitle);}
-
+	public baseMultiTransformMorphs(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}
+	public baseMultiTransformMorphs(baseMultiTransformMorphs _otr) {super(_otr);}
 
 	/**
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor

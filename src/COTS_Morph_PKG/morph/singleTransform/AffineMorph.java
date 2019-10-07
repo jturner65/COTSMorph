@@ -11,7 +11,8 @@ import base_Utils_Objects.vectorObjs.myPointf;
 
 public class AffineMorph extends baseSingleTransformMorph {
 
-	public AffineMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB,  _morphTitle);}
+	public AffineMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}
+	public AffineMorph(AffineMorph _otr) {super(_otr);}
 	@Override
 	protected final baseSpiralTransformer buildSimilarity() {
 		return new Reg_SpiralSimWithTranslation(morphTitle,mapA.basisVecs[0],mapA.basisVecs[2],mapA.basisVecs[1]);		

@@ -2,7 +2,7 @@ package COTS_Morph_PKG.analysis.base;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.analysis.prob.base.baseProbSummary;
+import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
 import COTS_Morph_PKG.map.base.baseMap;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
@@ -42,33 +42,6 @@ public abstract class baseAnalyzer {
 	public abstract void analyzeTrajectory(ArrayList pts, String name);
 	
 
-	
-	/**
-	 * find the square distance between two maps' vertices
-	 * @param aMap
-	 * @param bMap
-	 * @return
-	 */
-	public final float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
-		float res = 0.0f;
-		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
-		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
-		return res;
-	}
-
-//	
-//	/**
-//	 * find the distance between two maps' vertices
-//	 * @param aMap
-//	 * @param bMap
-//	 * @return
-//	 */
-//	public final float findDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
-//		float res = findSqDistBetween2MapVerts(aMap, bMap);
-//		return (float) Math.sqrt(res);
-//	}
-
-	
 	/**
 	 * this will properly format and display a string of text, and will translate the width, so multiple strings can be displayed on the same line with different colors
 	 * @param tclr

@@ -8,7 +8,9 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 
 public class LERPMorph extends baseSingleTransformMorph {
-	public LERPMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTitle);transform =null;}//null transform forces lerp interpolation	
+	public LERPMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);transform =null;}//null transform forces lerp interpolation	
+	
+	public LERPMorph(LERPMorph _otr) {super(_otr);transform =null;}
 	
 	@Override
 	protected void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd) {}

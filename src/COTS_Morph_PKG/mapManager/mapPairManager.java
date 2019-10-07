@@ -2,6 +2,8 @@ package COTS_Morph_PKG.mapManager;
 
 
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.map.quad.BiLinMap;
@@ -23,6 +25,7 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
+import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
@@ -138,6 +141,7 @@ public class mapPairManager {
 
 	public static my_procApplet pa;
 	public COTS_MorphWin win;
+	public MessageObject msgObj;
 	/**
 	 * array holding upper left corner x,y, width, height of rectangle to use for oriented lineup images
 	 */
@@ -156,7 +160,12 @@ public class mapPairManager {
 	 */
 	protected float[] mStckDistAnalysisRectDims;
 	protected float perMStckDistAnalysisImageWidth;
-	
+	/**
+	 * threading constructions - allow map manager to own its own threading executor
+	 */
+	protected ExecutorService th_exec;	//to access multithreading - instance from calling program
+	protected final int numUsableThreads;		//# of threads usable by the application
+
 	/**
 	 * morph animation variables
 	 */
@@ -174,7 +183,7 @@ public class mapPairManager {
 	protected boolean morphStackAnalysisDone = false;
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
-		win=_win; pa=myDispWindow.pa;
+		win=_win; pa=myDispWindow.pa;msgObj=win.getMsgObj();
 		//for building registration copy
 		fromMapIDX = 0;
 		toMapIDX = 1;
@@ -184,7 +193,11 @@ public class mapPairManager {
 		// necessary info to build map
 		bndPts = new myPointf[_bndPts.length][];
 		for(int i=0;i<bndPts.length;++i) {bndPts[i]=new myPointf[_bndPts[i].length];	for(int j=0;j<bndPts[i].length;++j) {		bndPts[i][j]=new myPointf(_bndPts[i][j]);	}}
-		currUIVals = new mapUpdFromUIData(_currUIVals);
+		currUIVals = new mapUpdFromUIData(_currUIVals);		
+		
+		//want # of usable background threads.  Leave 2 for primary process (and potential draw loop)
+		numUsableThreads = Runtime.getRuntime().availableProcessors() - 2;
+		th_exec = Executors.newCachedThreadPool();// this is performing much better even though it is using all available threads
 		
 		//build maps
 		maps = new baseMap[2];
@@ -206,39 +219,41 @@ public class mapPairManager {
 	
 	public baseMorph buildMorph(int typeIDX, baseMap _mapA, baseMap _mapB) {
 		switch (typeIDX) {
-			case LERPMorphIDX 		: {		return new LERPMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]); 		}
-			case RigidMorphIDX  	: {		return new RigidMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]); 		}
-			case AffineMorphIDX 	: {		return new AffineMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
-			case CarrierSimDiagIDX 	: {		return new CarrierSimDiagMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);	}
-			case DualCarrierSimIDX 	: {		return new DualCarrierSimMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]); }
-			case QuadSpiralEdgeIDX 	: {		return new QuadKeyEdgeSpiralMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
-			case LogPolarMorphIDX 	: {		return new LogPolarMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
-			case CompoundMorphIDX 	: {		return new CompoundMorph(win,this,_mapA, _mapB, morphTypes[typeIDX]);}
+			case LERPMorphIDX 		: {		return new LERPMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]); 		}
+			case RigidMorphIDX  	: {		return new RigidMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]); 		}
+			case AffineMorphIDX 	: {		return new AffineMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]);}
+			case CarrierSimDiagIDX 	: {		return new CarrierSimDiagMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]);	}
+			case DualCarrierSimIDX 	: {		return new DualCarrierSimMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]); }
+			case QuadSpiralEdgeIDX 	: {		return new QuadKeyEdgeSpiralMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]);}
+			case LogPolarMorphIDX 	: {		return new LogPolarMorph(win,this,_mapA, _mapB, typeIDX,  morphTypes[typeIDX]);}
+			case CompoundMorphIDX 	: {		return new CompoundMorph(win,this,_mapA, _mapB, typeIDX,  morphTypes[typeIDX]);}
 		
 			default : {
-				win.getMsgObj().dispInfoMessage("mapPairManager", "buildMorph", "Unknown morph type idx : " + typeIDX + ". Returning null.");
+				msgObj.dispInfoMessage("mapPairManager", "buildMorph", "Unknown morph type idx : " + typeIDX + ". Returning null.");
 				return null;
 			}
 		}
 	}//buildMorph
-
 	
-	public final baseMap buildCopyMapOfPassedMapType(baseMap oldMap, String _mapName) {	
-		baseMap map;
-		switch (oldMap.mapTypeIDX) {
-			case triangleMapIDX			: {	map = new BiLinTriPolyMap(_mapName,(BiLinTriPolyMap)oldMap);		break;}
-			case ptNormTriMapIDX		: {	map = new PointNormTriPolyMap(_mapName,(PointNormTriPolyMap)oldMap);		break;}
-			case bilinearMapIDX 		: {	map = new BiLinMap(_mapName,(BiLinMap)oldMap);		break;}
-			case COTSMapIDX 			: {	map = new COTSMap(_mapName,(COTSMap)oldMap); 		break;}
-			case BaryBiLinQuadMapIDX	: {	map = new BiLinMap(_mapName,(BiLinMap)oldMap);		break;} 
-			case BaryCOTSQuadMapIDX		: {	map = new COTSMap(_mapName,(COTSMap)oldMap); 		break;} 
-			default		:{
-				win.getMsgObj().dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to duplicate passed map "+ oldMap.mapTitle + " due to unknown map type : " + oldMap.mapTypeIDX + " : "  +mapTypes[oldMap.mapTypeIDX] + ". Returning null.");
+	public synchronized final baseMorph buildCopyMorphOfPassedType(baseMorph oldMorph) {
+		int typeIDX = oldMorph.morphTypeIDX;
+		switch (typeIDX) {
+			case LERPMorphIDX 		: {		return new LERPMorph((LERPMorph)oldMorph); 		}
+			case RigidMorphIDX  	: {		return new RigidMorph((RigidMorph)oldMorph); 		}
+			case AffineMorphIDX 	: {		return new AffineMorph((AffineMorph)oldMorph);}
+			case CarrierSimDiagIDX 	: {		return new CarrierSimDiagMorph((CarrierSimDiagMorph)oldMorph);	}
+			case DualCarrierSimIDX 	: {		return new DualCarrierSimMorph((DualCarrierSimMorph)oldMorph); }
+			case QuadSpiralEdgeIDX 	: {		return new QuadKeyEdgeSpiralMorph((QuadKeyEdgeSpiralMorph)oldMorph);}
+			case LogPolarMorphIDX 	: {		return new LogPolarMorph((LogPolarMorph)oldMorph);}
+			case CompoundMorphIDX 	: {		return new CompoundMorph((CompoundMorph)oldMorph);}
+		
+			default : {
+				msgObj.dispInfoMessage("mapPairManager", "buildCopyMorphOfPassedType", "Unknown morph type idx : " + typeIDX + ". Returning null.");
 				return null;
 			}
 		}
-		return map;
-	}//buildCopyMapOfPassedMapType		
+		
+	}//buildCopyMorphOfPassedType
 
 	/**
 	 * build a map of the specified map type
@@ -264,11 +279,29 @@ public class mapPairManager {
 		    case BaryBiLinQuadMapIDX	: { return new BiLinMap(win,this, _cntlPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
 		    case BaryCOTSQuadMapIDX		: { return new COTSMap(win,this,  _cntlPts, _mapValIdx, _mapType,mapGridColors[_mapValIdx], currUIVals,true, true, mapName);}  
 			default		:{
-				win.getMsgObj().dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to build requested map due to unknown map type : " + _mapType + " : "  +mapName + ". Returning null.");
+				msgObj.dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to build requested map due to unknown map type : " + _mapType + " : "  +mapName + ". Returning null.");
 				return null;
 			}			
 		}
 	}
+	
+	public final baseMap buildCopyMapOfPassedMapType(baseMap oldMap, String _mapName) {	
+		baseMap map;
+		switch (oldMap.mapTypeIDX) {
+			case triangleMapIDX			: {	map = new BiLinTriPolyMap(_mapName,(BiLinTriPolyMap)oldMap);		break;}
+			case ptNormTriMapIDX		: {	map = new PointNormTriPolyMap(_mapName,(PointNormTriPolyMap)oldMap);		break;}
+			case bilinearMapIDX 		: {	map = new BiLinMap(_mapName,(BiLinMap)oldMap);		break;}
+			case COTSMapIDX 			: {	map = new COTSMap(_mapName,(COTSMap)oldMap); 		break;}
+			case BaryBiLinQuadMapIDX	: {	map = new BiLinMap(_mapName,(BiLinMap)oldMap);		break;} 
+			case BaryCOTSQuadMapIDX		: {	map = new COTSMap(_mapName,(COTSMap)oldMap); 		break;} 
+			default		:{
+				msgObj.dispErrorMessage("mapManager", "buildMapOfPassedType", "Error : Unable to duplicate passed map "+ oldMap.mapTitle + " due to unknown map type : " + oldMap.mapTypeIDX + " : "  +mapTypes[oldMap.mapTypeIDX] + ". Returning null.");
+				return null;
+			}
+		}
+		return map;
+	}//buildCopyMapOfPassedMapType		
+
 	
 	//////////////
 	// map comparison and map/morph processing
@@ -343,7 +376,7 @@ public class mapPairManager {
 	public final void calculateMorphDistortion() {
 //		if((mapType==triangleMapIDX) || ( mapType==ptNormTriMapIDX)) {	
 //			//need to find better way of calculating triangle map cell corner points so indexing isn't broken
-//			win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Calculating morph distortion for maps of type " + mapTypes[mapType] + " not yet supported.");
+//			msgObj.dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Calculating morph distortion for maps of type " + mapTypes[mapType] + " not yet supported.");
 //			return;
 //		}
 			//this is index in morph list for type of morph to use to measure distortion
@@ -353,7 +386,7 @@ public class mapPairManager {
 		
 		float ttlDistForEntireMorph = morphs[currMorphTypeIDX].calculateMorphDistortion(currDistMsrMorph, currDistTransformIDX);
 		morphStackAnalysisDone = true;
-		win.getMsgObj().dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Finished calculating current morph distortion : Total average distortion across entire morph : " +ttlDistForEntireMorph +" for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + cmpndMorphTypes[currDistTransformIDX]);
+		msgObj.dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Finished calculating current morph distortion : Total average distortion across entire morph : " +ttlDistForEntireMorph +" for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + cmpndMorphTypes[currDistTransformIDX]);
 		
 	}//calculateMorphDistortion
 
@@ -363,7 +396,7 @@ public class mapPairManager {
 	 */
 	public final void buildOrientedLineup() {
 		TreeMap<Float, baseMap> rawMorphMaps = morphs[currMorphTypeIDX].buildLineupOfFrames(currUIVals.getNumLineupFrames()); 
-		//win.getMsgObj().dispInfoMessage("mapManager::"+name, "buildOrientedLineup", "# of morph maps: " + rawMorphMaps.size() + " lineup num requested :" +currUIVals.numLineupFrames + " maps types : " + maps[0].mapTitle+" | " + maps[1].mapTitle);
+		//msgObj.dispInfoMessage("mapManager::"+name, "buildOrientedLineup", "# of morph maps: " + rawMorphMaps.size() + " lineup num requested :" +currUIVals.numLineupFrames + " maps types : " + maps[0].mapTitle+" | " + maps[1].mapTitle);
 		lineUpMorphMaps.clear();
 		for(Float t : rawMorphMaps.keySet()) {
 			baseMap tmpMorphMap = rawMorphMaps.get(t);
@@ -372,6 +405,11 @@ public class mapPairManager {
 		
 	}
 
+	
+	//getter/setter/convenience funcs to check for whether mt capable, and to return # of usable threads (total host threads minus some reserved for processing)
+	public int getNumUsableThreads() {return numUsableThreads;}
+	public ExecutorService getTh_Exec() {return th_exec;}
+	
 	//////////////
 	// draw routines
 	

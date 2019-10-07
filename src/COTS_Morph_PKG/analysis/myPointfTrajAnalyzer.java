@@ -3,7 +3,7 @@ package COTS_Morph_PKG.analysis;
 import java.util.ArrayList;
 
 import COTS_Morph_PKG.analysis.base.baseVecTrajAnalyzer;
-import COTS_Morph_PKG.analysis.prob.myProbSummary_ptOrVec;
+import COTS_Morph_PKG.analysis.stats.myProbSummary_ptOrVec;
 import base_Utils_Objects.vectorObjs.myPointf;
 
 /**

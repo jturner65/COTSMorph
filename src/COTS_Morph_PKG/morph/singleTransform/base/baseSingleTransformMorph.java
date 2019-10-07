@@ -23,13 +23,14 @@ public abstract class baseSingleTransformMorph extends baseMorph {
 	 */	
 	protected myPointf[] crnrPtAra;
 
-	public baseSingleTransformMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTitle);}
-
+	public baseSingleTransformMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}	
+	public baseSingleTransformMorph(baseSingleTransformMorph _otr) {		super(_otr);}
+	
 	/**
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */	
 	@Override
-	public void _endCtorInit() {		
+	protected void _endCtorInit() {		
 		transform = buildSimilarity();	
 		crnrPtAra = getCornerPtAra();
 	}	
