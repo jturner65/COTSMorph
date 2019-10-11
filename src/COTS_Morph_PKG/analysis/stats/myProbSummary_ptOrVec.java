@@ -292,6 +292,23 @@ public class myProbSummary_ptOrVec extends baseProbSummary {
 		}
 		return resMap;		
 	}//summaryStringAra()
+
+	/**
+	 * return an array of values scaled to lie between observed min and max, in sequence of original data
+	 * @return
+	 */
+	public float[][] getScaledVals() {
+		float[][] res = new float[fltSummaryAra.length][];
+		for(int i=0;i<fltSummaryAra.length;++i) {	res[i]=fltSummaryAra[i].getScaledVals();}
+		return res;
+	}
+	
+	public float[][] getMinMax(){
+		float[][] res = new float[fltSummaryAra.length][];
+		for(int i=0;i<fltSummaryAra.length;++i) {	res[i]=fltSummaryAra[i].getMinMax();}
+		return res;
+	}
+	
 	/**
 	 * don't use this one, use the one above
 	 */

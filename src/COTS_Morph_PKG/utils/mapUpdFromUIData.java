@@ -2,6 +2,7 @@ package COTS_Morph_PKG.utils;
 
 import java.util.TreeMap;
 
+import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 
 /**
@@ -43,7 +44,7 @@ public class mapUpdFromUIData {
 	public mapUpdFromUIData(mapUpdFromUIData _otr) {
 		win=_otr.win;
 		initMaps();
-		setAllVals(_otr.intValues,_otr.strValues,_otr.floatValues,_otr.boolValues);
+		setAllVals(_otr);
 	}
 	
 	private void initMaps() {
@@ -53,24 +54,31 @@ public class mapUpdFromUIData {
 		boolValues = new TreeMap<Integer, Boolean>();
 	}
 	
-	public void setAllVals(mapUpdFromUIData _otr) {setAllVals(_otr.intValues,_otr.strValues,_otr.floatValues,_otr.boolValues);}
+	public void setAllVals(mapUpdFromUIData _otr) {
+//		_otr.checkValsForChanged();
+//		setAllVals(_otr.oldIntVals,_otr.oldStrVals,_otr.oldFloatVals,_otr.oldBoolVals);
+		setAllVals(_otr.intValues,_otr.strValues,_otr.floatValues,_otr.boolValues);
+//		changedVals.clear();
+//		for(Integer key : changedVals.keySet()) {changedVals.put(key, _otr.changedVals.get(key));}
+		
+	}
+	
 	public void setAllVals(TreeMap<Integer, Integer> _intValues, TreeMap<Integer, String> _strValues, TreeMap<Integer, Float> _floatValues,TreeMap<Integer, Boolean> _boolValues) {
 		for(Integer key : _intValues.keySet()) {intValues.put(key, _intValues.get(key));}
 		for(Integer key : _strValues.keySet()) {strValues.put(key, _strValues.get(key));}
 		for(Integer key : _floatValues.keySet()) {floatValues.put(key, _floatValues.get(key));}
 		for(Integer key : _boolValues.keySet()) {boolValues.put(key, _boolValues.get(key));}
 	}
-
 	
 	public boolean compareIntValue(Integer idx, Integer value) {	return (intValues.get(idx) != null) && (intValues.get(idx).equals(value));	}
 	public boolean compareStringValue(Integer idx, String value) {	return (strValues.get(idx) != null) && (strValues.get(idx).equals(value));	}
 	public boolean compareFloatValue(Integer idx, Float value) {	return (floatValues.get(idx) != null) && (floatValues.get(idx).equals(value));	}
 	public boolean compareBoolValue(Integer idx, Boolean value) {	return (boolValues.get(idx) != null) && (boolValues.get(idx).equals(value));	}
 	
-	public void setIntValue(Integer idx, Integer value){	intValues.put(idx,value);	}
-	public void setStringValue(Integer idx, String value){	strValues.put(idx,value);	}
-	public void setFloatValue(Integer idx, Float value){	floatValues.put(idx,value);	}
-	public void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);	}
+	public void setIntValue(Integer idx, Integer value){	intValues.put(idx,value);  }
+	public void setStringValue(Integer idx, String value){	strValues.put(idx,value);}
+	public void setFloatValue(Integer idx, Float value){	floatValues.put(idx,value);}
+	public void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);}
 	
 	/**
 	 * access ints
@@ -91,7 +99,25 @@ public class mapUpdFromUIData {
 	/**
 	 * access bools
 	 */
+	public boolean getFlags(int idx) {return boolValues.get(idx);}
 	public boolean forceUpdate() {return false;}//TODO update this if desired to have UI able to force map to update cntl point values;  boolValues.get(COTS_MorphWin.<flag idx>);}
+	
+	public boolean uiForMorphDistAnalysisChanged(mapUpdFromUIData _otr) {
+		
+		boolean checkCmpnd = false;
+		if((getCurrMorphTypeIDX() == mapPairManager.CompoundMorphIDX)) {
+			checkCmpnd = ((getCurrMorphType_OrientIDX() != _otr.getCurrMorphType_OrientIDX()) || 
+					(getCurrMorphType_SizeIDX() != _otr.getCurrMorphType_SizeIDX()) || 
+					(getCurrMorphType_ShapeIDX() != _otr.getCurrMorphType_ShapeIDX()) || 
+					(getCurrMorphType_COVPathIDX() != _otr.getCurrMorphType_COVPathIDX()));
+		}
+		
+		return ((getNumCellsPerSide() != _otr.getNumCellsPerSide()) 
+				|| (getNumMorphSlices() != _otr.getNumMorphSlices()) 
+				|| (getCurrMorphTypeIDX() != _otr.getCurrMorphTypeIDX()) 
+				|| checkCmpnd				
+				|| (getCurrDistTransformIDX() != _otr.getCurrDistTransformIDX())) ;		
+	}
 	
 	/**
 	 * access floats
@@ -108,6 +134,6 @@ public class mapUpdFromUIData {
 	 * set morph speed and update win ui object
 	 * @param _prog
 	 */
-	public void setMorphSpeed(float _speed) {floatValues.put(COTS_MorphWin.gIDX_MorphSpeed,_speed);	win.setUIObj_FloatVals(COTS_MorphWin.gIDX_MorphTVal,_speed);		}
+	public void setMorphSpeed(float _speed) {floatValues.put(COTS_MorphWin.gIDX_MorphSpeed,_speed);	win.setUIObj_FloatVals(COTS_MorphWin.gIDX_MorphSpeed,_speed);		}
 
 }//class mapUpdateFromUIData

@@ -143,8 +143,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	/**
 	 * # of priv flags from base class and instancing class
 	 */
-	private int numPrivFlags;	
-
+	private int numPrivFlags;
+	//array of corner vals to set/reset
+	protected myPointf[][][] crnrs;
 	/**
 	 * colors for each of 2 maps' grids
 	 */
@@ -162,8 +163,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	public String[][] menuBtnNames = new String[][] { // each must have literals for every button defined in side bar
 		// menu, or ignored
 		{ "---", "---", "---"}, // row 1
-		{ "---", "---", "---", "---" }, // row 3
-		{ "---", "---", "---", "---" }, // row 2
+		{ "Curr Crnrs 0", "Curr Crnrs 1", "Curr Crnrs 2", "---" }, // row 3
+		{ "Curr Crnrs 0", "Curr Crnrs 1", "Curr Crnrs 2", "Orig Crnrs" }, // row 2
 		{ "---", "---", "---", "---" }, 
 		{ "---", "---", "---", "---", "---" } 
 	};
@@ -184,10 +185,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	
 	@Override
 	protected final void initMe() {
+		crnrs = new myPointf[10][][];
 		// capable of using right side menu
-		uiUpdateData = new mapUpdFromUIData(this); 
 		setFlags(drawRightSideMenu, true);
-		
+		uiUpdateData = new mapUpdFromUIData(this); 
 		// init specific sim flags
 		initPrivFlags(numPrivFlags);
 		//initially set to show maps
@@ -210,7 +211,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 
 		initMe_Indiv();
 	}//initMe
-	
+	/**
+	 * has to be called after UI structs are built and set
+	 */
 	private void buildUIUpdateStruct() {		
 		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();          
 
@@ -298,7 +301,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpBtnNamesArray.add(new Object[] { "Showing Ortho Frame", "Show Ortho Frame",drawMap_OrthoFrameIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Map Image", "Show Map Image",drawMap_ImageIDX});
 		
-		//tmpBtnNamesArray.add(new Object[] { "Using Per-Feature Morphs", "Using Global Morph",usePerFtrMorph_IDX});
 		tmpBtnNamesArray.add(new Object[] { "Running Morph Sweep", "Run Morph Sweep", sweepMapsIDX});
 		
 		tmpBtnNamesArray.add(new Object[] { "Showing Morph Map", "Show Morph Map",drawMorph_MapIDX});
@@ -313,9 +315,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpBtnNamesArray.add(new Object[] { "Showing Reg Map Lineup", "Show Reg Map Lineup", showOrientedLineupIDX});
 		
 		tmpBtnNamesArray.add(new Object[] { "Showing Traj Analysis", "Show Traj Analysis", showTrajAnalysisWinIDX});		
-		tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis", "Show Distortion Analysis", showMrphStackDistAnalysisWinIDX});
+		//tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis", "Show Distortion Analysis", showMrphStackDistAnalysisWinIDX});
 		tmpBtnNamesArray.add(new Object[] { "Showing Traj Analysis Graphs", "Show Traj Analysis Graphs", showMorphAnalysisGraphsIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs", showMrphStackDistAnalysisGraphsIDX});
+		//tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs", showMrphStackDistAnalysisGraphsIDX});
 		//instance-specific buttons
 		numPrivFlags = initAllPrivBtns_Indiv(tmpBtnNamesArray);
 		
@@ -343,7 +345,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpListObjVals.put(gIDX_SetBrnchStrat, branchShareStrategies);
 		tmpListObjVals.put(gIDX_CntlPtDispDetail, cntlPtDispDetail);
 		tmpListObjVals.put(gIDX_MorphAnalysisMmmntsDetail, analysisMmmntsDetail);
-		tmpListObjVals.put(gIDX_DistTestTransform, mapPairManager.cmpndMorphTypes);
+		tmpListObjVals.put(gIDX_DistTestTransform, mapPairManager.morphTypes);
 		tmpListObjVals.put(gIDX_DistDimToShow, distDimToShow);
 		
 		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 	
@@ -369,7 +371,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpUIObjArray.put(gIDX_DistTestTransform,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_DistTestTransform).length-1, 1},0.0, "Distortion Analysis Transform", new boolean[]{true, true, true}});
 		tmpUIObjArray.put(gIDX_DistDimToShow,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_DistDimToShow).length-1, 1},2.0, "Distortion Dimension to Show In Colors", new boolean[]{true, true, true}});
 		
-		tmpUIObjArray.put(gIDX_MorphDistMult,new Object[] { new double[] { 0.0, 10.0, 0.1 }, 0.0,"Distortion Mult For Vis(log)", new boolean[] { false, false, true } }); 	
+		tmpUIObjArray.put(gIDX_MorphDistMult,new Object[] { new double[] { -10.0, 20.0, 0.1 }, 0.0,"Distortion Mult Exponent (for Visualization)", new boolean[] { false, false, true } }); 	
 		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
 	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
@@ -438,7 +440,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
 				break;}
 			case gIDX_MorphDistMult : {
-				if(checkAndSetFloatVal(UIidx, (float) Math.pow(Math.E,val))) {updateMapVals(); }
+				if(checkAndSetFloatVal(UIidx, (float) Math.pow(10,val))) {updateMapVals(); }
 				break;		}
 			default : {setUIWinVals_Indiv(UIidx, val);}
 		}
@@ -453,12 +455,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		boolean oldVal = getPrivFlags(idx);
 		privFlags[flIDX] = (val ? privFlags[flIDX] | mask : privFlags[flIDX] & ~mask);
 		//this will update UI-to-maps com object
-		if(null!=uiUpdateData) {checkAndSetBoolValue(idx, val);}
+		if(null!=uiUpdateData) {checkAndSetBoolValue(idx, val); if((null!=mapManagers) && (mapManagers.length > 0)) {updateMapVals();}}
 		switch (idx) {// special actions for each flag
 			case debugAnimIDX				: {		
-//				if(val) {
-//					mapManagers[currMapTypeIDX].calcAndShowAreas();
-//				}
 				break;		}
 			case resetMapCrnrsIDX			: {			
 				if(val) {		resetAllMapCorners();	clearBtnNextFrame(idx);	}
@@ -582,6 +581,28 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final boolean checkAndSetStrVal(int idx, String value) {if(!uiUpdateData.compareStringValue(idx, value)) {uiUpdateData.setStringValue(idx, value);return true;}return false;}
 	protected final boolean checkAndSetFloatVal(int idx, float value) {if(!uiUpdateData.compareFloatValue(idx, value)) {uiUpdateData.setFloatValue(idx, value);return true;}return false;}
 	
+	/**
+	 * set all maps' default corner locations to be the current maps' corner locations
+	 */
+	protected final void saveCurrMapCrnrsAsGlblCrnrs(int idx) {		//only do for quads, or will break
+		crnrs[idx] = mapManagers[currMapTypeIDX].getCurrMapCrnrsAsResetCrnrrs();
+		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].setBndPts(crnrs[idx]);	}
+		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].resetAllMapCorners();}
+	}
+	
+	protected final void setCurrMapCrnrsAsGlblCrnrs(int idx) {
+		if((idx < 0) || (idx > crnrs.length) || (crnrs[idx]==null)|| (crnrs[idx][0]==null)) {resetAllMapBaseCrnrs(); return;}
+		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].setBndPts(crnrs[idx]);	}
+		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].resetAllMapCorners();}
+	}
+	
+	/**
+	 * set all maps' default corner locations to original values
+	 */
+	protected final void resetAllMapBaseCrnrs() {
+		for(int i=0;i<mapManagers.length;++i) {	mapManagers[i].resetBndPts();}
+		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].resetAllMapCorners();}
+	}
 	
 	/**
 	 * clear button next frame - to act like momentary switch.  will also clear UI object
@@ -635,26 +656,37 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		pa.translate(camVals[0], camVals[1], (float) dz);
 		setCamOrient();
 	}
+//	@Override
+//	protected final void drawMe(float animTimeMod) {
+//		pa.pushMatrix();pa.pushStyle();
+//		boolean debug = getPrivFlags(debugAnimIDX), showLbls = getPrivFlags(drawMap_CntlPtLblsIDX), drawCircles = getPrivFlags(drawMap_CellCirclesIDX);
+//		boolean drawMorphMap = getPrivFlags(drawMorph_MapIDX), drawMorphSlices = getPrivFlags(drawMorph_SlicesIDX), drawCntlPts = getPrivFlags(drawMap_CntlPtsIDX);
+//		boolean drawMap = getPrivFlags(drawMapIDX), drawMorphCntlPtTraj = getPrivFlags(drawMorph_CntlPtTrajIDX), drawCopy = getPrivFlags(drawMap_RegCopyIDX);
+//		boolean _showDistColors = getPrivFlags(drawMorph_DistColorsIDX);
+//		if(_showDistColors) {	mapManagers[currMapTypeIDX].checkIfMorphAnalysisDone();	}
+//		//draw maps with dependenc on wireframe/filled setting
+//		mapManagers[currMapTypeIDX].drawMaps_Main(debug, getPrivFlags(drawMapIDX), _showDistColors, getPrivFlags(drawMap_FillOrWfIDX), drawCircles, drawCopy);
+//		//drawMaps_Aux(boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines) {
+//		mapManagers[currMapTypeIDX].drawMaps_Aux(debug, getPrivFlags(drawMap_ImageIDX), getPrivFlags(drawMap_OrthoFrameIDX), getPrivFlags(drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
+//		
+//		if(drawMorphCntlPtTraj) {		mapManagers[currMapTypeIDX].drawMorphedMap_CntlPtTraj(drawMapDetail);}		
+//		
+//		if(drawMorphMap || drawMorphSlices || drawCircles || getPrivFlags(drawMorph_CntlPtTrajIDX) || getPrivFlags(drawMorph_Slices_RtSideInfoIDX)) {		
+//			mapManagers[currMapTypeIDX].drawAndAnimMorph(debug, animTimeMod, drawMap,
+//					drawMorphMap, _showDistColors, getPrivFlags(drawMorph_FillOrWfIDX), 
+//					drawMorphSlices, getPrivFlags(drawMorph_Slices_FillOrWfIDX), 
+//					drawCircles, drawCntlPts, getPrivFlags(sweepMapsIDX), showLbls,drawMapDetail);	
+//		}
+//		
+//		_drawMe_Indiv(animTimeMod);
+//		pa.popStyle();pa.popMatrix();	
+//	}
+	
 	@Override
 	protected final void drawMe(float animTimeMod) {
 		pa.pushMatrix();pa.pushStyle();
-		boolean debug = getPrivFlags(debugAnimIDX), showLbls = getPrivFlags(drawMap_CntlPtLblsIDX), drawCircles = getPrivFlags(drawMap_CellCirclesIDX);
-		boolean drawMorphMap = getPrivFlags(drawMorph_MapIDX), drawMorphSlices = getPrivFlags(drawMorph_SlicesIDX), drawCntlPts = getPrivFlags(drawMap_CntlPtsIDX);
-		boolean drawMap = getPrivFlags(drawMapIDX), drawMorphCntlPtTraj = getPrivFlags(drawMorph_CntlPtTrajIDX), drawCopy = getPrivFlags(drawMap_RegCopyIDX);
-		boolean _showDistColors = getPrivFlags(drawMorph_DistColorsIDX);
 		//draw maps with dependenc on wireframe/filled setting
-		mapManagers[currMapTypeIDX].drawMaps_Main(debug, getPrivFlags(drawMapIDX), _showDistColors, getPrivFlags(drawMap_FillOrWfIDX), drawCircles, drawCopy);
-		//drawMaps_Aux(boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines) {
-		mapManagers[currMapTypeIDX].drawMaps_Aux(debug, getPrivFlags(drawMap_ImageIDX), getPrivFlags(drawMap_OrthoFrameIDX), getPrivFlags(drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
-		
-		if(drawMorphCntlPtTraj) {		mapManagers[currMapTypeIDX].drawMorphedMap_CntlPtTraj(drawMapDetail);}		
-		
-		if(drawMorphMap || drawMorphSlices || drawCircles || getPrivFlags(drawMorph_CntlPtTrajIDX) || getPrivFlags(drawMorph_Slices_RtSideInfoIDX)) {		
-			mapManagers[currMapTypeIDX].drawAndAnimMorph(debug, animTimeMod, drawMap,
-					drawMorphMap, _showDistColors, getPrivFlags(drawMorph_FillOrWfIDX), 
-					drawMorphSlices, getPrivFlags(drawMorph_Slices_FillOrWfIDX), 
-					drawCircles, drawCntlPts, getPrivFlags(sweepMapsIDX), showLbls,drawMapDetail);	
-		}
+		mapManagers[currMapTypeIDX].drawMapsAndMorphs(animTimeMod, drawMapDetail);
 		
 		_drawMe_Indiv(animTimeMod);
 		pa.popStyle();pa.popMatrix();	
@@ -700,7 +732,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 */
 	
 	protected final float drawRightSideMaps(float _yOff) {
-		_yOff = mapManagers[currMapTypeIDX].drawRightSideMaps(_yOff, sideBarYDisp, getPrivFlags(drawMap_RegCopyIDX), getPrivFlags(drawMorph_MapIDX), getPrivFlags(drawMorph_Slices_RtSideInfoIDX));		
+		_yOff = mapManagers[currMapTypeIDX].drawRightSideMaps(_yOff, sideBarYDisp,getPrivFlags(drawMorph_DistColorsIDX), getPrivFlags(drawMap_RegCopyIDX), getPrivFlags(drawMorph_MapIDX), getPrivFlags(drawMorph_Slices_RtSideInfoIDX));		
 		return _yOff;
 	}
 	
@@ -827,15 +859,18 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	
 			case 1: {// row 2 of menu side bar buttons
 				switch (btn) {
-					case 0: {
+					case 0: {	//set current map corners on both maps to be default corners for all maps in this world
+						saveCurrMapCrnrsAsGlblCrnrs(0);
 						resetButtonState();
 						break;
 					}
-					case 1: {
+					case 1: {	//reset all map corners to be default bnd corners
+						saveCurrMapCrnrsAsGlblCrnrs(1);
 						resetButtonState();
 						break;
 					}
 					case 2: {
+						saveCurrMapCrnrsAsGlblCrnrs(2);
 						resetButtonState();
 						break;
 					}
@@ -854,18 +889,22 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			case 2: {// row 3 of menu side bar buttons
 				switch (btn) {
 					case 0: {
+						setCurrMapCrnrsAsGlblCrnrs(0);
 						resetButtonState();
 						break;
 					}
 					case 1: {
+						setCurrMapCrnrsAsGlblCrnrs(1);
 						resetButtonState();
 						break;
 					}
 					case 2: {
+						setCurrMapCrnrsAsGlblCrnrs(2);
 						resetButtonState();
 						break;
 					}
 					case 3: {
+						resetAllMapBaseCrnrs();
 						resetButtonState();
 						break;
 					}

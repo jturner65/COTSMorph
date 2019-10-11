@@ -5,6 +5,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import COTS_Morph_PKG.analysis.registration.mapRegDist;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.map.quad.BiLinMap;
 import COTS_Morph_PKG.map.quad.COTSMap;
@@ -20,7 +21,6 @@ import COTS_Morph_PKG.morph.singleTransform.CarrierSimDiagMorph;
 import COTS_Morph_PKG.morph.singleTransform.LERPMorph;
 import COTS_Morph_PKG.morph.singleTransform.RigidMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
@@ -67,7 +67,8 @@ public class mapPairManager {
 	/**
 	 * bounds for the key frame maps managed by this
 	 */
-	public final myPointf[][] bndPts;
+	public myPointf[][] bndPts;
+	public final myPointf[][] origBndPts;
 	/**
 	 * structure to manage registration functionality and distance calculation
 	 */
@@ -98,6 +99,9 @@ public class mapPairManager {
 		"Dual Carrier Similarity",
 		"Key edge->Key edge Spiral",
 	};
+	
+	
+	public static final int compareMorphSameIDX = 0;
 	
 	//need an index per morph type
 	public static final int
@@ -179,7 +183,9 @@ public class mapPairManager {
 		{{255,200,0,255},{255,0,0,255}}			//map grid 1
 	};
 
-
+	/**
+	 * whether or not the current UI values are reflected in the current distortion calculation
+	 */
 	protected boolean morphStackAnalysisDone = false;
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
@@ -191,8 +197,12 @@ public class mapPairManager {
 		mapType=_mapType;
 		name = win.getWinName()+"::Mgr of " + mapTypes[mapType] + " maps";
 		// necessary info to build map
+		origBndPts = new myPointf[_bndPts.length][];
+		for(int i=0;i<origBndPts.length;++i) {origBndPts[i]=new myPointf[_bndPts[i].length];	for(int j=0;j<origBndPts[i].length;++j) {		origBndPts[i][j]=new myPointf(_bndPts[i][j]);	}}
 		bndPts = new myPointf[_bndPts.length][];
 		for(int i=0;i<bndPts.length;++i) {bndPts[i]=new myPointf[_bndPts[i].length];	for(int j=0;j<bndPts[i].length;++j) {		bndPts[i][j]=new myPointf(_bndPts[i][j]);	}}
+		//setBndPts(origBndPts);
+		
 		currUIVals = new mapUpdFromUIData(_currUIVals);		
 		
 		//want # of usable background threads.  Leave 2 for primary process (and potential draw loop)
@@ -209,13 +219,26 @@ public class mapPairManager {
 		morphs = new baseMorph[morphTypes.length];
 		for(int i=0;i<morphs.length;++i) {	morphs[i]=buildMorph(i, maps[0],maps[1]);}
 		
-		distMsrMorphs = new baseMorph[cmpndMorphTypes.length];
+		distMsrMorphs = new baseMorph[morphTypes.length];
 		for(int i=0;i<distMsrMorphs.length;++i) {	distMsrMorphs[i]=buildMorph(i, maps[0],maps[1]);}
 		
 		
 		setPopUpWins_RectDims();
 		updateMapValsFromUI(currUIVals);
 	}//ctor
+	
+//	public void setBndPts(myPointf[][] _bndPts) {
+//		bndPts = new myPointf[_bndPts.length][];
+//		for(int i=0;i<bndPts.length;++i) {bndPts[i]=new myPointf[_bndPts[i].length];	for(int j=0;j<bndPts[i].length;++j) {		bndPts[i][j]=new myPointf(_bndPts[i][j]);	}}
+//	}
+	public void setBndPts(myPointf[][] _bndPts) {
+		for(int i=0;i<bndPts.length;++i) {for(int j=0;j<bndPts[i].length;++j) {		bndPts[i][j].set(_bndPts[i][j]);	}}
+	}
+	/**
+	 * call to reset all maps' original base points - used for reset
+	 */
+	public void resetBndPts() {setBndPts(origBndPts);}
+	
 	
 	public baseMorph buildMorph(int typeIDX, baseMap _mapA, baseMap _mapB) {
 		switch (typeIDX) {
@@ -373,6 +396,7 @@ public class mapPairManager {
 	 * @param _currDistTransformIDX index in morph list for transformatio to use to calculate distortion
 	 */
 
+	boolean morphCalcLaunched = false;
 	public final void calculateMorphDistortion() {
 //		if((mapType==triangleMapIDX) || ( mapType==ptNormTriMapIDX)) {	
 //			//need to find better way of calculating triangle map cell corner points so indexing isn't broken
@@ -383,12 +407,24 @@ public class mapPairManager {
 		int currDistTransformIDX = currUIVals.getCurrDistTransformIDX();		
 		baseMorph currDistMsrMorph = distMsrMorphs[currDistTransformIDX];
 		currDistMsrMorph.updateMorphValsFromUI(this.currUIVals);
-		
-		float ttlDistForEntireMorph = morphs[currMorphTypeIDX].calculateMorphDistortion(currDistMsrMorph, currDistTransformIDX);
-		morphStackAnalysisDone = true;
-		msgObj.dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Finished calculating current morph distortion : Total average distortion across entire morph : " +ttlDistForEntireMorph +" for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + cmpndMorphTypes[currDistTransformIDX]);
+		if(!morphCalcLaunched) {
+			morphCalcLaunched = true;
+			morphs[currMorphTypeIDX].calculateMorphDistortion(currDistMsrMorph);
+			msgObj.dispInfoMessage("mapPairManager", "findDifferenceBetweenMaps",  "Waiting to finish.");	
+		}
+	
 		
 	}//calculateMorphDistortion
+	
+	/**
+	 * called by distortion runner
+	 */
+	public final void finishedDistortionCalc() {
+		float ttlDistForEntireMorph = morphs[currMorphTypeIDX].updateMapValsFromDistCalc();
+		morphStackAnalysisDone = true;
+		morphCalcLaunched = false;
+		msgObj.dispInfoMessage("mapPairManager", "finishedDistortionCalc",  "Finished calculating current morph distortion : Total average distortion across entire morph : " +ttlDistForEntireMorph +" for maps of type " + mapTypes[mapType] +" with "+ currUIVals.getNumCellsPerSide() +" cells per side and morph of type " +morphTypes[currMorphTypeIDX] +" with " + currUIVals.getNumMorphSlices() + " slices, using transformation : " + morphTypes[currUIVals.getCurrDistTransformIDX()]);	
+	}
 
 
 	/**
@@ -410,8 +446,36 @@ public class mapPairManager {
 	public int getNumUsableThreads() {return numUsableThreads;}
 	public ExecutorService getTh_Exec() {return th_exec;}
 	
+	/**
+	 * called at beginning of draw if showing morph colors : check if we need to recalculate distortion due to UI changes
+	 */
+	public void checkIfMorphAnalysisDone() {	if(!morphStackAnalysisDone) {calculateMorphDistortion();}}
+	
 	//////////////
 	// draw routines
+	
+	public final void drawMapsAndMorphs(float animTimeMod, int drawMapDetail) {
+		pa.pushMatrix();pa.pushStyle();
+		boolean debug = currUIVals.getFlags(COTS_MorphWin.debugAnimIDX), showLbls = currUIVals.getFlags(COTS_MorphWin.drawMap_CntlPtLblsIDX), drawCircles = currUIVals.getFlags(COTS_MorphWin.drawMap_CellCirclesIDX);
+		boolean drawMorphMap = currUIVals.getFlags(COTS_MorphWin.drawMorph_MapIDX), drawMorphSlices = currUIVals.getFlags(COTS_MorphWin.drawMorph_SlicesIDX), drawCntlPts = currUIVals.getFlags(COTS_MorphWin.drawMap_CntlPtsIDX);
+		boolean drawMap = currUIVals.getFlags(COTS_MorphWin.drawMapIDX), drawMorphCntlPtTraj = currUIVals.getFlags(COTS_MorphWin.drawMorph_CntlPtTrajIDX), drawCopy = currUIVals.getFlags(COTS_MorphWin.drawMap_RegCopyIDX);
+		boolean _showDistColors = currUIVals.getFlags(COTS_MorphWin.drawMorph_DistColorsIDX);
+		if(_showDistColors) {	checkIfMorphAnalysisDone();	}
+		//draw maps with dependenc on wireframe/filled setting
+		drawMaps_Main(debug, currUIVals.getFlags(COTS_MorphWin.drawMapIDX), _showDistColors, currUIVals.getFlags(COTS_MorphWin.drawMap_FillOrWfIDX), drawCircles, drawCopy);
+		//drawMaps_Aux(boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines) {
+		drawMaps_Aux(debug, currUIVals.getFlags(COTS_MorphWin.drawMap_ImageIDX), currUIVals.getFlags(COTS_MorphWin.drawMap_OrthoFrameIDX), currUIVals.getFlags(COTS_MorphWin.drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
+		
+		if(drawMorphCntlPtTraj) {		drawMorphedMap_CntlPtTraj(drawMapDetail);}		
+		
+		if(drawMorphMap || drawMorphSlices || drawCircles || currUIVals.getFlags(COTS_MorphWin.drawMorph_CntlPtTrajIDX) || currUIVals.getFlags(COTS_MorphWin.drawMorph_Slices_RtSideInfoIDX)) {		
+			drawAndAnimMorph(debug, animTimeMod, drawMap,
+					drawMorphMap, _showDistColors, currUIVals.getFlags(COTS_MorphWin.drawMorph_FillOrWfIDX), 
+					drawMorphSlices, currUIVals.getFlags(COTS_MorphWin.drawMorph_Slices_FillOrWfIDX), 
+					drawCircles, drawCntlPts, currUIVals.getFlags(COTS_MorphWin.sweepMapsIDX), showLbls,drawMapDetail);	
+		}
+		pa.popStyle();pa.popMatrix();	
+	}
 	
 	/**
 	 * draw a point of a particular radius
@@ -445,7 +509,8 @@ public class mapPairManager {
 	public final void drawMaps_Main(boolean debug, boolean drawMap, boolean _showDistColors,boolean fillOrWf, boolean drawCircles, boolean drawCopy) {
 		if(drawMap) {
 			if(fillOrWf) {		
-				if(_showDistColors){for(int i=0;i<maps.length;++i) {maps[i].drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}}
+				if(_showDistColors){
+					for(int i=0;i<maps.length;++i) {maps[i].drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}}
 				else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Fill();}}}
 			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Wf();}}
 		}
@@ -495,15 +560,15 @@ public class mapPairManager {
 			morphs[currMorphTypeIDX].drawMorphSlices((!drawMorphMap && _showDistColors), morphSlicesFillOrWf, drawMap, drawCircles, drawCntlPts, showLbls, _detail);			
 		}
 		if(drawMorphMap) {
-			morphs[currMorphTypeIDX].drawMorphedMap(_showDistColors, morphMapFillOrWf, drawMap, drawCircles);	
+			morphs[currMorphTypeIDX].drawCurrMorphedMap(_showDistColors, morphMapFillOrWf, drawMap, drawCircles);	
 			if(drawCntlPts){morphs[currMorphTypeIDX].drawMorphedMap_CntlPts(_detail);}
 			morphs[currMorphTypeIDX].drawHeaderAndLabels(showLbls,_detail);
 		}
 		if(sweepMaps) {
 			morphProgress += (morphSign * (animTimeMod * morphSpeed));			
 			if(morphProgress > 1.0f) {morphProgress = 1.0f;morphSign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	morphSign = 1.0f;}		
-			currUIVals.setMorphProgress(morphProgress);
 		}
+		currUIVals.setMorphProgress(morphProgress);
 	}
 	
 	public final void drawMaps_MorphAnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, int dispDetail, float sideBarYDisp) {
@@ -531,16 +596,13 @@ public class mapPairManager {
 			pa.setFill(new int[] {235, 252,255},alpha);
 			pa.translate(0.0f,-perTrajAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
 			pa.rect(trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]);	
-			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels,  dispDetail, new float[] {perTrajAnalysisImageWidth,perTrajAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
-			
-			pa.popStyle();pa.popMatrix();
-			
+			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels,  dispDetail, new float[] {perTrajAnalysisImageWidth,perTrajAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});			
+			pa.popStyle();pa.popMatrix();			
 		}
 		pa.popStyle();pa.popMatrix();
 	}
 
 	public final void drawMaps_MrphStackDistAnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, float sideBarYDisp) {
-		if(!morphStackAnalysisDone) {calculateMorphDistortion();}
 		int alpha = 120;
 		recalcMrphStckAnalysisDims(0);
 		pa.pushMatrix();pa.pushStyle();	
@@ -622,7 +684,7 @@ public class mapPairManager {
 		return _yOff;
 	}
 	
-	public final float drawRightSideMaps(float _yOff, float sideBarYDisp, boolean drawRegCopy, boolean drawMorph,  boolean drawMorphSlicesRtSideInfo) {
+	public final float drawRightSideMaps(float _yOff, float sideBarYDisp, boolean _showDistClrs, boolean drawRegCopy, boolean drawMorph,  boolean drawMorphSlicesRtSideInfo) {
 		pa.showOffsetText(0,IRenderInterface.gui_Cyan,  "Current Maps : " + mapTypes[mapType] + " Maps : ");
 		
 		pa.translate(10.0f, sideBarYDisp, 0.0f);		
@@ -631,6 +693,12 @@ public class mapPairManager {
 		//if(drawRegCopy) {_yOff = copyMap.drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);}
 		if(drawMorph) {			_yOff = _drawRightSideMorphMap(_yOff, sideBarYDisp);	}		
 		pa.translate(-10.0f, sideBarYDisp, 0.0f);	
+		if(_showDistClrs) {
+			pa.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Distortion Mins/Maxs : ");
+			pa.translate(10.0f, sideBarYDisp, 0.0f);	
+			_yOff = morphs[currMorphTypeIDX].drawDistortionRtSideMenuMinMax(_yOff, sideBarYDisp,  currUIVals.getDistDimToShow());
+			pa.translate(-10.0f, sideBarYDisp, 0.0f);	
+		}
 		pa.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Morph : ");
 		pa.translate(10.0f, sideBarYDisp, 0.0f);		
 		//_yOff += sideBarYDisp;
@@ -700,15 +768,26 @@ public class mapPairManager {
 	}
 	
 	public final void updateMapValsFromUI(mapUpdFromUIData upd) {
-		currUIVals.setAllVals(upd);
+		boolean shouldRecalcMorphAnalysis=  upd.uiForMorphDistAnalysisChanged(currUIVals);
+		//currUIVals.setAllVals(upd);
+		currUIVals = upd;
 		currMorphTypeIDX = currUIVals.getCurrMorphTypeIDX();
+		//float oldMorphProgres = morphProgress;
+		morphProgress = currUIVals.getMorphProgress();   
 		
-		morphProgress = currUIVals.getMorphProgress();        
+		//msgObj.dispInfoMessage("mapPairManager::"+this.name, "updateMapValsFromUI", "Morph Progress changed from " + oldMorphProgres + " to  " +morphProgress);
+		
 		morphSpeed = currUIVals.getMorphSpeed(); 
-		
+		if(shouldRecalcMorphAnalysis) {
+			//msgObj.dispInfoMessage("mapPairManager::"+this.name, "updateMapValsFromUI", "UI Update forces morph stack analysis recalc");
+			morphStackAnalysisDone = false;		//set to recalculate on draw, if ui elements have changed that impact this
+		} 
+		else {
+			//msgObj.dispInfoMessage("mapPairManager::"+this.name, "updateMapValsFromUI", "UI Update does not force morph stack analysis recalc");
+		}
 		setPopUpWins_RectDims();
 		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphValsFromUI(upd);}
-		morphStackAnalysisDone = false;		//set to recalculate on update
+		
 		for(int i=0;i<this.distMsrMorphs.length;++i) {distMsrMorphs[i].updateMorphValsFromUI(upd);}
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true, true);
@@ -730,9 +809,26 @@ public class mapPairManager {
 	 */	
 	public final void resetAllMapCorners() {
 		for(int j=0;j<maps.length;++j) {		maps[j].resetCntlPts(bndPts[j]);	}	
-		for (int i=0;i<morphs.length;++i) {morphs[i].resetAllBranching();}		
+		for (int i=0;i<morphs.length;++i) {		morphs[i].resetAllBranching();}		
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetAllMapCorners", true, true);		
+		morphStackAnalysisDone = false;
 	}	
+	/**
+	 * use this to record state of current map corners
+	 * @return
+	 */
+	public final myPointf[][] getCurrMapCrnrsAsResetCrnrrs() {
+		myPointf[][] res = new myPointf[2][];
+		for(int i=0;i<res.length;++i) {
+			res[i] = new myPointf[4];
+			myPointf[] mapICntlPts = maps[i].getCntlPts_Copy();
+			for(int j=0;j<mapICntlPts.length;++j) {				res[i][j]=mapICntlPts[j];		}
+			if(mapICntlPts.length < res[i].length) {		//if not a quad
+				for(int j=mapICntlPts.length; j<res[i].length;++j) {res[i][j] = new myPointf(origBndPts[i][j]);}
+			}
+		}
+		return res;
+	}
 	
 	/**
 	 * reset all instances of either "floor"/A or "ceiling"/B map
@@ -741,6 +837,7 @@ public class mapPairManager {
 	public final void resetMapCorners(int mapIDX) {	
 		if(mapIDX==0) {for (int i=0;i<morphs.length;++i) {morphs[i].resetCurMorphBranching();}		}//if map A is reset then branching needs to be reset as well for morphs
 		maps[mapIDX].resetCntlPts(bndPts[mapIDX]);morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::resetMapCorners", true, true);
+		morphStackAnalysisDone = false;
 	}
 	
 	/**
@@ -751,7 +848,7 @@ public class mapPairManager {
 		for(int j=0;j<rawPts0.length;++j) {	newPts[j] = myPointf._add(myPointf._sub(rawPts0[j], bndPts[srcIDX][j]), bndPts[destIDX][j]);}			
 		maps[destIDX].resetCntlPts(newPts);	
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::matchAllMapCorners", true, true);
-				
+		morphStackAnalysisDone = false;
 	}//matchAllMapCorners	
 
 	//minimum distance for click to be considered within range of control point
@@ -808,7 +905,7 @@ public class mapPairManager {
 		}
 		if(performFinalIndiv) {		//some editing happened, so finalize
 			currMseModMap.mseDragInMap_Post(defVec,mseClickIn3D_f,isScale, isRotation, isTranslation, key, keyCode);	
-			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap", false, ( win.getPrivFlags(COTS_MorphWin.drawMorph_MapIDX)));
+			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap", false, ( currUIVals.getFlags(COTS_MorphWin.drawMorph_MapIDX)));
 		}
 		return performFinalIndiv;
 	}//mseDragInMap
@@ -817,7 +914,7 @@ public class mapPairManager {
 	public final void hndlMouseRelIndiv() {
 		for(int i=0;i<maps.length;++i) {	maps[i].mseRelease();}
 		if(currMseModMap != null) {
-			morphStackAnalysisDone = false;
+			morphStackAnalysisDone = false;	//any changes to either mouse map require distortion to be recalculated
 			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::hndlMouseRelIndiv", true, true);
 			currMseModMap = null;
 		}

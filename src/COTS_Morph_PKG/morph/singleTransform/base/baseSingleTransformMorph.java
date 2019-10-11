@@ -30,7 +30,7 @@ public abstract class baseSingleTransformMorph extends baseMorph {
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */	
 	@Override
-	protected void _endCtorInit() {		
+	protected final void _endCtorInit() {		
 		transform = buildSimilarity();	
 		crnrPtAra = getCornerPtAra();
 	}	
@@ -58,6 +58,7 @@ public abstract class baseSingleTransformMorph extends baseMorph {
 		calcMorphBetweenTwoSetsOfCntlPoints(aCntlPts, bCntlPts, newPts, tA, tB);
 		//set curmorphmap's control points to be those calculated
 		_curMorphMap.setCntlPts(newPts, mapFlags[mapUpdateNoResetIDX]);
+		_curMorphMap.setCurMorphTVal(tB);
 	}//calcMorphAndApplyToMap	
 
 	/**

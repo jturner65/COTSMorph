@@ -2,6 +2,8 @@ package COTS_Morph_PKG.analysis.stats.base;
 
 import java.util.TreeMap;
 
+import base_Utils_Objects.MyMathUtils;
+
 /**
  * abstract class to provide the backbone for analysis of data sets
  * @author john
@@ -51,6 +53,38 @@ public abstract class baseProbSummary {
 	public boolean doClipAllSamples() {return getFlag(clipAllSmplsIDX);}
 	public void setClipAllSamples(boolean val) {setFlag(clipAllSmplsIDX, val);}
 	
+	
+	/**
+	 * return the value 0->1 corresponding to the scaled location between min and max
+	 * @param val
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	protected final float scaleVal(float val, float min, float max) {
+		if(Math.abs(max-min) < MyMathUtils.eps_f) {return 0.0f;}
+		
+		return (val-min)/(max-min);		
+	}
+	
+	
+	/**
+	 * return the value 0->1 corresponding to the scaled location between min and max
+	 * @param val
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	protected final double scaleVal(double val, double min, double max) {
+		if(Math.abs(max-min) < MyMathUtils.eps) {return 0.0;}
+		return (val-min)/(max-min);			
+	}
+	
+	/**
+	 * provide a summary of stats for the data this summary object manages
+	 * @param smryName
+	 * @return
+	 */
 	public abstract TreeMap<String,String> summaryStringAra(String smryName);
 	
 	protected void initFlags(){stFlags = new int[1 + numFlags/32]; for(int i = 0; i<numFlags; ++i){setFlag(i,false);}}

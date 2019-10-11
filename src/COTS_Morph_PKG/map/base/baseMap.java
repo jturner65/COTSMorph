@@ -121,7 +121,11 @@ public abstract class baseMap {
 	protected mapCntlFlags regMapUpdateFlags;// = new boolean[] {false, false};		
 		//flag control construction for reset updates
 	protected mapCntlFlags resetMapUpdateFlags;// = new boolean[] {true, false};
-
+	/**
+	 * current t value of this map, corresponding to morph.  keyframes are 0,1
+	 */
+	protected float curMorphTVal;
+	
 	/**
 	 * whether the title of this map should be shown on 2 lines in the right side info disp
 	 */
@@ -130,11 +134,12 @@ public abstract class baseMap {
 	protected static final int[] whiteClr = new int[] {255,255,255,255};
 	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
 		win=_win; pa=myDispWindow.pa; mgr = _mapMgr; currUIVals = _currUIVals;
-		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		
+		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		curMorphTVal = 1.0f * mapIdx;
 		mapTitle = _mapTitle;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
 		isKeyFrameMap = _isKeyFrame;
 		//init point structures
 		initCtorMethodVars(_pClrs, _cntlPts,_cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 	
+		//initCtorMethodVars(_pClrs, _cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 	
 		//set control points and initialize 
 		setCntlPts(_cntlPts, resetMapUpdateFlags, currUIVals.getNumCellsPerSide());
 		
@@ -151,6 +156,7 @@ public abstract class baseMap {
 		isKeyFrameMap = false;
 		//points and labels for points, basis vectors, and map flags structures
 		initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.origCntlPts, _otr.basisVecs[0]);
+		//initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.basisVecs[0]);
 		//set inited values to copies
 		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
 		cntlPtCOM = new myPointf(_otr.cntlPtCOM);
@@ -167,6 +173,7 @@ public abstract class baseMap {
 	 * @param _origCntlPts
 	 */	
 	private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myPointf[] _origCntlPts, myVectorf tmpNorm) {
+	//private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myVectorf tmpNorm) {
 		//init mse click obj refs - not really necessary
 		currMseModCntlPt = null;			currMseClkLocVec = null; distPlanarPtMade = false;
 		cntlPtCOV = new myPointf(0,0,0);	cntlPtCOM = new myPointf(0,0,0);
@@ -183,23 +190,34 @@ public abstract class baseMap {
 		//build ortho basis for map based on initial control points
 		basisVecs = buildBasisVecs(tmpNorm);
 		//build display-only ortho frame
-		buildOrthoFrame();		
-		origCntlPtCOV = new myPointf();
+		buildOrthoFrame();
+		
+		setOrigCntlPts(_origCntlPts);
 		cntlPts = new myPointf[_cntlPts.length];
-		origCntlPts = new myPointf[cntlPts.length];
 		cntlPtLbls = new String[cntlPts.length];
 		for(int i=0;i<cntlPts.length;++i) {	
 			cntlPts[i]= new myPointf(_cntlPts[i]);
-			origCntlPts[i] = new myPointf(_origCntlPts[i]);
 			cntlPtLbls[i]="" + ((char)(i+'A'));
-			origCntlPtCOV._add(origCntlPts[i]);
 		}
-		origCntlPtCOV._div(origCntlPts.length);		
 		regMapUpdateFlags = new mapCntlFlags();		
 		resetMapUpdateFlags = new mapCntlFlags();
 		resetMapUpdateFlags.setResetBranching(true);	
 	}//initCntlPtsBasisVecsMapUpdateFlags
 
+	/**
+	 * set/reset original control points to be equal to passed points
+	 * @param _origCntlPts
+	 */
+	public final void setOrigCntlPts(myPointf[] _origCntlPts) {
+		origCntlPtCOV = new myPointf();
+		origCntlPts = new myPointf[_origCntlPts.length];
+		for(int i=0;i<_origCntlPts.length;++i) {	
+			origCntlPts[i] = new myPointf(_origCntlPts[i]);
+			origCntlPtCOV._add(origCntlPts[i]);
+		}
+		origCntlPtCOV._div(origCntlPts.length);		
+		
+	}
 	
 	/**
 	 * move this map to the passed values
@@ -263,7 +281,8 @@ public abstract class baseMap {
 	 * @param upd
 	 */
 	public void updateMapVals_FromUI(mapUpdFromUIData upd) {
-		currUIVals.setAllVals(upd);
+		//currUIVals.setAllVals(upd);
+		currUIVals =upd;
 		boolean changed = upd.forceUpdate();
 		//update cell count if neccessary
 		changed = updateNumCellsPerSide(upd.getNumCellsPerSide()) || changed;
@@ -357,7 +376,9 @@ public abstract class baseMap {
 			
 		for(int i=0;i<polyPointTVals.length;++i) {
 			polyPointTVals[i]=i/(1.0f*numCellsPerSide);
-		}			
+		}		
+		
+		distCellColors = new float[numCellsPerSide][numCellsPerSide][3];
 	}//buildPolyPointTVals
 	
 	protected abstract myPointf[][] buildEdgePoints();
@@ -727,6 +748,7 @@ public abstract class baseMap {
 	}//_drawOrthoFrame
 	
 	public static final String strPointDispFrmt8 = "%8.3f";
+	public static final String strPointDispFrmt85 = "%8.5f";
 	public static final String strPointDispFrmt6 = "%6.3f";
 
 	public void drawHeaderAndLabels(boolean _drawLabels, int detail) {
@@ -883,6 +905,9 @@ public abstract class baseMap {
 	 * @return
 	 */
 	public final myPointf[][] getEdgePts(){			return edgePts;}	
+	
+	public final float getCurMorphTVal() {	return curMorphTVal;}
+	public final void setCurMorphTVal(float _t) {curMorphTVal = _t;}
 
 	public final myPointf[] getCntlPts() {			return cntlPts;}
 	public abstract int getNumCntlPts();
@@ -921,7 +946,7 @@ public abstract class baseMap {
 		myVectorf dispVec = new myVectorf(otrMap.origCntlPtCOV,origCntlPtCOV);
 		myVectorf _unitDispVec = dispVec._normalized();
 		float cosThet = _rayDir._dot(_unitDispVec);// sinThet = (float) Math.sqrt(1-(cosThet * cosThet));
-		if(cosThet == 0) {win.getMsgObj().dispInfoMessage("baseMap","findPointInMyPlane",this.mapTitle + " : zero denom");return new myPointf();}//degenerate - ray is coplanar with plane of map
+		if(cosThet == 0) {mgr.msgObj.dispInfoMessage("baseMap","findPointInMyPlane",this.mapTitle + " : zero denom");return new myPointf();}//degenerate - ray is coplanar with plane of map
 		//parallel component of _rayDir is dispVec, want to calculate perp component
 		float newMag = dispVec.magn/cosThet;		
 		myVectorf rayDirMult = myVectorf._mult(_rayDir, newMag);

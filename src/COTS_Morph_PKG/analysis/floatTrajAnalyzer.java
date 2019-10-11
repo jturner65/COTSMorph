@@ -5,6 +5,7 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.analysis.base.baseAnalyzer;
 import COTS_Morph_PKG.analysis.stats.myProbSummary_Flts;
+import COTS_Morph_PKG.analysis.stats.myProbSummary_ptOrVec;
 import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
@@ -14,10 +15,23 @@ public class floatTrajAnalyzer extends baseAnalyzer {
 	 * all trajectory values : per stat, per t value list of point and vector trajectories
 	 */
 	public float[][] trajVals;
+	/**
+	 * calculate these after trajectory values are calculated, only once, to display for graph
+	 * 1st idx is summary, 2nd idx is trajectory idx
+	 */
+	protected float[][] perSummaryScaledValTrajs;
+	/**
+	 * build this after trajectories are summarized.  
+	 * 1st idx is summary, 2nd idx is min or max
+	 */
+	protected float[][] perSummaryMinMax;
+	
 
 	public floatTrajAnalyzer() {
 		super();
 		summaries = new myProbSummary_Flts[numStatsToMeasure];	
+		perSummaryScaledValTrajs = new float[summaries.length][];
+		perSummaryMinMax = new float[summaries.length][];
 	}
 
 	/**
@@ -36,9 +50,11 @@ public class floatTrajAnalyzer extends baseAnalyzer {
 		for(int i=0;i<summaries.length;++i) {
 			summaries[i]=new myProbSummary_Flts(name +" " +statNames[i], trajVals[i]);
 			if(_dbg) {System.out.println("\nSummary : " +summaries[i].toString());}
+			perSummaryScaledValTrajs[i] = ((myProbSummary_Flts) summaries[i]).getScaledVals();
+			perSummaryMinMax[i] = ((myProbSummary_Flts) summaries[i]).getMinMax();			
 		}		
 		if(_dbg) {System.out.println("Analyzer " + ID+ " for : " + name +" Done ");}
-	}
+	}//analyzeAreaTrajectory
 
 	@Override
 	protected void drawSingleSummary(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult) {
@@ -53,11 +69,27 @@ public class floatTrajAnalyzer extends baseAnalyzer {
 		pa.translate(0.0f,txtLineYDisp,0.0f);	
 		
 	}//drawSingleSummary
-
+	protected int[] trajClr = new int[] {255,255,255,255};
 	@Override
-	protected void drawSingleSmryGraph(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp,float ltrMult) {
+	protected final void drawSingleSmryGraph(my_procApplet pa, String[] mmntDispLabels, int smryIdx, float[] graphRect, float ltrMult)  {
+		float[] perSmry_Traj = perSummaryScaledValTrajs[smryIdx], perSmry_MinMax = perSummaryMinMax[smryIdx];
+		float widthPerElem = graphRect[2]/(1.0f*perSmry_Traj.length);
+		
+		pa.pushMatrix();pa.pushStyle();			
+		//drawSingleTraj(my_procApplet pa, int[] clr, float[] trajRect, float[] minMax, float[] trajElems, float widthPerElem)
+		drawSingleTraj(pa, trajClr, graphRect, perSmry_MinMax, perSmry_Traj,widthPerElem);
+		pa.popStyle();pa.popMatrix();
+		
+		
+		pa.translate(0.0f,graphRect[3],0.0f);				//draw all these lines on each other
 	}
-	
-	
+	@Override
+	protected final void drawSingleSmryGraphMinMaxLbls(my_procApplet pa, int smryIdx, float ltrMult) {
+		float[] perSmry_MinMax = perSummaryMinMax[smryIdx];
+		//(my_procApplet pa, int clrLabel, String txt, float ltrMult)
+		drawSingleMinMaxTxt(pa, pa.gui_Black, "Min/Max ["+ String.format(frmtStr,perSmry_MinMax[0])+", " + String.format(frmtStr,perSmry_MinMax[1])+"]",ltrMult);
+		
+	}
+
 
 }//class morphAreaTrajAnalyzer

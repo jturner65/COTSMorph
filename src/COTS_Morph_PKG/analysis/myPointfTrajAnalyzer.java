@@ -29,8 +29,8 @@ public class myPointfTrajAnalyzer extends baseVecTrajAnalyzer{
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public final void analyzeTrajectory(ArrayList pts, String name) {analyzeMyPtTrajectory((ArrayList<myPointf>)pts, name, debug);}
-	private void analyzeMyPtTrajectory(ArrayList<myPointf> pts, String name, boolean _dbg) {
+	protected final void analyzeMyPtTrajectory_Indiv(ArrayList pts, String name) {analyzeMyPtTrajectory((ArrayList<myPointf>)pts, name, debug);}
+	protected void analyzeMyPtTrajectory(ArrayList<myPointf> pts, String name, boolean _dbg) {
 		if((null==pts) || (pts.size() < 4)) {return;}
 		if(_dbg) {System.out.println("Analyzer " + ID+ " for : " + name  + " # Pts : " +pts.size() +" myPointfTrajAnalyzer::analyzeTrajectory : ");}
 

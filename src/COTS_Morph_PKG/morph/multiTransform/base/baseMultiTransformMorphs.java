@@ -26,7 +26,7 @@ public abstract class baseMultiTransformMorphs extends baseMorph {
 	 * this will perform initialization of morph-specific data before initial morph calc is performed, from base class ctor
 	 */	
 	@Override
-	public void _endCtorInit() {		
+	protected final void _endCtorInit() {		
 		crnrPtAras = getCornerPtAras();
 		if((null==crnrPtAras) || (crnrPtAras.length == 0)) {return;}
 		transforms = new baseSpiralTransformer[crnrPtAras.length];		
@@ -56,6 +56,7 @@ public abstract class baseMultiTransformMorphs extends baseMorph {
 		calcMorphBetweenTwoSetsOfCntlPoints(aCntlPts, bCntlPts, newPts, tA, tB);
 		//set curmorphmap's control points to be those calculated
 		_curMorphMap.setCntlPts(newPts, mapFlags[mapUpdateNoResetIDX]);
+		_curMorphMap.setCurMorphTVal(tB);
 	}//calcMorphAndApplyToMap	
 	
 	/**

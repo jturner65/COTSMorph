@@ -2,16 +2,17 @@ package COTS_Morph_PKG.morph.base;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
 
 import COTS_Morph_PKG.analysis.floatTrajAnalyzer;
-import COTS_Morph_PKG.analysis.morphStackDistAnalyzer;
 import COTS_Morph_PKG.analysis.myPointfTrajAnalyzer;
+import COTS_Morph_PKG.analysis.registration.mapRegDist;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
-import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.runners.morphStackDistortionCalc_Runner;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
@@ -96,10 +97,22 @@ public abstract class baseMorph {
 	
 		//ref to UI object from map manager
 	protected mapUpdFromUIData currUIVals;
-	
-	protected morphStackDistAnalyzer mrphStackDistAnalyzer;
+	/**
+	 * thread runner for distortion calculation
+	 */
+	protected morphStackDistortionCalc_Runner  distCalcRunner;
+	/**
+	 * threading constructions - allow map manager to own its own threading executor
+	 */
+	protected ExecutorService th_exec;	//to access multithreading - instance from calling program
+	protected final int numUsableThreads;		//# of threads usable by the application
+
 	//currently calculated distortion cell colors
 	protected float[][][][] distCellColors;
+	
+	protected float[] 
+			minCellDistVals = new float[3],			//minimum seen distortion in any cell 
+			maxCellDistVals = new float[3];			//max seen distortion in any cell
 
 	/**
 	 * 
@@ -111,25 +124,39 @@ public abstract class baseMorph {
 		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
 		mapA = _mapA;
 		mapB = _mapB;	
-		mrphStackDistAnalyzer = new morphStackDistAnalyzer(mapMgr);
-		_ctorFinalize();
+		th_exec = mapMgr.getTh_Exec();
+		numUsableThreads = mapMgr.getNumUsableThreads();
+		//(mapPairManager _mapMgr, ExecutorService _th_exec, boolean _canMT, int _numThds, int _numWorkUnits)
+		distCalcRunner = new morphStackDistortionCalc_Runner(mapMgr, th_exec, true, numUsableThreads, 1);
+		_ctorFinalize(true);
 	}
 	
 	public baseMorph(baseMorph _otr) {//copy ctor
 		win=_otr.win; pa=myDispWindow.pa;morphTitle=_otr.morphTitle+"_cpy";mapMgr=_otr.mapMgr;morphTypeIDX=_otr.morphTypeIDX;
 		mapA = getCopyOfMap(_otr.mapA, "cpyOfMapA");
 		mapB = getCopyOfMap(_otr.mapB, "cpyOfMapB");
-		mrphStackDistAnalyzer = new morphStackDistAnalyzer(mapMgr);
-		_ctorFinalize();		
+		th_exec = mapMgr.getTh_Exec();
+		numUsableThreads = mapMgr.getNumUsableThreads();
+		//(mapPairManager _mapMgr, ExecutorService _th_exec, boolean _canMT, int _numThds, int _numWorkUnits)
+		distCalcRunner = new morphStackDistortionCalc_Runner( mapMgr, th_exec, true, numUsableThreads, 1);
+		_ctorFinalize(true);		
 	}
 	
-	public void setNewKeyFrameMaps(baseMap _mapA, baseMap _mapB) {
+	/**
+	 * currently called only from distortion calculation
+	 * @param _mapA
+	 * @param _mapB
+	 */
+	public void setNewKeyFrameMaps(baseMap _mapA, baseMap _mapB, boolean setAllInitVals) {
 		mapA = _mapA;
 		mapB = _mapB;	
-		_ctorFinalize();
+		_ctorFinalize(setAllInitVals);
 	}
-	
-	private void _ctorFinalize() {
+	/**
+	 * finalize construction of morph
+	 * @param isFullFunctionMorph whether this is a full morph, or only one to be used for comparison calculations
+	 */
+	private void _ctorFinalize(boolean isFullFunctionMorph) {
 		morphT=.5f;
 		curMorphMap = getCopyOfMap(mapA,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
 		curMorphMap.setImageToMap(mapA.getImageToMap());		
@@ -137,14 +164,7 @@ public abstract class baseMorph {
 		normDispTimeVec = new myVectorf(mapA.getCOV(), mapB.getCOV());
 		normDispTimeVec = myVectorf._mult(mapA.basisVecs[0], normDispTimeVec._dot(mapA.basisVecs[0]));	
 		//areaTrajMaps = new TreeMap<Float, Float>();
-		areaTrajs = new ArrayList<Float>();
-		cntlPtTrajs = new TreeMap<Float, myPointf[][]>();
-		edgePtTrajs = new TreeMap<Float, myPointf[][][]>();
 		mapFlags = new mapCntlFlags[numMapFlags];
-		trajAnalyzers = new TreeMap<String, myPointfTrajAnalyzer>();
-		trajAnalyzeKeys = mapA.getTrajAnalysisKeys();
-		reCalcTrajsAndAnalysis = true;
-		initTrajAnalyzers();
 		for(int i=0;i<mapFlags.length;++i) {
 			mapFlags[i] = new mapCntlFlags();
 			mapFlags[i].setOptimizeAlpha(true); 
@@ -155,9 +175,17 @@ public abstract class baseMorph {
 		mapRegDistCalc = new mapRegDist(this.mapMgr, mapA, mapB);
 		_endCtorInit();
 		mapCalcsAfterCntlPointsSet(morphTitle + "::ctor",false, false);	
-
-		setMorphSliceAra();
-		calcMorph();		
+		if(isFullFunctionMorph) {
+			areaTrajs = new ArrayList<Float>();
+			cntlPtTrajs = new TreeMap<Float, myPointf[][]>();
+			edgePtTrajs = new TreeMap<Float, myPointf[][][]>();
+			trajAnalyzers = new TreeMap<String, myPointfTrajAnalyzer>();
+			trajAnalyzeKeys = mapA.getTrajAnalysisKeys();
+			reCalcTrajsAndAnalysis = true;
+			initTrajAnalyzers();
+			setMorphSliceAra();
+			calcMorph();		
+		}
 	}
 	
 	
@@ -182,14 +210,21 @@ public abstract class baseMorph {
 	private float oldMorphT = 0.0f;
 	public final void updateMorphMapWithMapVals() {	updateMorphMapWithMapVals(true);}
 	public final void updateMorphMapWithMapVals(boolean calcMorph) {
-		//win.getMsgObj().dispInfoMessage("baseMorph::"+morphTitle, "updateMorphMapWithMapVals", "Before updateMeWithMapVals");// :  curMorphMap :  "+ curMorphMap.toString());
+		//mapMgr.msgObj.dispInfoMessage("baseMorph::"+morphTitle, "updateMorphMapWithMapVals", "Before updateMeWithMapVals");// :  curMorphMap :  "+ curMorphMap.toString());
 		
 //		curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
 //		if(calcMorph) {
 //			calcMorph();
 //		}
-		//win.getMsgObj().dispInfoMessage("baseMorph::"+morphTitle, "updateMorphMapWithMapVals", "After updateMeWithMapVals :  curMorphMap :  "+ curMorphMap.toString());
+		//mapMgr.msgObj.dispInfoMessage("baseMorph::"+morphTitle, "updateMorphMapWithMapVals", "After updateMeWithMapVals :  curMorphMap :  "+ curMorphMap.toString());
 	}
+	
+	/**
+	 * this is only to calcuate the morph for comparison purposes - use t == .5f for most comparisons
+	 * Note this will not build control point trajectories, slices, or other components used in the full morph
+	 */
+	public final void calcMorphCompare(float t) {_calcMorphOnMap(curMorphMap, false, t);}
+	
 	
 	/**
 	 * issue  : branching is flaking out with curMorphMap.  Problem is that old alpha values are not properly tracked.  
@@ -210,6 +245,7 @@ public abstract class baseMorph {
 
 			curMorphMap = getCopyOfMap(curMorphMap,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
 		}
+		//if(morphT == .5f) {	System.out.println(this.morphTitle+" : calc morph @ t== .5f");}
 		//update morph map with map a's vals, 
 		//curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
 		//if(morphT != oldMorphT) {
@@ -325,44 +361,57 @@ public abstract class baseMorph {
 	/**
 	 * calculate morph stack distortion
 	 */
-	public final float calculateMorphDistortion(baseMorph currDistMsrMorph, int currDistTransformIDX) {
+	public final void calculateMorphDistortion(baseMorph currDistMsrMorph) {
 		setMorphSliceAra();
-			//retrieve all control points of all cells in all maps of morph.  ara 0 is k == slice, ara 1 is i, ara 2 is j, ara 3 is cntl pts	
-		//baseMap[][][] allPolyCntlPts = buildAllSliceCellMaps();		
-		//win.getMsgObj().dispInfoMessage("baseMorph", "calculateMorphDistortion",  "allPolyCntlPts has : " + allPolyCntlPts.length + " slices with : "+ allPolyCntlPts[0].length +" columns and " + allPolyCntlPts[0][0].length + " rows ");
 		
-			//now calculate distortion
-		//mrphStackDistAnalyzer.calculateAllDistortions(currDistMsrMorph, allPolyCntlPts);
-		mrphStackDistAnalyzer.calculateAllDistortions(currDistMsrMorph, morphSliceAra.values().toArray(new baseMap[0]));
+		currDistMsrMorph.setMorphSlices(3);
 		
-		
-		distCellColors = mrphStackDistAnalyzer.getTtlDistPerCell();
-		mapA.setDistCellColors(distCellColors[0]);
-		mapB.setDistCellColors(distCellColors[distCellColors.length-1]);
-		//morphSliceAraDistColorsSet = false;
+		morphSliceAraDistColorsSet = false;
 		morphMapDistColorsSet = false;
-		setMorphMapAndSliceColors();
-		return mrphStackDistAnalyzer.getTtlDistForEntireMrphStck();
-		
+		canResetMapFlags = false;
+		//launch thread to calc distortion in background
+		distCalcRunner.setAllInitMapVals(currDistMsrMorph, morphSliceAra.values().toArray(new baseMap[0]));
+		th_exec.submit(distCalcRunner);
+
+		mapMgr.msgObj.dispInfoMessage("baseMorph", "calculateMorphDistortion",  "Launched distortion calc");
 	}//calculateMorphDistortion
 	
+	/**
+	 * called after morph thread is completed
+	 * @return
+	 */
+
+	public final float updateMapValsFromDistCalc() {
+		distCellColors = distCalcRunner.getTtlDistPerCell();
+		mapA.setDistCellColors(distCellColors[0]);
+		mapB.setDistCellColors(distCellColors[distCellColors.length-1]);
+		minCellDistVals = distCalcRunner.getMinDistPerCell();
+		maxCellDistVals = distCalcRunner.getMaxDistPerCell();
+		canResetMapFlags = true;
+		setMorphMapAndSliceColors();		
+		return distCalcRunner.getTtlDistForEntireMrphStck();
+	}
+	
+	private boolean morphMapDistColorsSet = false, morphSliceAraDistColorsSet = false, canResetMapFlags = false;
 	protected void setMorphMapAndSliceColors() {
 		if((distCellColors != null) && (morphSliceAra.size()==distCellColors.length)) {
-			if(!morphSliceAraDistColorsSet) {	_setMorphMapDistColors();	morphSliceAraDistColorsSet = true;}
-			if(!morphMapDistColorsSet) {			_morphMapSetDistColors();morphMapDistColorsSet=true;}
+			if(!morphSliceAraDistColorsSet) {	
+				int kIdx = 0;
+				for(float key : morphSliceAra.keySet()) {morphSliceAra.get(key).setDistCellColors(distCellColors[kIdx++]);}			
+				if(canResetMapFlags) {morphSliceAraDistColorsSet = true;}
+			}
+			if(!morphMapDistColorsSet) {			
+				int kIDX = (int)((distCellColors.length-1) * morphT);
+				//if(kIDX >= distCellColors.length-1) {
+					curMorphMap.setDistCellColors(distCellColors[kIDX]);
+//				} else {
+//					curMorphMap.setDistCellColors(distCalcRunner.calcMorphMapDist(curMorphMap, kIDX));
+//				}
+				if(canResetMapFlags) {morphMapDistColorsSet=true;}
+			}
 		}
 	}
 	
-	private boolean morphSliceAraDistColorsSet = false;
-	private final void _setMorphMapDistColors() {
-		int kIdx = 0;
-		for(float key : morphSliceAra.keySet()) {morphSliceAra.get(key).setDistCellColors(distCellColors[kIdx++]);}
-	}
-	private boolean morphMapDistColorsSet = false;
-	private final void _morphMapSetDistColors() {	
-		int kIDX = (int)((distCellColors.length-1) * morphT);
-		curMorphMap.setDistCellColors(distCellColors[kIDX]);		
-	}
 	/**
 	 * call only once
 	 */
@@ -483,9 +532,10 @@ public abstract class baseMorph {
 	
 	
 	public final void updateMorphValsFromUI(mapUpdFromUIData upd) {
-		currUIVals.setAllVals(upd);
-		setMorphSlices(upd.getNumMorphSlices());
+		//currUIVals.setAllVals(upd);
+		currUIVals = upd;
 		curMorphMap.updateMapVals_FromUI(upd);
+		setMorphSlices(upd.getNumMorphSlices());
 		updateMorphValsFromUI_Indiv(upd);
 	}
 	protected abstract void updateMorphValsFromUI_Indiv(mapUpdFromUIData upd);
@@ -557,6 +607,33 @@ public abstract class baseMorph {
 		pa.translate(0.0f, sideBarYDisp, 0.0f);
 		return yOff;
 	}
+	/**
+	 * draw the summaries of distortion values on right side menu, highlighting the dimension of the distortion currently being displayed
+	 * @param vals
+	 */
+	private final void _drawRtSideMenuDistSummaries(float[] vals,  String label, int curIdx) {
+		pa.pushMatrix();pa.pushStyle();
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.2f, label + " :[");
+			for(int i=0;i<vals.length-1;++i) {
+				pa.showOffsetText_RightSideMenu(pa.getClr((i==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(baseMap.strPointDispFrmt85,vals[i])+", ");
+			}
+			pa.showOffsetText_RightSideMenu(pa.getClr((vals.length-1==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(baseMap.strPointDispFrmt85,vals[vals.length-1]));
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.2f, "]");
+		pa.popStyle();pa.popMatrix();	
+	}
+	
+	
+	public final float drawDistortionRtSideMenuMinMax(float yOff, float sideBarYDisp, int curIdx) {		
+		_drawRtSideMenuDistSummaries(maxCellDistVals,"Max Dist",  curIdx);
+		yOff += sideBarYDisp;
+		pa.translate(0.0f,sideBarYDisp, 0.0f);	
+		
+		_drawRtSideMenuDistSummaries(minCellDistVals,"Min Dist",  curIdx);
+		yOff += sideBarYDisp;
+		pa.translate(0.0f,sideBarYDisp, 0.0f);				
+
+		return yOff;
+	}
 	
 	public final float drawMorphRtSdMenuDescr(float yOff, float sideBarYDisp, float _morphSpeed) {//, String[] _scopeList) {
 		pa.pushMatrix();pa.pushStyle();
@@ -609,6 +686,7 @@ public abstract class baseMorph {
 			if(null != cntlPts) {
 				for(int i = 0;i<cntlPts[0].length-2;++i) {		mapMgr._drawPt(cntlPts[1][i], 2.0f); pa.line(cntlPts[0][i], cntlPts[1][i]);}
 			}
+			//following not nested in case their values change
 			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {
 				int k=cntlPts[0].length-2;
 				mapMgr._drawPt(cntlPts[1][k], 2.0f); pa.line(cntlPts[0][k], cntlPts[1][k]);				
@@ -624,13 +702,13 @@ public abstract class baseMorph {
 		pa.popStyle();pa.popMatrix();	
 	}
 	
-	public final void drawMorphedMap(boolean _showDistColors, boolean _isFill, boolean _drawMap, boolean _drawCircles) {
+	public final void drawCurrMorphedMap(boolean _showDistColors, boolean _isFill, boolean _drawMap, boolean _drawCircles) {
 		_drawMorphMap(curMorphMap, _showDistColors,_isFill, _drawMap, _drawCircles);
 	}
 	
 	public final void drawMorphSlices( boolean _showDistColors, boolean _isFill, boolean _drawMorphSliceMap, boolean _drawCircles, boolean _drawCntlPts, boolean _showLabels, int _detail) {
 		if(_drawMorphSliceMap) {
-			if(_showDistColors) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}} 
+			if(_showDistColors && morphSliceAraDistColorsSet) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}} 
 			else if(_isFill) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Fill();}} 
 			else {			for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Wf();}}
 		}
@@ -651,7 +729,7 @@ public abstract class baseMorph {
 	
 	protected final void _drawMorphMap(baseMap _map, boolean _showDistColors, boolean _isFill, boolean _drawMap, boolean _drawCircles) {
 		if(_drawMap) {
-			if(_showDistColors) {_map.drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}
+			if(_showDistColors && morphSliceAraDistColorsSet) {_map.drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}
 			else if(_isFill) {	_map.drawMap_Fill();}
 			else {			_map.drawMap_Wf();}	
 		}
@@ -739,6 +817,11 @@ public abstract class baseMorph {
 	
 	public baseMap getCurMorphMap() {return curMorphMap;}	
 	public myPointf[] getCurMorphMap_CntlPts() {return curMorphMap.getCntlPts();}
+	
+	public final int getNumMorphSlices() {
+		//mapMgr.msgObj.dispInfoMessage("baseMorph", "getNumMorphSlices", "NumMorphSlices var : " + numMorphSlices + " | Size of morph slices ara : " + this.morphSliceAra.size());
+		return numMorphSlices;
+	}
 	
 	public mapPairManager getMapPairManager() {return mapMgr;}
 

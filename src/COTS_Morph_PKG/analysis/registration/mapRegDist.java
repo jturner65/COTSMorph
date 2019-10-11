@@ -1,4 +1,4 @@
-package COTS_Morph_PKG.utils;
+package COTS_Morph_PKG.analysis.registration;
 
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
@@ -22,7 +22,7 @@ public class mapRegDist {
 	 */
 	private baseMap copyMap;
 	/**
-	 * best distance between from man and to map
+	 * displacement vector, angle and scale difference between the two maps
 	 */
 	private myVectorf dispBetweenMaps;
 	private float[] angleAndScale;
@@ -119,7 +119,7 @@ public class mapRegDist {
 		  cos += AP._dot(BP);
 		  sin += AP._dot(rBP);
 		}
-		angleAndScale[0] = (float) Math.atan2(sin,cos);// + (_idxOffset * (MyMathUtils.twoPi_f/cntlPts.length));
+		angleAndScale[0] = (float) Math.atan2(sin,cos);
 		dispBetweenMaps.set(new myVectorf(B,A));
 		angleAndScale[1] = (float) Math.pow(scl, 1.0/cntlPtsA.length);
 	}//findDifferenceToMe
@@ -147,19 +147,39 @@ public class mapRegDist {
 	}	
 	
 	
+	/**
+	 * find the distance between two maps' vertices
+	 * @param aMap
+	 * @param bMap
+	 * @return
+	 */
+	public final float findDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
+		float res = 0.0f;
+		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
+		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
+		return (float) Math.sqrt(res);
+	}
+	
 	public float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
 		float res = 0.0f;
 		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
 		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
 		return res;
 	}
-	
+	/**
+	 * finds correspondence between maps verts that preserves orientation of verts and has minimum distance between maps (i.e. compares rotated version of to map with from map)
+	 * @param fromMap
+	 * @param toMap
+	 * @param dispMod
+	 * @return
+	 */
 	public baseMap findBestDifferenceBetweenMaps(baseMap fromMap, baseMap toMap, boolean dispMod) {
 		baseMap bestMap = null;
 		float tmpDistBetweenMaps, minDistBetweenMaps = 9999999999.9f;
 		dispBetweenMaps = new myVectorf();
 		angleAndScale = new float[2];
-		for(int i=0;i<fromMap.getNumCntlPts();++i) {
+		int numCntlPts = fromMap.getNumCntlPts();
+		for(int i=0;i<numCntlPts;++i) {
 			myVectorf tmpDispBetweenMaps = new myVectorf();
 			float[] tmpAngleAndScale = new float[2];
 			//toMap.findDifferenceToMe(fromMap, i, tmpDispBetweenMaps, tmpAngleAndScale);

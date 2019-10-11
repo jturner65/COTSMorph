@@ -2,12 +2,11 @@ package COTS_Morph_PKG.morph;
 
 import java.util.ArrayList;
 
+import COTS_Morph_PKG.analysis.registration.mapRegDist;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.base.baseMorph;
-import COTS_Morph_PKG.morph.multiTransform.base.baseMultiTransformMorphs;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapRegDist;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -70,7 +69,7 @@ public class CompoundMorph extends baseMorph {
 	public CompoundMorph(CompoundMorph _otr) {super(_otr);}
 
 	@Override
-	public void _endCtorInit() {
+	protected final void _endCtorInit() {
 		mapRegDistCalcs = new mapRegDist[numMorphFeatures];
 		currMorphToUseIDX = new int[numMorphFeatures];
 		_currPerMorphMaps = new baseMap[numMorphFeatures];
@@ -115,6 +114,8 @@ public class CompoundMorph extends baseMorph {
 		_curMorphMap.setCntlPts(resPts, mapFlags[mapUpdateNoResetIDX]);		
 		//_curMorphMap.registerMeToVals(myVectorf._mult(distBetweenAllMaps[transMorphIDX],-1.0f), new float[] {-angleScalesAllMaps[orientMorphIDX][0],1.0f/angleScalesAllMaps[scaleMorphIDX][1]});
 		_curMorphMap.registerMeToVals(myVectorf._mult(mapRegDistCalcs[transMorphIDX].getDispBetweenMaps(),-1.0f), new float[] {-mapRegDistCalcs[orientMorphIDX].getAngle(),1.0f/mapRegDistCalcs[scaleMorphIDX].getScale()});
+		
+		_curMorphMap.setCurMorphTVal(tB);
 	}
 
 	@Override

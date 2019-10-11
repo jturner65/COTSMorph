@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.utils;
 
 /**
- * this class holds a flags/state machine object to control map calculations - used so that additional control can be added easily without recoding
+ * this class holds a flags/state machine object to control map calculations - used so that additional control options can be added easily without recoding
  * @author john
  *
  */

@@ -178,6 +178,7 @@ public class myProbSummary_Flts extends baseProbSummary{
 	//set desired bounds on any distribution built from this data
 	public void setMinMax(float min, float max) {setMinMax(new float[] {min,max});}
 	public void setMinMax(float[] _minMax) {	minMax = _minMax;}
+	public float[] getMinMax() {return new float[] {minMax[0],minMax[1]};}
 	
 	public void calcSmpleMomentsForSampleSize(){calcSmpleMomentsForSampleSize(numVals, minMax);}
 	//assuming calculated moments are population moments, modify popToSmpleMmntMults values so they can be used to calculate sample moments from pop momments
@@ -240,8 +241,7 @@ public class myProbSummary_Flts extends baseProbSummary{
 			}			
 		}//if vals		
 		return res;
-	}//getCDFOfData
-	
+	}//getCDFOfData	
 	
 	//get moments of sampled data, if specified that given moments are of underlying population
 	public float smpl_mean() {return (getFlag(meanIDX) & getFlag(smplValsCalcedIDX)) ? mmnts[meanIDX] * popToSmplMmntMults[meanIDX]: 0;}
@@ -269,9 +269,17 @@ public class myProbSummary_Flts extends baseProbSummary{
 		resMap.put("MIN",String.format(frmtStr,getMin()));
 		resMap.put("MAX",String.format(frmtStr,getMax()));
 		return resMap;		
-	}//summaryStringAra()
-
-		
+	}//summaryStringAra()		
+	
+	/**
+	 * return an array of values scaled to lie between observed min and max, in sequence of original data
+	 * @return
+	 */
+	public float[] getScaledVals() {
+		float[] res = new float[vals.length];
+		for(int i=0;i<vals.length;++i) {	res[i]=scaleVal(vals[i],this.minMax[0],this.minMax[1]);}
+		return res;
+	}
 
 	public String getMomentsVals() {
 		String res = "# vals : " +numVals + " | Set By Data : " + getFlag(setByDataIDX) + " | "  + getMoments();

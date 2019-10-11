@@ -25,7 +25,7 @@ public class COTS_MorphSideBarMenu extends BaseBarMenu {
 		 */
 		//protected void setBtnData(String[] _funcRowNames, int[] _numBtnsPerFuncRow, int _numDbgBtns, boolean _inclWinNames, boolean _inclMseOvValues) {
 
-		setBtnData(new String[]{"Load/Save Geometry Data","Functions 2","Functions 3","Functions 4"}, new int[] {3,4,4,4}, 5, true, true);
+		setBtnData(new String[]{"Load/Save Map Configuration","Save Curr Keyframes' Default Corners...","Set All Keyframes' Default Corners...","Functions 4"}, new int[] {3,4,4,4}, 5, true, true);
 
 	}
 }//class COTS_MorphSideBarMenu
