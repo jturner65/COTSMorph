@@ -89,11 +89,11 @@ public abstract class baseVecTrajAnalyzer extends baseAnalyzer {
 		pa.scale(.8f);
 		float newLtrMult = 4.5f;
 		//(my_procApplet pa, int clrLabel, String txt, float ltrMult)
-		drawSingleMinMaxTxt(pa, pa.gui_Red, "["+ String.format(frmtStr,perSmry_MinMax[0][0])+", " + String.format(frmtStr,perSmry_MinMax[0][1])+"]",newLtrMult);
-		drawSingleMinMaxTxt(pa, pa.gui_DarkGreen, "["+ String.format(frmtStr,perSmry_MinMax[1][0])+", " + String.format(frmtStr,perSmry_MinMax[1][1])+"]",newLtrMult);
-		drawSingleMinMaxTxt(pa, pa.gui_DarkBlue, "["+ String.format(frmtStr,perSmry_MinMax[2][0])+", " + String.format(frmtStr,perSmry_MinMax[2][1])+"]",newLtrMult);
+		drawSingleMinMaxTxt(pa, IRenderInterface.gui_Red, "["+ String.format(frmtStr,perSmry_MinMax[0][0])+", " + String.format(frmtStr,perSmry_MinMax[0][1])+"]",newLtrMult);
+		drawSingleMinMaxTxt(pa, IRenderInterface.gui_DarkGreen, "["+ String.format(frmtStr,perSmry_MinMax[1][0])+", " + String.format(frmtStr,perSmry_MinMax[1][1])+"]",newLtrMult);
+		drawSingleMinMaxTxt(pa, IRenderInterface.gui_DarkBlue, "["+ String.format(frmtStr,perSmry_MinMax[2][0])+", " + String.format(frmtStr,perSmry_MinMax[2][1])+"]",newLtrMult);
 		if(perSmry_MinMax.length > 3) {
-			drawSingleMinMaxTxt(pa, pa.gui_Magenta, "["+ String.format(frmtStr,perSmry_MinMax[3][0])+", " + String.format(frmtStr,perSmry_MinMax[3][1])+"]",5.0f);
+			drawSingleMinMaxTxt(pa, IRenderInterface.gui_Magenta, "["+ String.format(frmtStr,perSmry_MinMax[3][0])+", " + String.format(frmtStr,perSmry_MinMax[3][1])+"]",5.0f);
 		}
 	}
 }//class baseVecTrajAnalyzer

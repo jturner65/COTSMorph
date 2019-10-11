@@ -224,7 +224,7 @@ public class mapPairManager {
 		
 		
 		setPopUpWins_RectDims();
-		updateMapValsFromUI(currUIVals);
+		updateMapMorphVals_FromUI(currUIVals);
 	}//ctor
 	
 //	public void setBndPts(myPointf[][] _bndPts) {
@@ -406,7 +406,7 @@ public class mapPairManager {
 			//this is index in morph list for type of morph to use to measure distortion
 		int currDistTransformIDX = currUIVals.getCurrDistTransformIDX();		
 		baseMorph currDistMsrMorph = distMsrMorphs[currDistTransformIDX];
-		currDistMsrMorph.updateMorphValsFromUI(this.currUIVals);
+		currDistMsrMorph.updateMorphVals_FromUI(this.currUIVals);
 		if(!morphCalcLaunched) {
 			morphCalcLaunched = true;
 			morphs[currMorphTypeIDX].calculateMorphDistortion(currDistMsrMorph);
@@ -767,10 +767,10 @@ public class mapPairManager {
 		maps[idx].setFlags(new boolean[] {true});
 	}
 	
-	public final void updateMapValsFromUI(mapUpdFromUIData upd) {
+	public final void updateMapMorphVals_FromUI(mapUpdFromUIData upd) {
 		boolean shouldRecalcMorphAnalysis=  upd.uiForMorphDistAnalysisChanged(currUIVals);
-		//currUIVals.setAllVals(upd);
-		currUIVals = upd;
+		currUIVals.setAllVals(upd);//can't use the same mapUpdFromUIData everywhere because we compare differences
+		//currUIVals = upd;
 		currMorphTypeIDX = currUIVals.getCurrMorphTypeIDX();
 		//float oldMorphProgres = morphProgress;
 		morphProgress = currUIVals.getMorphProgress();   
@@ -786,9 +786,9 @@ public class mapPairManager {
 			//msgObj.dispInfoMessage("mapPairManager::"+this.name, "updateMapValsFromUI", "UI Update does not force morph stack analysis recalc");
 		}
 		setPopUpWins_RectDims();
-		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphValsFromUI(upd);}
+		for(int i=0;i<this.morphs.length;++i) {	morphs[i].updateMorphVals_FromUI(upd);}
 		
-		for(int i=0;i<this.distMsrMorphs.length;++i) {distMsrMorphs[i].updateMorphValsFromUI(upd);}
+		for(int i=0;i<this.distMsrMorphs.length;++i) {distMsrMorphs[i].updateMorphVals_FromUI(upd);}
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true, true);
 	}

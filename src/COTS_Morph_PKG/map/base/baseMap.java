@@ -281,8 +281,8 @@ public abstract class baseMap {
 	 * @param upd
 	 */
 	public void updateMapVals_FromUI(mapUpdFromUIData upd) {
-		//currUIVals.setAllVals(upd);
-		currUIVals =upd;
+		currUIVals.setAllVals(upd);//can't use the same mapUpdFromUIData everywhere because we compare differences
+		//currUIVals =upd;
 		boolean changed = upd.forceUpdate();
 		//update cell count if neccessary
 		changed = updateNumCellsPerSide(upd.getNumCellsPerSide()) || changed;

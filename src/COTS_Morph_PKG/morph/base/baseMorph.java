@@ -205,9 +205,9 @@ public abstract class baseMorph {
 	}
 	
 	/**
-	 * this should be called whenever map A's values have changed (??)
+	 * this should be called whenever map A's values have changed (??) this is in place to address weird morph branching stuff
 	 */
-	private float oldMorphT = 0.0f;
+	//private float oldMorphT = 0.0f;
 	public final void updateMorphMapWithMapVals() {	updateMorphMapWithMapVals(true);}
 	public final void updateMorphMapWithMapVals(boolean calcMorph) {
 		//mapMgr.msgObj.dispInfoMessage("baseMorph::"+morphTitle, "updateMorphMapWithMapVals", "Before updateMeWithMapVals");// :  curMorphMap :  "+ curMorphMap.toString());
@@ -241,7 +241,7 @@ public abstract class baseMorph {
 			curMorphMap = getCopyOfMap(mapA,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
 //		} else if(morphT == 1.0f) {
 //			curMorphMap = getCopyOfMap(mapB,mapB.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
-		} else if(morphT != oldMorphT){
+		} else {//if(morphT != oldMorphT){
 
 			curMorphMap = getCopyOfMap(curMorphMap,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
 		}
@@ -377,7 +377,7 @@ public abstract class baseMorph {
 	}//calculateMorphDistortion
 	
 	/**
-	 * called after morph thread is completed
+	 * called after morph distortion calc thread is completed
 	 * @return
 	 */
 
@@ -531,9 +531,9 @@ public abstract class baseMorph {
 	}//buildCntlPointTrajs()
 	
 	
-	public final void updateMorphValsFromUI(mapUpdFromUIData upd) {
-		//currUIVals.setAllVals(upd);
-		currUIVals = upd;
+	public final void updateMorphVals_FromUI(mapUpdFromUIData upd) {
+		currUIVals.setAllVals(upd);//can't use the same mapUpdFromUIData everywhere because we compare differences
+
 		curMorphMap.updateMapVals_FromUI(upd);
 		setMorphSlices(upd.getNumMorphSlices());
 		updateMorphValsFromUI_Indiv(upd);
@@ -751,13 +751,10 @@ public abstract class baseMorph {
 	 * this will return an array of k, i,j control point arrays, where i and j are map column and row, and k is slice idx
 	 * @return
 	 */
-	public final baseMap[][][] buildAllSliceCellMaps(){
-		
+	public final baseMap[][][] buildAllSliceCellMaps(){		
 		baseMap[][][] res = new baseMap[numMorphSlices][][];
 		int i = 0;
-		for(Float key : morphSliceAra.keySet()) {res[i++] = morphSliceAra.get(key).buildPolyMaps();}
-		
-		
+		for(Float key : morphSliceAra.keySet()) {res[i++] = morphSliceAra.get(key).buildPolyMaps();}		
 		return res;
 	}
 	

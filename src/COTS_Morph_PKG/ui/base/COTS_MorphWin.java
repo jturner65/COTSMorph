@@ -246,7 +246,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 		uiUpdateData.setAllVals(intValues, strValues, floatValues, boolValues); 
 	}
-
+	
+	
 	/**
 	 * initialize all maps - only call once
 	 */
@@ -376,7 +377,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	}//setupGUIObjsAras
 	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
 	
-	public final void setUIObj_FloatVals(int UIidx, float val) {guiObjs[UIidx].setVal(val);}
+	//public final void setUIObj_FloatVals(int UIidx, float val) {guiObjs[UIidx].setVal(val);}
 	
 	
 	@Override
@@ -455,7 +456,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		boolean oldVal = getPrivFlags(idx);
 		privFlags[flIDX] = (val ? privFlags[flIDX] | mask : privFlags[flIDX] & ~mask);
 		//this will update UI-to-maps com object
-		if(null!=uiUpdateData) {checkAndSetBoolValue(idx, val); if((null!=mapManagers) && (mapManagers.length > 0)) {updateMapVals();}}
+		if(null!=uiUpdateData) {if(checkAndSetBoolValue(idx, val)){ if((null!=mapManagers) && (mapManagers.length > 0)) {updateMapVals();}}}
 		switch (idx) {// special actions for each flag
 			case debugAnimIDX				: {		
 				break;		}
@@ -582,6 +583,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final boolean checkAndSetFloatVal(int idx, float value) {if(!uiUpdateData.compareFloatValue(idx, value)) {uiUpdateData.setFloatValue(idx, value);return true;}return false;}
 	
 	/**
+	 * these are called externally from mapUpdFromUI object from map manager/morph/map, to synchronize values that might change, like morph time
+	 * @param idx
+	 * @param value
+	 */
+	//public final void updateBoolValFromMapMgr(int idx, boolean value) {uiUpdateData.setBoolValue(idx, value);}
+	public final void updateIntValFromMapMgr(int idx, int value) {guiObjs[idx].setVal(value);uiUpdateData.setIntValue(idx, value);}
+	//public final void updateStrValFromMapMgr(int idx, String value) {uiUpdateData.setStringValue(idx, value);}
+	public final void updateFloatValFromMapMgr(int idx, float value) {guiObjs[idx].setVal(value);uiUpdateData.setFloatValue(idx, value);}
+
+	
+	/**
 	 * set all maps' default corner locations to be the current maps' corner locations
 	 */
 	protected final void saveCurrMapCrnrsAsGlblCrnrs(int idx) {		//only do for quads, or will break
@@ -611,7 +623,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected void clearBtnNextFrame(int idx) {addPrivBtnToClear(idx);		checkAndSetBoolValue(idx, false);}
 
 	protected final void updateMapVals() {
-		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].updateMapValsFromUI(uiUpdateData);	}
+		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].updateMapMorphVals_FromUI(uiUpdateData);	}
 		mapManagers[currMapTypeIDX].buildOrientedLineup();
 	}
 	

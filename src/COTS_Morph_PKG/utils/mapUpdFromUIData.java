@@ -126,14 +126,15 @@ public class mapUpdFromUIData {
 	public float getMorphSpeed() {return floatValues.get(COTS_MorphWin.gIDX_MorphSpeed);}
 	public float getMorphDistMult() {return floatValues.get(COTS_MorphWin.gIDX_MorphDistMult);}
 	/**
-	 * set morph progress and update win ui object
+	 * set morph progress and update win ui object from morph object
 	 * @param _prog
 	 */
-	public void setMorphProgress(float _prog) {floatValues.put(COTS_MorphWin.gIDX_MorphTVal,_prog);	win.setUIObj_FloatVals(COTS_MorphWin.gIDX_MorphTVal,_prog);			}
+	public void setMorphProgress(float _prog) {floatValues.put(COTS_MorphWin.gIDX_MorphTVal,_prog);	win.updateFloatValFromMapMgr(COTS_MorphWin.gIDX_MorphTVal,_prog);}
 	/**
-	 * set morph speed and update win ui object
+	 * set morph speed and update win ui object from morph object
 	 * @param _prog
 	 */
-	public void setMorphSpeed(float _speed) {floatValues.put(COTS_MorphWin.gIDX_MorphSpeed,_speed);	win.setUIObj_FloatVals(COTS_MorphWin.gIDX_MorphSpeed,_speed);		}
+	public void setMorphSpeed(float _speed) {floatValues.put(COTS_MorphWin.gIDX_MorphSpeed,_speed);	win.updateFloatValFromMapMgr(COTS_MorphWin.gIDX_MorphSpeed,_speed);		}
+
 
 }//class mapUpdateFromUIData

@@ -3,7 +3,6 @@ package COTS_Morph_PKG.analysis.base;
 import java.util.ArrayList;
 
 import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
-import COTS_Morph_PKG.map.base.baseMap;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -40,6 +39,7 @@ public abstract class baseAnalyzer {
 	 * assumes each area sample is uniformly spaced in time
 	 * @param pts
 	 */
+	@SuppressWarnings("rawtypes")
 	public abstract void analyzeTrajectory(ArrayList pts, String name);
 	
 
