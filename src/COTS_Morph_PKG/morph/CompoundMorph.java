@@ -106,7 +106,7 @@ public class CompoundMorph extends baseMorph {
 	public double calcMorph_Double(float tA, double AVal, float tB, double BVal) {return morphsAvailable[scalarValMorphIDX][currMorphToUseIDX[scalarValMorphIDX]].calcMorph_Double(tA,AVal,tB,BVal);}
 
 	@Override
-	public void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB) {
+	protected void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB) {
 		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(); 
 		//this is shape with points deregistered (aligned) against mapA on translation, rotation and scale
 		myPointf[] resPts = getDeRegShapeMapCntlPts(aCntlPts, bCntlPts,tA, tB);

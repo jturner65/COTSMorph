@@ -50,7 +50,7 @@ public abstract class baseSingleTransformMorph extends baseMorph {
 	 * use currently set t value to calculate morph and apply to passed morph map
 	 */
 	@Override
-	public final void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB) {
+	protected final void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB) {
 		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(); 
 		myPointf[] newPts = new myPointf[aCntlPts.length];
 		

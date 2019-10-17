@@ -9,6 +9,7 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
 import base_UI_Objects.windowUI.myDispWindow;
+import base_Utils_Objects.interpolants.InterpolantTypes;
 import base_Utils_Objects.io.MsgCodes;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -22,22 +23,23 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	public static final int
 		gIDX_MorphTVal 					= 0,
 		gIDX_MorphSpeed					= 1,
-		gIDX_NumCellsPerSide    		= 2,
-		gIDX_MapType					= 3,	
-		gIDX_MorphType					= 4,			//overall morphtype to use - can be overridden		
-		gIDX_MorphTypeOrient			= 5,			//morph types to use for each characteristic of morph frames
-		gIDX_MorphTypeSize				= 6,
-		gIDX_MorphTypeShape				= 7,
-		gIDX_MorphTypeCOVPath			= 8,				
-		gIDX_SetBrnchStrat				= 9,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
-		gIDX_NumLineupFrames			= 10,			//# of frames to use for lineup
-		gIDX_NumMorphSlices 			= 11,			//# of slices in morph
-		gIDX_CntlPtDispDetail			= 12,			//how much detail the cntrol point display will show
-		gIDX_MorphAnalysisMmmntsDetail 	= 13,
-		gIDX_DistTestTransform			= 14,			//transformation to use to measure distortion
-		gIDX_DistDimToShow				= 15,			//which distortion dimension should be colored
-		gIDX_MorphDistMult 				= 16;			//distortion multiplier to use to control colors for 
-	protected static final int numBaseCOTSWinUIObjs = 17;
+		gIDX_MorphTValType				= 2,			//type of interpolant to use for morph animation
+		gIDX_NumCellsPerSide    		= 3,
+		gIDX_MapType					= 4,	
+		gIDX_MorphType					= 5,			//overall morphtype to use - can be overridden		
+		gIDX_MorphTypeOrient			= 6,			//morph types to use for each characteristic of morph frames
+		gIDX_MorphTypeSize				= 7,
+		gIDX_MorphTypeShape				= 8,
+		gIDX_MorphTypeCOVPath			= 9,				
+		gIDX_SetBrnchStrat				= 10,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
+		gIDX_NumLineupFrames			= 11,			//# of frames to use for lineup
+		gIDX_NumMorphSlices 			= 12,			//# of slices in morph
+		gIDX_CntlPtDispDetail			= 13,			//how much detail the cntrol point display will show
+		gIDX_MorphAnalysisMmmntsDetail 	= 14,
+		gIDX_DistTestTransform			= 15,			//transformation to use to measure distortion
+		gIDX_DistDimToShow				= 16,			//which distortion dimension should be colored
+		gIDX_MorphDistMult 				= 17;			//distortion multiplier to use to control colors for 
+	protected static final int numBaseCOTSWinUIObjs = 18;
 	/**
 	 * structure to facilitate communicating UI changes with functional code
 	 */
@@ -46,6 +48,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * possible branch sharing strategies
 	 */
 	protected static final String[] branchShareStrategies = new String[] {"No Branch Sharing", "Force from A", "Force from B", "Force from Edit"};
+	/**
+	 * control point detail to display
+	 */
 	protected static final String[] cntlPtDispDetail = new String[] {"Cntl Pts Only", "Cntl Pts & COV", "Cntl Pts, COV & Edge Pts", "All Pts"};
 	protected static final String[] analysisMmmntsDetail = new String[] {"Mean & STD", "First 4 moments", "Mean & STD + Min & Max", "4 Mmnts + Min & Max"};	
 	protected static final String[] distDimToShow  = new String[] {"Map Rows", "Map Columns", "Morph Slices"};
@@ -220,6 +225,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		intValues.put(gIDX_NumCellsPerSide, (int) guiObjs[gIDX_NumCellsPerSide].getVal()); 
 		intValues.put(gIDX_MapType,	(int) guiObjs[gIDX_MapType].getVal()); 		
 		intValues.put(gIDX_MorphType, (int) guiObjs[gIDX_MorphType].getVal()); 			
+		intValues.put(gIDX_MorphTValType, (int) guiObjs[gIDX_MorphTValType].getVal()); 		
 		intValues.put(gIDX_MorphTypeOrient, (int) guiObjs[gIDX_MorphTypeOrient].getVal()); 	
 		intValues.put(gIDX_MorphTypeSize, (int) guiObjs[gIDX_MorphTypeSize].getVal()); 		
 		intValues.put(gIDX_MorphTypeShape, (int) guiObjs[gIDX_MorphTypeShape].getVal()); 		
@@ -246,8 +252,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 		uiUpdateData.setAllVals(intValues, strValues, floatValues, boolValues); 
 	}
-	
-	
+		
 	/**
 	 * initialize all maps - only call once
 	 */
@@ -338,7 +343,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) { 
 		tmpListObjVals.put(gIDX_MapType, mapPairManager.mapTypes);	
 		tmpListObjVals.put(gIDX_MorphType, mapPairManager.morphTypes); 
-		
+		tmpListObjVals.put(gIDX_MorphTValType, InterpolantTypes.getListOfTypes());
 		tmpListObjVals.put(gIDX_MorphTypeOrient, mapPairManager.cmpndMorphTypes); 
 		tmpListObjVals.put(gIDX_MorphTypeSize, mapPairManager.cmpndMorphTypes); 
 		tmpListObjVals.put(gIDX_MorphTypeShape, mapPairManager.cmpndMorphTypes); 
@@ -349,8 +354,12 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpListObjVals.put(gIDX_DistTestTransform, mapPairManager.morphTypes);
 		tmpListObjVals.put(gIDX_DistDimToShow, distDimToShow);
 		
+	
+		
 		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 	
 		tmpUIObjArray.put(gIDX_MorphSpeed,new Object[] { new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", new boolean[] { false, false, true } }); 	
+		tmpUIObjArray.put(gIDX_MorphTValType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTValType).length-1, 1},1.0* InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : ", new boolean[]{true, true, true}});
+		
 		tmpUIObjArray.put(gIDX_NumCellsPerSide,new Object[] { new double[] { 2.0, 50.0, 1.0 }, 4.0, "# of Cells Per Grid Side", new boolean[]{true, false, true}}); 
 		
 		tmpUIObjArray.put(gIDX_SetBrnchStrat,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_SetBrnchStrat).length-1, 1},0.0, "Branch Sharing Strategy", new boolean[]{true, true, true}});
@@ -390,6 +399,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				break;}		
 			case gIDX_MorphSpeed : {		//multiplier for animating morph
 				if(checkAndSetFloatVal(UIidx, val)) {updateMapVals(); }
+				break;}
+			case gIDX_MorphTValType : {
+				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
 				break;}
 			case gIDX_NumCellsPerSide : {	//# of cells per side for Map grid
 				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}

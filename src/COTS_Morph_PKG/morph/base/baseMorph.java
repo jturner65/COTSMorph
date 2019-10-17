@@ -331,7 +331,7 @@ public abstract class baseMorph {
 	/**
 	 * use currently set t value to calculate morph and apply to passed morph map
 	 */
-	public abstract void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB);
+	protected abstract void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB);
 	
 	/**
 	 * calcluate this morph algorithm between Apts and Bpts, putting result in destPts
@@ -782,20 +782,22 @@ public abstract class baseMorph {
 		baseMap tmpMap = getCopyOfMap(null, mapA.mapTitle);	
 		TreeMap<Float, baseMap> morphMaps = new TreeMap<Float, baseMap>();
 		//want incr so that i get numMaps back
-		Float tIncr = 1.0f/(numMaps-1.0f);
-		Float t = 0.0f;
-		for (int i=0;i<numMaps-1;++i) {		
+		Float tIncr = 1.0f/(numMaps-1.0f);  //getCurrAnimatorInterpolant
+		Float _rawt = 0.0f, t;
+		for (int i=0;i<numMaps-1;++i) {	
+			t = mapMgr.getCurrAnimatorInterpolant(_rawt);
 			tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
 			_calcMorphOnMap(tmpMap, true, t);
-			morphMaps.put(t, tmpMap);		
-			t+=tIncr;
+			morphMaps.put(_rawt, tmpMap);		
+			_rawt+=tIncr;
 		}
-		t=1.0f;
+		_rawt=1.0f;
+		t = mapMgr.getCurrAnimatorInterpolant(_rawt);
 		//tmpMap = mapMgr.buildCopyMapOfPassedMapType(mapA, "Morph @ t="+String.format("%2.3f", t));
 		tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
 		//
-		_calcMorphOnMap(tmpMap, true,t);	
-		morphMaps.put(t, tmpMap);				
+		_calcMorphOnMap(tmpMap, true,_rawt);	
+		morphMaps.put(_rawt, tmpMap);				
 		return morphMaps;
 	}
 

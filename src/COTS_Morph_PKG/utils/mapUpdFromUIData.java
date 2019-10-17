@@ -96,6 +96,8 @@ public class mapUpdFromUIData {
 	
 	public int getCurrDistTransformIDX() {return intValues.get(COTS_MorphWin.gIDX_DistTestTransform);}
 	public int getDistDimToShow() {return intValues.get(COTS_MorphWin.gIDX_DistDimToShow);}
+	
+	public int getCurrAnimatorIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphTValType);}
 	/**
 	 * access bools
 	 */
@@ -116,12 +118,14 @@ public class mapUpdFromUIData {
 				|| (getNumMorphSlices() != _otr.getNumMorphSlices()) 
 				|| (getCurrMorphTypeIDX() != _otr.getCurrMorphTypeIDX()) 
 				|| checkCmpnd				
+				|| (getCurrAnimatorIDX() != _otr.getCurrAnimatorIDX())
 				|| (getCurrDistTransformIDX() != _otr.getCurrDistTransformIDX())) ;		
 	}
 	
 	/**
 	 * access floats
 	 */
+	
 	public float getMorphProgress() {return floatValues.get(COTS_MorphWin.gIDX_MorphTVal);}
 	public float getMorphSpeed() {return floatValues.get(COTS_MorphWin.gIDX_MorphSpeed);}
 	public float getMorphDistMult() {return floatValues.get(COTS_MorphWin.gIDX_MorphDistMult);}

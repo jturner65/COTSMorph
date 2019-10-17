@@ -25,6 +25,8 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.myDispWindow;
+import base_Utils_Objects.interpolants.InterpolantTypes;
+import base_Utils_Objects.interpolants.base.baseInterpolant;
 import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.vectorObjs.myPoint;
 import base_Utils_Objects.vectorObjs.myPointf;
@@ -173,7 +175,16 @@ public class mapPairManager {
 	/**
 	 * morph animation variables
 	 */
-	private float morphProgress = 0.5f, morphSpeed = 1.0f;
+	private float //morphProgress = 0.5f, 
+			morphSpeed = 1.0f;
+	/**
+	 * interplants to be used for animation
+	 */
+	private baseInterpolant[] animators;
+	/**
+	 * index of current animator being used
+	 */
+	private int curAnimatorIDX = InterpolantTypes.linear.getVal();
 	
 	/**
 	 * colors for each of 2 maps' grids
@@ -190,6 +201,7 @@ public class mapPairManager {
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
 		win=_win; pa=myDispWindow.pa;msgObj=win.getMsgObj();
+				
 		//for building registration copy
 		fromMapIDX = 0;
 		toMapIDX = 1;
@@ -204,6 +216,10 @@ public class mapPairManager {
 		//setBndPts(origBndPts);
 		
 		currUIVals = new mapUpdFromUIData(_currUIVals);		
+		animators = new baseInterpolant[InterpolantTypes.getNumVals()];
+		for(int i=0;i<animators.length;++i) {
+			animators[i] = baseInterpolant.buildInterpolant(InterpolantTypes.getVal(i), 0.5f);
+		}
 		
 		//want # of usable background threads.  Leave 2 for primary process (and potential draw loop)
 		numUsableThreads = Runtime.getRuntime().availableProcessors() - 2;
@@ -226,6 +242,15 @@ public class mapPairManager {
 		setPopUpWins_RectDims();
 		updateMapMorphVals_FromUI(currUIVals);
 	}//ctor
+	
+	/**
+	 * call from morphs to determine what current animator will yield for passed raw t value
+	 * @param _rawt raw, linearly-evolved t value from 0 to 1
+	 * @return
+	 */
+	public float getCurrAnimatorInterpolant(float _rawt) {
+		return animators[curAnimatorIDX].calcInterpolant(_rawt);
+	}
 	
 //	public void setBndPts(myPointf[][] _bndPts) {
 //		bndPts = new myPointf[_bndPts.length][];
@@ -544,10 +569,11 @@ public class mapPairManager {
 	 * manage morph display and evolution
 	 * @param animTimeMod
 	 */
-	protected float morphSign = 1.0f;
+	//protected float morphSign = 1.0f;
 
 	public final void drawAndAnimMorph(boolean debug, float animTimeMod, boolean drawMap, boolean drawMorphMap, boolean _showDistColors, boolean morphMapFillOrWf,  boolean drawSlices, boolean morphSlicesFillOrWf,boolean drawCircles, boolean drawCntlPts, boolean sweepMaps, boolean showLbls, int _detail) {
-		morphs[currMorphTypeIDX].setMorphT(morphProgress);//sets t value and calcs morph
+		//morphs[currMorphTypeIDX].setMorphT(morphProgress);//sets t value and calcs morph
+		morphs[currMorphTypeIDX].setMorphT(animators[curAnimatorIDX].getValue());//sets t value and calcs morph
 		pa.pushMatrix();pa.pushStyle();	
 			pa.fill(0,0,0,255);
 			pa.stroke(0,0,0,255);
@@ -565,10 +591,11 @@ public class mapPairManager {
 			morphs[currMorphTypeIDX].drawHeaderAndLabels(showLbls,_detail);
 		}
 		if(sweepMaps) {
-			morphProgress += (morphSign * (animTimeMod * morphSpeed));			
-			if(morphProgress > 1.0f) {morphProgress = 1.0f;morphSign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	morphSign = 1.0f;}		
+			evolveAllAnimators(animTimeMod);
+//			morphProgress += (morphSign * (animTimeMod * morphSpeed));			
+//			if(morphProgress > 1.0f) {morphProgress = 1.0f;morphSign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	morphSign = 1.0f;}		
 		}
-		currUIVals.setMorphProgress(morphProgress);
+		currUIVals.setMorphProgress(animators[curAnimatorIDX].getValue());
 	}
 	
 	public final void drawMaps_MorphAnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, int dispDetail, float sideBarYDisp) {
@@ -772,8 +799,11 @@ public class mapPairManager {
 		currUIVals.setAllVals(upd);//can't use the same mapUpdFromUIData everywhere because we compare differences
 		//currUIVals = upd;
 		currMorphTypeIDX = currUIVals.getCurrMorphTypeIDX();
-		//float oldMorphProgres = morphProgress;
-		morphProgress = currUIVals.getMorphProgress();   
+		
+		curAnimatorIDX = currUIVals.getCurrAnimatorIDX();
+		
+		//morphProgress = currUIVals.getMorphProgress(); 
+		setAllAnimatorVals(currUIVals.getMorphProgress());
 		
 		//msgObj.dispInfoMessage("mapPairManager::"+this.name, "updateMapValsFromUI", "Morph Progress changed from " + oldMorphProgres + " to  " +morphProgress);
 		
@@ -792,14 +822,25 @@ public class mapPairManager {
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true, true);
 	}
-	
+	/**
+	 * set all animators to passed value
+	 * @param _t
+	 */
+	private void setAllAnimatorVals(float _t) {		for(int i=0;i<animators.length;++i) {	animators[i].setValue(_t);}		}
+	/**
+	 * evolve all animators from draw function
+	 * @param animTimeMod
+	 */
+	private void evolveAllAnimators(float animTimeMod) {
+		float delta = animTimeMod * morphSpeed;
+		for(int i=0;i<animators.length;++i) {	animators[i].evolveInterpolant(delta);}
+	}
+		
 	/**
 	 * this will return true if the current morph type uses registration - currently only CarrierSimRegTransIDX
 	 * @return
 	 */
-	public final boolean checkCurrMorphUsesReg() {
-		return AffineMorphIDX==currMorphTypeIDX;
-	}	
+	public final boolean checkCurrMorphUsesReg() {		return AffineMorphIDX==currMorphTypeIDX;	}	
 	
 	////////////////////
 	// mouse/keyboard ui interaction 
