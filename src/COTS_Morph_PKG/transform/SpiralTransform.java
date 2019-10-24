@@ -31,16 +31,31 @@ public class SpiralTransform extends baseTransform {
 	 * spiral center
 	 */
 	public myPointf F;
+	/**
+	 * whether this spiral is degenerate = if angle is 0 then can't calculate F point, so use LERP instead
+	 */
+	protected boolean isDegenerate;
 	
 	//protected static final String[] rtMenuDispType = new String[] {"Scale","Angle","Branch"};
 	protected static final String[] rtMenuDispType = new String[] {"S","A","B"};
+	/**
+	 * these are only  used if degenerate, for lerp
+	 */
+	private myPointf startP, endP;
 
 
-	public SpiralTransform(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	super( _name+"_Sprl", _n, _I, _J);}
+	public SpiralTransform(String _name, myVectorf _n, myVectorf _I, myVectorf _J) {	
+		super( _name+"_Sprl", _n, _I, _J);
+		startP = new myPointf();
+		endP = new myPointf();
+	}
 	
 	public SpiralTransform(String _name, SpiralTransform _otr) {
 		super( _name+"_Spiral_Cpy",_otr);
 		m= _otr.m;		a= _otr.a;		
+		startP = new myPointf(_otr.startP);
+		endP = new myPointf(_otr.endP);		
+		isDegenerate = a==0;
 		old_alpha = _otr.old_alpha;
 		a_BranchDisp = _otr.a_BranchDisp;
 		F = new myPointf(_otr.F);
@@ -48,11 +63,14 @@ public class SpiralTransform extends baseTransform {
 	
 	@Override
 	protected final void reset_Indiv() {
-		 m = 1.0f;
-		 a = 0.0f; 
-		 old_alpha = 0.0f;
-		 a_BranchDisp = 0.0f; 
-		 F = new myPointf();
+		m = 1.0f;
+		a = 0.0f; 
+		startP = new myPointf();
+		endP = new myPointf();
+		isDegenerate = a==0;
+		old_alpha = 0.0f;
+		a_BranchDisp = 0.0f; 
+		F = new myPointf();
 	}
 	
 	/**
@@ -65,8 +83,12 @@ public class SpiralTransform extends baseTransform {
 		m=scale;
 		old_alpha = a;
 		a=angle;
+		isDegenerate = a==0;
 		//no branching, since this angle will be set to be +/- PI
 		a_BranchDisp = 0.0f;
+		startP.set(A);
+		endP.set(B);
+		
 		F = spiralCenter(m,a,A,B);  
 	}
 	
@@ -109,6 +131,10 @@ public class SpiralTransform extends baseTransform {
 	    if(optimizeAlpha) {
 	    	calcOptimalAlpha(alphaNew, flags);
 	    }
+	    isDegenerate = a==0;
+		startP.set(e0[0]);
+		endP.set(e1[0]);
+	    
 	    
 	    F = spiralCenter(m,a,e0[0],e1[0]);  
 	}//buildTransformation
@@ -159,6 +185,7 @@ public class SpiralTransform extends baseTransform {
 	 * @return
 	 */
 	public final myPointf spiralCenter(myPointf A, myPointf B, myPointf C, myPointf D) {         // new spiral center
+		if(isDegenerate) {return new myPointf();}//if is degenerate then bypassing spiral
 		myVectorf AB=new myVectorf(A,B), CD=new myVectorf(C,D), AC=new myVectorf(A,C);
 		float mu = CD.magn/AB.magn, magSq=CD.magn*AB.magn;		
 		myVectorf rAB = myVectorf._rotAroundAxis(AB, norm, MyMathUtils.halfPi_f);
@@ -175,12 +202,13 @@ public class SpiralTransform extends baseTransform {
 	/**
 	 * find fixed points given scale and angle - point is pivot that takes A to C
 	 * @param scale |CD|/|AB|
-	 * @param angle angle between AB and CD around planar normal
+	 * @param angle angle between AB and CD around planar normal - can't be 0
 	 * @param A
 	 * @param C
 	 * @return
 	 */
 	public final myPointf spiralCenter(float scale, float angle, myPointf A, myPointf C) {         // new spiral center
+		if(isDegenerate) {return new myPointf();}//if is degenerate then bypassing spiral
 		//fixed point will move FA to FC and FB to FD
 		float cos = (float) Math.cos(angle), sin = (float) Math.sin(angle);
 		myVectorf CARaw=new myVectorf(C,A),
@@ -193,6 +221,7 @@ public class SpiralTransform extends baseTransform {
 		return res;
 	}
 	
+	
 	/**
 	 * calc 1D transformation point for given point
 	 * @param A base point to transform
@@ -200,7 +229,13 @@ public class SpiralTransform extends baseTransform {
 	 * @return
 	 */	
 	@Override
-	public final myPointf transformPoint(myPointf A, float t) {return new myPointf(F, (float) Math.pow(m, t), rotPtAroundF(A, F, t*a));}	
+	public final myPointf transformPoint(myPointf A, float t) {
+		if(isDegenerate) {//lerp
+			//System.out.println("Transforming point with degenerate spiral.");
+			myPointf disp = new myPointf(startP, t, endP);//(A-startP)  + (startP *(1-t) + endP * (t))
+			return myPointf._add(myPointf._sub(A, startP), disp);			
+		}//if is degenerate then bypassing spiral
+		return new myPointf(F, (float) Math.pow(m, t), rotPtAroundF(A, F, t*a));}	
 	
 	/**
 	 * calc 1D transformation vector for given vector
@@ -208,7 +243,12 @@ public class SpiralTransform extends baseTransform {
 	 * @param t time 
 	 * @return
 	 */	
-	public final myPointf transformVector(myVectorf V, float t) {return myVectorf._mult(myVectorf._rotAroundAxis(V, norm, t*a), (float) Math.pow(m, t));}
+	public final myPointf transformVector(myVectorf V, float t) {
+		if(isDegenerate) {//lerp
+			myPointf disp = new myPointf(startP, t, endP);//(V-startP)  + (startP *(1-t) + endP * (t))
+			return myPointf._add(myPointf._sub(V, startP), disp);
+		}//if is degenerate then bypassing spiral
+		return myVectorf._mult(myVectorf._rotAroundAxis(V, norm, t*a), (float) Math.pow(m, t));}
 	
 	
 	/**
@@ -233,9 +273,13 @@ public class SpiralTransform extends baseTransform {
 //		yOff += sideBarYDisp;
 //		pa.translate(0.0f,sideBarYDisp, 0.0f);
 //		pa.pushMatrix();pa.pushStyle();		
-		
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
+		if(isDegenerate) {
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "No F");
+		} else {
+			
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
+		}
 		pa.popStyle();pa.popMatrix();
 			
 		yOff += sideBarYDisp;
@@ -246,11 +290,14 @@ public class SpiralTransform extends baseTransform {
 	
 	public final float drawFixedPoint(my_procApplet pa, float yOff, float sideBarYDisp){
 		pa.translate(10.0f, 0.0f, 0.0f);
-		pa.pushMatrix();pa.pushStyle();		
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
-		pa.popStyle();pa.popMatrix();
-			
+		if(isDegenerate) {
+			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "Theta == 0 caused degenerate spiral.");
+		} else {
+			pa.pushMatrix();pa.pushStyle();		
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
+				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
+			pa.popStyle();pa.popMatrix();
+		}
 		yOff += sideBarYDisp;
 		pa.translate(-10.0f,sideBarYDisp, 0.0f);
 		return yOff;

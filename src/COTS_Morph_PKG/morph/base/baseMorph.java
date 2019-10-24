@@ -16,6 +16,7 @@ import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
+import base_Utils_Objects.interpolants.InterpolantBehavior;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
@@ -230,7 +231,7 @@ public abstract class baseMorph {
 	}
 	
 	/**
-	 * this should be called whenever map A's values have changed (??) this is in place to address weird morph branching stuff
+	 * this should be called whenever map A's values have changed (??) this is in place to address weird morph branching stuff TODO
 	 */
 	//private float oldMorphT = 0.0f;
 	public final void updateMorphMapWithMapVals() {	updateMorphMapWithMapVals(true);}
@@ -249,7 +250,6 @@ public abstract class baseMorph {
 	 * Note this will not build control point trajectories, slices, or other components used in the full morph
 	 */
 	public final void calcMorphCompare(float t) {_calcMorphOnMap(curMorphMap, false, t);}
-	
 	
 	/**
 	 * issue  : branching is flaking out with curMorphMap.  Problem is that old alpha values are not properly tracked.  
@@ -290,32 +290,6 @@ public abstract class baseMorph {
 		
 		buildCntlPointTrajs();
 	}	
-	
-//	/**
-//	 * use currently set t value to calculate morph
-//	 */
-//	protected final void calcMorph() {
-//		//update morph map with map a's vals, 
-//		//curMorphMap.updateMeWithMapVals(mapA,mapFlags[mapUpdateNoResetIDX]);
-////		if (morphT != oldMorphT) {
-////			baseMap tmpMap = getCopyOfMap(mapA, mapA.mapTitle);	
-////			curMorphMap = getCopyOfMap(tmpMap,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
-////		}
-//	
-//		if(morphT == 0.0f) {updateMorphMapWithMapVals(false);}
-//		//manage slices
-//		setMorphSliceAra();	
-//		
-//		mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(morphT != oldMorphT);
-//		
-//		_calcMorphOnMap(curMorphMap, true, morphT);
-//		
-//		oldMorphT = morphT;
-//		mapFlags[mapUpdateNoResetIDX].setOptimizeAlpha(true);
-//		
-//		buildCntlPointTrajs();
-//		
-//	}	
 	
 	protected final void _calcMorphOnMap(baseMap _curMorphMap, boolean _calcColors, float t) {
 		float tA = 1.0f-t, tB = t;
@@ -443,17 +417,48 @@ public abstract class baseMorph {
 //	}
 //	
 
-	
-	protected baseMap[][][] getKFPolyMapsForCurMorphAnimType(int animType){
+	/**
+	 * return the appropriate extra start frame and end frame copies depending on type of animation
+	 * @param animType int idx of animation/interpolant behavior
+	 * @return
+	 */
+	protected baseMap[][][] getKFPolyMapsForCurMorphAnimType(baseMap[] morphSliceAra, int animType){
 		baseMap[][][] res = new baseMap[2][][];
-		switch (animType) {
+		InterpolantBehavior animBehavior = InterpolantBehavior.getVal(animType);
+		//morphSliceAra[k].buildPolyMaps();
+		int stIdx, endIdx;
+		switch (animBehavior) {
+			case pingPong : {
+				stIdx = 1;
+				endIdx = morphSliceAra.length-2;
+				break;
+			}		
+			case oneWayFwdLoop : {
+				stIdx = morphSliceAra.length-1;
+				endIdx = morphSliceAra.length-2;
+				break;
+			}		
+			case oneWayBkwdLoop :{
+				stIdx = 1;
+				endIdx = 0;
+				break;
+			}		
+			case pingPongStop : 
+			case oneWayFwdStopLoop : 
+			case oneWayBkwdStopLoop :{//morphSliceAra[k].buildPolyMaps();
+				stIdx = 0;
+				endIdx = morphSliceAra.length-1;
+				break;
+			}	
+			default		:{		
+				stIdx = 1;
+				endIdx = morphSliceAra.length-2;	
+				break;
+			}
+		}//switch
 		
-		
-		
-		
-		}
-		
-		
+		res[0] = morphSliceAra[stIdx].buildPolyMaps();
+		res[1] = morphSliceAra[endIdx].buildPolyMaps();		
 		return res;
 		
 	}
@@ -471,12 +476,11 @@ public abstract class baseMorph {
 		morphSliceAraDistColorsSet = false;
 		morphMapDistColorsSet = false;
 		canResetMapFlags = false;
-		
-		baseMap[][][] kfPolyMaps = getKFPolyMapsForCurMorphAnimType(animType);
-		
+		baseMap[] morphSliceAra = morphSliceAras[curMorphSliceAraIDX].values().toArray(new baseMap[0]);
+		baseMap[][][] kfPolyMaps = getKFPolyMapsForCurMorphAnimType(morphSliceAra, animType);
 		
 		//launch thread to calc distortion in background
-		distCalcRunner.setAllInitMapVals(currDistMsrMorph, morphSliceAras[curMorphSliceAraIDX].values().toArray(new baseMap[0]),kfPolyMaps[0],kfPolyMaps[1]);
+		distCalcRunner.setAllInitMapVals(currDistMsrMorph, morphSliceAra, kfPolyMaps[0],kfPolyMaps[1]);
 //		distCalcRunners[equalDist_MorphSlicesIDX].setAllInitMapVals(currDistMsrMorph, morphSliceAras[equalDist_MorphSlicesIDX].values().toArray(new baseMap[0]));
 //		distCalcRunners[equalRawT_MorphSlicesIDX].setAllInitMapVals(currDistMsrMorph, morphSliceAras[equalRawT_MorphSlicesIDX].values().toArray(new baseMap[0]));
 		//th_exec.submit(distCalcRunner);

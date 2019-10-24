@@ -218,7 +218,7 @@ public class mapPairManager {
 		currUIVals = new mapUpdFromUIData(_currUIVals);		
 		animators = new baseInterpolant[InterpolantTypes.getNumVals()];
 		for(int i=0;i<animators.length;++i) {
-			animators[i] = baseInterpolant.buildInterpolant(InterpolantTypes.getVal(i), 0.5f);
+			animators[i] = baseInterpolant.buildInterpolant(InterpolantTypes.getVal(i), 0.5f, 0.5f);
 		}
 		
 		//want # of usable background threads.  Leave 2 for primary process (and potential draw loop)
