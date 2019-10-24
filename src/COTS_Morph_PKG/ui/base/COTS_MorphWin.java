@@ -8,7 +8,8 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
-import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.base.myDispWindow;
+import base_Utils_Objects.interpolants.InterpolantBehavior;
 import base_Utils_Objects.interpolants.InterpolantTypes;
 import base_Utils_Objects.io.MsgCodes;
 import base_Utils_Objects.vectorObjs.myPoint;
@@ -31,15 +32,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		gIDX_MorphTypeSize				= 7,
 		gIDX_MorphTypeShape				= 8,
 		gIDX_MorphTypeCOVPath			= 9,				
-		gIDX_SetBrnchStrat				= 10,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
-		gIDX_NumLineupFrames			= 11,			//# of frames to use for lineup
-		gIDX_NumMorphSlices 			= 12,			//# of slices in morph
-		gIDX_CntlPtDispDetail			= 13,			//how much detail the cntrol point display will show
-		gIDX_MorphAnalysisMmmntsDetail 	= 14,
-		gIDX_DistTestTransform			= 15,			//transformation to use to measure distortion
-		gIDX_DistDimToShow				= 16,			//which distortion dimension should be colored
-		gIDX_MorphDistMult 				= 17;			//distortion multiplier to use to control colors for 
-	protected static final int numBaseCOTSWinUIObjs = 18;
+		gIDX_MorphAnimType				= 10,			//type of morphing animation to execute - ping pong, ping pong with stop, 1-way forward loop, 1 way backward loop
+		gIDX_SetBrnchStrat				= 11,			//whether branching should be forced from Edit, forced from A, forced from B, or not shared
+		gIDX_NumLineupFrames			= 12,			//# of frames to use for lineup
+		gIDX_NumMorphSlices 			= 13,			//# of slices in morph
+		gIDX_MorphSliceDispType			= 14,			//type of morph slice to display - evenly spaced or "faded"
+		gIDX_CntlPtDispDetail			= 15,			//how much detail the cntrol point display will show
+		gIDX_MorphAnalysisMmmntsDetail 	= 16,
+		gIDX_DistTestTransform			= 17,			//transformation to use to measure distortion
+		gIDX_DistDimToShow				= 18,			//which distortion dimension should be colored
+		gIDX_MorphDistMult 				= 19;			//distortion multiplier to use to control colors for 
+	protected static final int numBaseCOTSWinUIObjs = 20;
 	/**
 	 * structure to facilitate communicating UI changes with functional code
 	 */
@@ -52,11 +55,23 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * control point detail to display
 	 */
 	protected static final String[] cntlPtDispDetail = new String[] {"Cntl Pts Only", "Cntl Pts & COV", "Cntl Pts, COV & Edge Pts", "All Pts"};
+	/**
+	 * values to display in control point trajectory analysis
+	 */
 	protected static final String[] analysisMmmntsDetail = new String[] {"Mean & STD", "First 4 moments", "Mean & STD + Min & Max", "4 Mmnts + Min & Max"};	
+	/**
+	 * which dimension to display for distortion 
+	 */
 	protected static final String[] distDimToShow  = new String[] {"Map Rows", "Map Columns", "Morph Slices"};
-	
+	/**
+	 * whether to show morph slices evenly spaced in actual t, or evenly spaced in input of function of t interpolant (non-linear) (if one is used)
+	 */
+	protected static final String[] morphSliceType  = new String[] {"Evenly Spaced", "Fade Spacing"};
+	//protected static final String[] morphAnimType = new String[] {"Ping-pong", "Ping-pong w/stop", "1-way fwd loop", "1-way bckwd loop"};
+
+	//these should be in order of increasing detail
 	public static final int 
-		drawMapDet_CntlPtsOnlyIDX  				= 0,
+		drawMapDet_CntlPts_IDX  				= 0,
 		drawMapDet_CntlPts_COV_IDX				= 1,
 		drawMapDet_CntlPts_COV_EdgePts_IDX		= 2,
 		drawMapDet_CntlPts_COV_EdgePts_F_IDX 	= 3;
@@ -236,9 +251,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		intValues.put(gIDX_CntlPtDispDetail, (int) guiObjs[gIDX_CntlPtDispDetail].getVal()); 
 		intValues.put(gIDX_MorphAnalysisMmmntsDetail, (int) guiObjs[gIDX_MorphAnalysisMmmntsDetail].getVal());  
 		intValues.put(gIDX_DistTestTransform, (int) guiObjs[gIDX_DistTestTransform].getVal());  
-		intValues.put(gIDX_DistDimToShow, (int) guiObjs[gIDX_DistDimToShow].getVal());  
-		
-		TreeMap<Integer, String> strValues = new TreeMap<Integer, String>();
+		intValues.put(gIDX_DistDimToShow, (int) guiObjs[gIDX_DistDimToShow].getVal()); 
+		intValues.put(gIDX_MorphSliceDispType, (int) guiObjs[gIDX_MorphSliceDispType].getVal()); 
+		intValues.put(gIDX_MorphAnimType, (int) guiObjs[gIDX_MorphAnimType].getVal()); 
+		//intValues.put(gIDX_MorphSliceTypeForDist, (int) guiObjs[gIDX_MorphSliceTypeForDist].getVal()); 
 		
 		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
 		
@@ -250,7 +266,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 		for(Integer i=0;i<this.numPrivFlags;++i) {	boolValues.put(i, getPrivFlags(i));}
 		
-		uiUpdateData.setAllVals(intValues, strValues, floatValues, boolValues); 
+		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
 	}
 		
 	/**
@@ -353,10 +369,13 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpListObjVals.put(gIDX_MorphAnalysisMmmntsDetail, analysisMmmntsDetail);
 		tmpListObjVals.put(gIDX_DistTestTransform, mapPairManager.morphTypes);
 		tmpListObjVals.put(gIDX_DistDimToShow, distDimToShow);
+		tmpListObjVals.put(gIDX_MorphSliceDispType, morphSliceType);
+		tmpListObjVals.put(gIDX_MorphAnimType, InterpolantBehavior.getListOfTypes());
 		
-	
 		
-		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[] { false, false, true } }); 	
+		//tmpListObjVals.put(gIDX_MorphSliceTypeForDist, morphSliceType);			
+		
+		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[] { false, false, true, true } }); 	
 		tmpUIObjArray.put(gIDX_MorphSpeed,new Object[] { new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", new boolean[] { false, false, true } }); 	
 		tmpUIObjArray.put(gIDX_MorphTValType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTValType).length-1, 1},1.0* InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : ", new boolean[]{true, true, true}});
 		
@@ -373,8 +392,12 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpUIObjArray.put(gIDX_MorphTypeShape, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeShape).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Shape Morph Type to Use", new boolean[]{true, true, true}});
 		tmpUIObjArray.put(gIDX_MorphTypeCOVPath,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeCOVPath).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "COV Path Morph Type to Use", new boolean[]{true, true, true}});
 		
+		tmpUIObjArray.put(gIDX_MorphAnimType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphAnimType).length-1, 1},1.0* InterpolantBehavior.pingPong.getVal(), "Morph Animation Type : ", new boolean[]{true, true, true}});
+		
 		tmpUIObjArray.put(gIDX_NumLineupFrames,new Object[] { new double[]{5.0, 20.0, 1.0},11.0, "# of Frames in Lineup", new boolean[]{true, false, true}}); 
 		tmpUIObjArray.put(gIDX_NumMorphSlices,new Object[] { new double[]{5.0, 20.0, 1.0},11.0, "# of Slices in Morph", new boolean[]{true, false, true}}); 
+		
+		tmpUIObjArray.put(gIDX_MorphSliceDispType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphSliceDispType).length-1, 1},0.0, "Morph Slice Spacing to Show", new boolean[]{true, true, true}});		
 		
 		tmpUIObjArray.put(gIDX_CntlPtDispDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_CntlPtDispDetail).length-1, 1},1.0*drawMapDetail, "Cntl Pt Disp Detail", new boolean[]{true, true, true}});
 		tmpUIObjArray.put(gIDX_MorphAnalysisMmmntsDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphAnalysisMmmntsDetail).length-1, 1},1.0*currMmntDispIDX, "Traj Analysis Detail", new boolean[]{true, true, true}});
@@ -382,6 +405,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpUIObjArray.put(gIDX_DistDimToShow,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_DistDimToShow).length-1, 1},2.0, "Distortion Dimension to Show In Colors", new boolean[]{true, true, true}});
 		
 		tmpUIObjArray.put(gIDX_MorphDistMult,new Object[] { new double[] { -10.0, 20.0, 0.1 }, 0.0,"Distortion Mult Exponent (for Visualization)", new boolean[] { false, false, true } }); 	
+		
+		//tmpUIObjArray.put(gIDX_MorphSliceTypeForDist,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphSliceTypeForDist).length-1, 1},0.0, "Morph Slice Spacing For Dist Calc", new boolean[]{true, true, true}});		
+	
 		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
 	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
@@ -394,7 +420,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		float val = (float) guiObjs[UIidx].getVal();
 		int ival = (int) val;
 		switch (UIidx) {	
-			case gIDX_MorphTVal : {			//morph value	
+			case gIDX_MorphTVal : {			//morph value				
 				if(checkAndSetFloatVal(UIidx, val)) {updateMapVals(); }
 				break;}		
 			case gIDX_MorphSpeed : {		//multiplier for animating morph
@@ -426,6 +452,9 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			case gIDX_MorphTypeCOVPath		: {		
 				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
 				break;}		
+			case gIDX_MorphAnimType			: {		
+				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
+				break;}		
 			
 			case gIDX_SetBrnchStrat : {
 				if(currBranchShareStrat != ival) {currBranchShareStrat = ival;uiUpdateData.setIntValue(UIidx, ival);}
@@ -439,6 +468,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			case gIDX_NumMorphSlices	:{
 				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
 				break;}
+			case gIDX_MorphSliceDispType	:{
+				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
+				break;}
+			
 			case gIDX_CntlPtDispDetail : {
 				if(ival != drawMapDetail) {drawMapDetail=ival;}
 				break;}				
@@ -455,6 +488,10 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			case gIDX_MorphDistMult : {
 				if(checkAndSetFloatVal(UIidx, (float) Math.pow(10,val))) {updateMapVals(); }
 				break;		}
+			
+//			case gIDX_MorphSliceTypeForDist :{
+//				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
+//				break;}
 			default : {setUIWinVals_Indiv(UIidx, val);}
 		}
 
@@ -591,7 +628,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 */
 	protected final boolean checkAndSetBoolValue(int idx, boolean value) {if(!uiUpdateData.compareBoolValue(idx, value)) {uiUpdateData.setBoolValue(idx, value); return true;}return false;}
 	protected final boolean checkAndSetIntVal(int idx, int value) {if(!uiUpdateData.compareIntValue(idx, value)) {uiUpdateData.setIntValue(idx, value);return true;}return false;}
-	protected final boolean checkAndSetStrVal(int idx, String value) {if(!uiUpdateData.compareStringValue(idx, value)) {uiUpdateData.setStringValue(idx, value);return true;}return false;}
 	protected final boolean checkAndSetFloatVal(int idx, float value) {if(!uiUpdateData.compareFloatValue(idx, value)) {uiUpdateData.setFloatValue(idx, value);return true;}return false;}
 	
 	/**
@@ -1024,7 +1060,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	@Override
 	protected final void delTrajToScrIndiv(int subScrKey, String newTrajKey) {}
 	@Override
-	protected final void processTrajIndiv(myDrawnSmplTraj drawnTraj) {}
+	public final void processTrajIndiv(myDrawnSmplTraj drawnTraj) {}
 
 
 }

@@ -24,7 +24,7 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
-import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.interpolants.InterpolantTypes;
 import base_Utils_Objects.interpolants.base.baseInterpolant;
 import base_Utils_Objects.io.MessageObject;
@@ -246,7 +246,7 @@ public class mapPairManager {
 	/**
 	 * call from morphs to determine what current animator will yield for passed raw t value
 	 * @param _rawt raw, linearly-evolved t value from 0 to 1
-	 * @return
+	 * @return 
 	 */
 	public float getCurrAnimatorInterpolant(float _rawt) {
 		return animators[curAnimatorIDX].calcInterpolant(_rawt);
@@ -421,7 +421,8 @@ public class mapPairManager {
 	 * @param _currDistTransformIDX index in morph list for transformatio to use to calculate distortion
 	 */
 
-	boolean morphCalcLaunched = false;
+	public boolean morphCalcLaunched = false;
+	private int maxDispCounter = 30, curDispCounter =0;
 	public final void calculateMorphDistortion() {
 //		if((mapType==triangleMapIDX) || ( mapType==ptNormTriMapIDX)) {	
 //			//need to find better way of calculating triangle map cell corner points so indexing isn't broken
@@ -429,18 +430,25 @@ public class mapPairManager {
 //			return;
 //		}
 			//this is index in morph list for type of morph to use to measure distortion
-		int currDistTransformIDX = currUIVals.getCurrDistTransformIDX();		
-		baseMorph currDistMsrMorph = distMsrMorphs[currDistTransformIDX];
-		currDistMsrMorph.updateMorphVals_FromUI(this.currUIVals);
 		if(!morphCalcLaunched) {
+			curDispCounter = 0;
+			int currDistTransformIDX = currUIVals.getCurrDistTransformIDX();		
+			baseMorph currDistMsrMorph = distMsrMorphs[currDistTransformIDX];
+			currDistMsrMorph.updateMorphVals_FromUI(this.currUIVals);
 			morphCalcLaunched = true;
-			morphs[currMorphTypeIDX].calculateMorphDistortion(currDistMsrMorph);
-			msgObj.dispInfoMessage("mapPairManager", "findDifferenceBetweenMaps",  "Waiting to finish.");	
+			morphs[currMorphTypeIDX].calculateMorphDistortion(currDistMsrMorph, currUIVals.getCurMorphAnimTypeIDX());
+			msgObj.dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Waiting to finish.");	
+		} else {
+			++curDispCounter;
+			if(curDispCounter % maxDispCounter == 0) {
+				msgObj.dispInfoMessage("mapPairManager", "calculateMorphDistortion",  "Already calculating Morph distortion, please wait for completion.");
+				curDispCounter=0;
+			}			
 		}
 	
 		
 	}//calculateMorphDistortion
-	
+
 	/**
 	 * called by distortion runner
 	 */
@@ -534,14 +542,13 @@ public class mapPairManager {
 	public final void drawMaps_Main(boolean debug, boolean drawMap, boolean _showDistColors,boolean fillOrWf, boolean drawCircles, boolean drawCopy) {
 		if(drawMap) {
 			if(fillOrWf) {		
-				if(_showDistColors){
-					for(int i=0;i<maps.length;++i) {maps[i].drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}}
-				else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Fill();}}}
-			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_Wf();}}
+				if(_showDistColors){	for(int i=0;i<maps.length;++i) {maps[i].drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}}
+				else {					for(int i=0;i<maps.length;++i) {maps[i].drawMap_Fill();}}
+			} else {					for(int i=0;i<maps.length;++i) {maps[i].drawMap_Wf();}}
 		}
 		if(drawCircles) {
-			if((!drawMap) && (fillOrWf)) {		for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Fill();}}		
-			else {				for(int i=0;i<maps.length;++i) {maps[i].drawMap_PolyCircles_Wf();}}					
+			if((!drawMap) && (fillOrWf)) {		for(int i=0;i<maps.length;++i) {	maps[i].drawMap_PolyCircles_Fill();	}}		
+			else {								for(int i=0;i<maps.length;++i) {	maps[i].drawMap_PolyCircles_Wf();}}					
 		}
 		if(drawCopy) {			mapRegDistCalc.drawMaps_Main(fillOrWf);}
 	}//drawMaps_Main
@@ -553,7 +560,7 @@ public class mapPairManager {
 	 * @param drawEdgeLines
 	 */
 	public final void drawMaps_Aux(boolean debug, boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines, boolean drawCntlPts, boolean drawCopy, boolean showLbls, int _detail) {
-		if(drawCopy) {mapRegDistCalc.drawMaps_Aux(drawTexture, drawOrtho, drawCntlPts,showLbls, _detail);}
+		if(drawCopy) {			mapRegDistCalc.drawMaps_Aux(drawTexture, drawOrtho, drawCntlPts,showLbls, _detail);}
 		if(drawTexture)	{		for(int i=0;i<maps.length;++i) {maps[i].drawMap_Texture();}}
 		if(drawOrtho) {			for(int i=0;i<maps.length;++i) {maps[i].drawOrthoFrame();}}
 		if(drawEdgeLines) {		maps[0].drawMap_EdgeLines();}
@@ -593,9 +600,10 @@ public class mapPairManager {
 		if(sweepMaps) {
 			evolveAllAnimators(animTimeMod);
 //			morphProgress += (morphSign * (animTimeMod * morphSpeed));			
-//			if(morphProgress > 1.0f) {morphProgress = 1.0f;morphSign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	morphSign = 1.0f;}		
+//			if(morphProgress > 1.0f) {morphProgress = 1.0f;morphSign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	morphSign = 1.0f;}	
+			currUIVals.setMorphProgress(animators[curAnimatorIDX].getValue());
 		}
-		currUIVals.setMorphProgress(animators[curAnimatorIDX].getValue());
+		
 	}
 	
 	public final void drawMaps_MorphAnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, int dispDetail, float sideBarYDisp) {
@@ -803,7 +811,7 @@ public class mapPairManager {
 		curAnimatorIDX = currUIVals.getCurrAnimatorIDX();
 		
 		//morphProgress = currUIVals.getMorphProgress(); 
-		setAllAnimatorVals(currUIVals.getMorphProgress());
+		setAllAnimatorVals(currUIVals.getMorphProgress(), currUIVals.getCurMorphAnimTypeIDX());
 		
 		//msgObj.dispInfoMessage("mapPairManager::"+this.name, "updateMapValsFromUI", "Morph Progress changed from " + oldMorphProgres + " to  " +morphProgress);
 		
@@ -826,7 +834,7 @@ public class mapPairManager {
 	 * set all animators to passed value
 	 * @param _t
 	 */
-	private void setAllAnimatorVals(float _t) {		for(int i=0;i<animators.length;++i) {	animators[i].setValue(_t);}		}
+	private void setAllAnimatorVals(float _t, int _animBehaviorIDX) {		for(int i=0;i<animators.length;++i) {	animators[i].setValue(_t); animators[i].setAnimBehavior(_animBehaviorIDX);}	 	}
 	/**
 	 * evolve all animators from draw function
 	 * @param animTimeMod

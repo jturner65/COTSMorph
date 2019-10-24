@@ -17,11 +17,7 @@ public class mapUpdFromUIData {
 	 */
 	private TreeMap<Integer, Integer> intValues;
 	/**
-	 * map to hold UI-driven int values, using the UI object idx's as keys
-	 */
-	private TreeMap<Integer, String> strValues;
-	/**
-	 * map to hold UI-driven int values, using the UI object idx's as keys
+	 * map to hold UI-driven float values, using the UI object idx's as keys
 	 */
 	private TreeMap<Integer, Float> floatValues;
 	/**
@@ -35,10 +31,10 @@ public class mapUpdFromUIData {
 	 * @param bools : idx 0 : forceUpdate;
 	 */
 	public mapUpdFromUIData(COTS_MorphWin _win) {	win=_win;	initMaps();}
-	public mapUpdFromUIData(COTS_MorphWin _win, TreeMap<Integer, Integer> _iVals, TreeMap<Integer, String> _sVals, TreeMap<Integer, Float> _fVals,TreeMap<Integer, Boolean> _bVals) {
+	public mapUpdFromUIData(COTS_MorphWin _win, TreeMap<Integer, Integer> _iVals, TreeMap<Integer, Float> _fVals,TreeMap<Integer, Boolean> _bVals) {
 		win=_win;
 		initMaps();
-		setAllVals(_iVals, _sVals, _fVals, _bVals);
+		setAllVals(_iVals, _fVals, _bVals);
 	}
 	
 	public mapUpdFromUIData(mapUpdFromUIData _otr) {
@@ -49,34 +45,30 @@ public class mapUpdFromUIData {
 	
 	private void initMaps() {
 		intValues = new TreeMap<Integer, Integer>();
-		strValues = new TreeMap<Integer, String>();
 		floatValues = new TreeMap<Integer, Float>(); 
 		boolValues = new TreeMap<Integer, Boolean>();
 	}
 	
 	public void setAllVals(mapUpdFromUIData _otr) {
 //		_otr.checkValsForChanged();
-//		setAllVals(_otr.oldIntVals,_otr.oldStrVals,_otr.oldFloatVals,_otr.oldBoolVals);
-		setAllVals(_otr.intValues,_otr.strValues,_otr.floatValues,_otr.boolValues);
+//		setAllVals(_otr.oldIntVals,_otr.oldFloatVals,_otr.oldBoolVals);
+		setAllVals(_otr.intValues,_otr.floatValues,_otr.boolValues);
 //		changedVals.clear();
 //		for(Integer key : changedVals.keySet()) {changedVals.put(key, _otr.changedVals.get(key));}
 		
 	}
 	
-	public void setAllVals(TreeMap<Integer, Integer> _intValues, TreeMap<Integer, String> _strValues, TreeMap<Integer, Float> _floatValues,TreeMap<Integer, Boolean> _boolValues) {
+	public void setAllVals(TreeMap<Integer, Integer> _intValues, TreeMap<Integer, Float> _floatValues,TreeMap<Integer, Boolean> _boolValues) {
 		for(Integer key : _intValues.keySet()) {intValues.put(key, _intValues.get(key));}
-		for(Integer key : _strValues.keySet()) {strValues.put(key, _strValues.get(key));}
 		for(Integer key : _floatValues.keySet()) {floatValues.put(key, _floatValues.get(key));}
 		for(Integer key : _boolValues.keySet()) {boolValues.put(key, _boolValues.get(key));}
 	}
 	
 	public boolean compareIntValue(Integer idx, Integer value) {	return (intValues.get(idx) != null) && (intValues.get(idx).equals(value));	}
-	public boolean compareStringValue(Integer idx, String value) {	return (strValues.get(idx) != null) && (strValues.get(idx).equals(value));	}
 	public boolean compareFloatValue(Integer idx, Float value) {	return (floatValues.get(idx) != null) && (floatValues.get(idx).equals(value));	}
 	public boolean compareBoolValue(Integer idx, Boolean value) {	return (boolValues.get(idx) != null) && (boolValues.get(idx).equals(value));	}
 	
 	public void setIntValue(Integer idx, Integer value){	intValues.put(idx,value);  }
-	public void setStringValue(Integer idx, String value){	strValues.put(idx,value);}
 	public void setFloatValue(Integer idx, Float value){	floatValues.put(idx,value);}
 	public void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);}
 	
@@ -98,12 +90,22 @@ public class mapUpdFromUIData {
 	public int getDistDimToShow() {return intValues.get(COTS_MorphWin.gIDX_DistDimToShow);}
 	
 	public int getCurrAnimatorIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphTValType);}
+	public int getCurMorphSliceAraIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphSliceDispType);}
+	
+	public int getCurMorphAnimTypeIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphAnimType);}
+	//public int getMorphSliceAraForDistIDX() {return intValues.get(COTS_MorphWin.gIDX_MorphSliceTypeForDist);}
 	/**
+	 * 
 	 * access bools
 	 */
 	public boolean getFlags(int idx) {return boolValues.get(idx);}
 	public boolean forceUpdate() {return false;}//TODO update this if desired to have UI able to force map to update cntl point values;  boolValues.get(COTS_MorphWin.<flag idx>);}
 	
+	/**
+	 * check if any UI values have changed that should force a distortion recalculation
+	 * @param _otr
+	 * @return
+	 */
 	public boolean uiForMorphDistAnalysisChanged(mapUpdFromUIData _otr) {
 		
 		boolean checkCmpnd = false;
@@ -117,8 +119,10 @@ public class mapUpdFromUIData {
 		return ((getNumCellsPerSide() != _otr.getNumCellsPerSide()) 
 				|| (getNumMorphSlices() != _otr.getNumMorphSlices()) 
 				|| (getCurrMorphTypeIDX() != _otr.getCurrMorphTypeIDX()) 
+				|| (getCurMorphAnimTypeIDX() != _otr.getCurMorphAnimTypeIDX()) 
 				|| checkCmpnd				
 				|| (getCurrAnimatorIDX() != _otr.getCurrAnimatorIDX())
+				|| (getCurMorphSliceAraIDX() != _otr.getCurMorphSliceAraIDX())
 				|| (getCurrDistTransformIDX() != _otr.getCurrDistTransformIDX())) ;		
 	}
 	

@@ -12,10 +12,10 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
-import COTS_Morph_PKG.utils.runners.morphStackDistortionCalc_Runner;
+import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
-import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
 
@@ -50,7 +50,20 @@ public abstract class baseMorph {
 	/**
 	 * solid representation of morphs
 	 */
-	protected TreeMap<Float, baseMap> morphSliceAra;
+	protected TreeMap<Float, baseMap>[] morphSliceAras;
+	protected static final int 
+		equalDist_MorphSlicesIDX = 0,
+		equalRawT_MorphSlicesIDX = 1;
+	protected static final int numMorphSliceAras = 2;
+	/**
+	 * thread runner for distortion calculation
+	 */
+	protected morphStackDistortionCalc_Runner  distCalcRunner;
+	/**
+	 * morph slice ara idx to use for display
+	 */
+	protected int curMorphSliceAraIDX = 0;
+	
 	protected int numMorphSlices = 8;
 	
 	public my_procApplet pa;
@@ -98,17 +111,14 @@ public abstract class baseMorph {
 		//ref to UI object from map manager
 	protected mapUpdFromUIData currUIVals;
 	/**
-	 * thread runner for distortion calculation
-	 */
-	protected morphStackDistortionCalc_Runner  distCalcRunner;
-	/**
 	 * threading constructions - allow map manager to own its own threading executor
 	 */
 	protected ExecutorService th_exec;	//to access multithreading - instance from calling program
 	protected final int numUsableThreads;		//# of threads usable by the application
 
 	//currently calculated distortion cell colors
-	protected float[][][][] distCellColors;
+	protected float[][][][] distCellColors;	
+	
 	
 	protected float[] 
 			minCellDistVals = new float[3],			//minimum seen distortion in any cell 
@@ -122,24 +132,39 @@ public abstract class baseMorph {
 	 */
 	public baseMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {
 		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
+		initMorphSliceAras();
 		mapA = _mapA;
 		mapB = _mapB;	
 		th_exec = mapMgr.getTh_Exec();
 		numUsableThreads = mapMgr.getNumUsableThreads();
 		//(mapPairManager _mapMgr, ExecutorService _th_exec, boolean _canMT, int _numThds, int _numWorkUnits)
-		distCalcRunner = new morphStackDistortionCalc_Runner(mapMgr, th_exec, true, numUsableThreads, 1);
+		initDistCalcRunners();
 		_ctorFinalize(true);
 	}
 	
+
 	public baseMorph(baseMorph _otr) {//copy ctor
 		win=_otr.win; pa=myDispWindow.pa;morphTitle=_otr.morphTitle+"_cpy";mapMgr=_otr.mapMgr;morphTypeIDX=_otr.morphTypeIDX;
+		initMorphSliceAras();
 		mapA = getCopyOfMap(_otr.mapA, "cpyOfMapA");
 		mapB = getCopyOfMap(_otr.mapB, "cpyOfMapB");
 		th_exec = mapMgr.getTh_Exec();
 		numUsableThreads = mapMgr.getNumUsableThreads();
 		//(mapPairManager _mapMgr, ExecutorService _th_exec, boolean _canMT, int _numThds, int _numWorkUnits)
-		distCalcRunner = new morphStackDistortionCalc_Runner( mapMgr, th_exec, true, numUsableThreads, 1);
+		initDistCalcRunners();
 		_ctorFinalize(true);		
+	}
+	@SuppressWarnings("unchecked")
+	private void initMorphSliceAras() {
+		morphSliceAras = new TreeMap[numMorphSliceAras];
+		for(int i=0;i<morphSliceAras.length;++i) {	morphSliceAras[i] = new TreeMap<Float, baseMap>();}
+	}
+	
+	private void initDistCalcRunners() {
+//		distCalcRunners = new morphStackDistortionCalc_Runner[numMorphSliceAras];
+//		for(int i=0;i<morphSliceAras.length;++i) {	distCalcRunners[i] = new morphStackDistortionCalc_Runner( mapMgr, th_exec, true, numUsableThreads, 1);}
+		
+		distCalcRunner = new morphStackDistortionCalc_Runner( mapMgr, th_exec, true, numUsableThreads, 1);
 	}
 	
 	/**
@@ -310,7 +335,7 @@ public abstract class baseMorph {
 	public abstract double calcMorph_Double(float tA, double AVal, float tB, double BVal);
 	
 	public TreeMap<Float, baseMap> buildLineupOfFrames(int _numFrames) {
-		return buildArrayOfMorphMaps(_numFrames, "_Lineup_Frames");
+		return _buildArrayOfMorphMaps_Even(new TreeMap<Float, baseMap>(), _numFrames, "_Lineup_Frames");
 	}
 	
 	/**
@@ -358,10 +383,87 @@ public abstract class baseMorph {
 	};
 	public abstract void mapCalcsAfterCntlPointsSet_Indiv(String _calledFrom);
 	
+//	/**
+//	 * calculate morph stack distortion
+//	 */
+//	public final void calculateMorphDistortion(baseMorph currDistMsrMorph) {
+//		setMorphSliceAra();
+//		
+//		currDistMsrMorph.setMorphSlices(3);
+//		
+//		morphSliceAraDistColorsSet = false;
+//		morphMapDistColorsSet = false;
+//		canResetMapFlags = false;
+//		//launch thread to calc distortion in background
+//		
+//		distCalcRunners[morphSliceAraForDistCalcIDX].setAllInitMapVals(currDistMsrMorph, morphSliceAras[morphSliceAraForDistCalcIDX].values().toArray(new baseMap[0]));
+//		th_exec.submit(distCalcRunners[morphSliceAraForDistCalcIDX]);
+//
+//		mapMgr.msgObj.dispInfoMessage("baseMorph", "calculateMorphDistortion",  "Launched distortion calc");
+//	}//calculateMorphDistortion
+//	
+//	/**
+//	 * called after morph distortion calc thread is completed
+//	 * @return
+//	 */
+//
+//	public final float updateMapValsFromDistCalc() {
+//		distCellColors[morphSliceAraForDistCalcIDX] = distCalcRunners[morphSliceAraForDistCalcIDX].getTtlDistPerCell();
+//		mapA.setDistCellColors(distCellColors[morphSliceAraForDistCalcIDX][0]);
+//		mapB.setDistCellColors(distCellColors[morphSliceAraForDistCalcIDX][distCellColors.length-1]);
+//		minCellDistVals = distCalcRunners[morphSliceAraForDistCalcIDX].getMinDistPerCell();
+//		maxCellDistVals = distCalcRunners[morphSliceAraForDistCalcIDX].getMaxDistPerCell();
+//		canResetMapFlags = true;
+//		setMorphMapAndSliceColors();		
+//		return distCalcRunners[morphSliceAraForDistCalcIDX].getTtlDistForEntireMrphStck();
+//	}
+//	
+//	private boolean morphMapDistColorsSet = false, morphSliceAraDistColorsSet = false, canResetMapFlags = false;
+//	protected void setMorphMapAndSliceColors() {
+//		TreeMap<Float, baseMap> morphSliceAra = morphSliceAras[morphSliceAraForDistCalcIDX];
+//		
+//		if((distCellColors != null) &&(distCellColors[morphSliceAraForDistCalcIDX] != null) && (morphSliceAra.size()==distCellColors[morphSliceAraForDistCalcIDX].length)) {
+//			if(!morphSliceAraDistColorsSet) {	
+//				int kIdx = 0;
+//				for(float key : morphSliceAra.keySet()) {morphSliceAra.get(key).setDistCellColors(distCellColors[morphSliceAraForDistCalcIDX][kIdx++]);}			
+//				if(canResetMapFlags) {morphSliceAraDistColorsSet = true;}
+//			}
+//			if(!morphMapDistColorsSet) {			
+//				int kIDX = (int)((distCellColors[morphSliceAraForDistCalcIDX].length-1) * morphT);
+//				//if(kIDX >= distCellColors.length-1) {
+//					curMorphMap.setDistCellColors(distCellColors[morphSliceAraForDistCalcIDX][kIDX]);
+//	//					} else {
+//	//						//curMorphMap.setDistCellColors(distCalcRunner.calcMorphMapDist(curMorphMap, kIDX));
+//	//						curMorphMap.setDistCellColors(distCalcRunner.calcMorphMapDist(morphSliceAra[kIDX], morphSliceAra[kIDX+1],curMorphMap));
+//	//					}
+//				if(canResetMapFlags) {morphMapDistColorsSet=true;}
+//			}
+//		}
+//		
+//	}
+//	
+
+	
+	protected baseMap[][][] getKFPolyMapsForCurMorphAnimType(int animType){
+		baseMap[][][] res = new baseMap[2][][];
+		switch (animType) {
+		
+		
+		
+		
+		}
+		
+		
+		return res;
+		
+	}
+	
+	
+	
 	/**
 	 * calculate morph stack distortion
 	 */
-	public final void calculateMorphDistortion(baseMorph currDistMsrMorph) {
+	public final void calculateMorphDistortion(baseMorph currDistMsrMorph, int animType) {
 		setMorphSliceAra();
 		
 		currDistMsrMorph.setMorphSlices(3);
@@ -369,8 +471,15 @@ public abstract class baseMorph {
 		morphSliceAraDistColorsSet = false;
 		morphMapDistColorsSet = false;
 		canResetMapFlags = false;
+		
+		baseMap[][][] kfPolyMaps = getKFPolyMapsForCurMorphAnimType(animType);
+		
+		
 		//launch thread to calc distortion in background
-		distCalcRunner.setAllInitMapVals(currDistMsrMorph, morphSliceAra.values().toArray(new baseMap[0]));
+		distCalcRunner.setAllInitMapVals(currDistMsrMorph, morphSliceAras[curMorphSliceAraIDX].values().toArray(new baseMap[0]),kfPolyMaps[0],kfPolyMaps[1]);
+//		distCalcRunners[equalDist_MorphSlicesIDX].setAllInitMapVals(currDistMsrMorph, morphSliceAras[equalDist_MorphSlicesIDX].values().toArray(new baseMap[0]));
+//		distCalcRunners[equalRawT_MorphSlicesIDX].setAllInitMapVals(currDistMsrMorph, morphSliceAras[equalRawT_MorphSlicesIDX].values().toArray(new baseMap[0]));
+		//th_exec.submit(distCalcRunner);
 		th_exec.submit(distCalcRunner);
 
 		mapMgr.msgObj.dispInfoMessage("baseMorph", "calculateMorphDistortion",  "Launched distortion calc");
@@ -381,6 +490,16 @@ public abstract class baseMorph {
 	 * @return
 	 */
 
+//	public final float updateMapValsFromDistCalc() {
+//		distCellColors = distCalcRunners[curMorphSliceAraIDX].getTtlDistPerCell();
+//		mapA.setDistCellColors(distCellColors[0]);
+//		mapB.setDistCellColors(distCellColors[distCellColors.length-1]);
+//		minCellDistVals = distCalcRunners[curMorphSliceAraIDX].getMinDistPerCell();
+//		maxCellDistVals = distCalcRunners[curMorphSliceAraIDX].getMaxDistPerCell();
+//		canResetMapFlags = true;
+//		setMorphMapAndSliceColors();		
+//		return distCalcRunners[curMorphSliceAraIDX].getTtlDistForEntireMrphStck();
+//	}
 	public final float updateMapValsFromDistCalc() {
 		distCellColors = distCalcRunner.getTtlDistPerCell();
 		mapA.setDistCellColors(distCellColors[0]);
@@ -394,7 +513,9 @@ public abstract class baseMorph {
 	
 	private boolean morphMapDistColorsSet = false, morphSliceAraDistColorsSet = false, canResetMapFlags = false;
 	protected void setMorphMapAndSliceColors() {
-		if((distCellColors != null) && (morphSliceAra.size()==distCellColors.length)) {
+		TreeMap<Float, baseMap> morphSliceAra = morphSliceAras[curMorphSliceAraIDX];
+		
+		if((distCellColors != null) &&(distCellColors != null) && (morphSliceAra.size()==distCellColors.length)) {
 			if(!morphSliceAraDistColorsSet) {	
 				int kIdx = 0;
 				for(float key : morphSliceAra.keySet()) {morphSliceAra.get(key).setDistCellColors(distCellColors[kIdx++]);}			
@@ -404,12 +525,14 @@ public abstract class baseMorph {
 				int kIDX = (int)((distCellColors.length-1) * morphT);
 				//if(kIDX >= distCellColors.length-1) {
 					curMorphMap.setDistCellColors(distCellColors[kIDX]);
-//				} else {
-//					curMorphMap.setDistCellColors(distCalcRunner.calcMorphMapDist(curMorphMap, kIDX));
-//				}
+	//					} else {
+	//						//curMorphMap.setDistCellColors(distCalcRunner.calcMorphMapDist(curMorphMap, kIDX));
+	//						curMorphMap.setDistCellColors(distCalcRunner.calcMorphMapDist(morphSliceAra[kIDX], morphSliceAra[kIDX+1],curMorphMap));
+	//					}
 				if(canResetMapFlags) {morphMapDistColorsSet=true;}
 			}
 		}
+		
 	}
 	
 	/**
@@ -533,7 +656,9 @@ public abstract class baseMorph {
 	
 	public final void updateMorphVals_FromUI(mapUpdFromUIData upd) {
 		currUIVals.setAllVals(upd);//can't use the same mapUpdFromUIData everywhere because we compare differences
-
+		curMorphSliceAraIDX = currUIVals.getCurMorphSliceAraIDX();
+		
+		//morphSliceAraForDistCalcIDX = currUIVals.getMorphSliceAraForDistIDX();
 		curMorphMap.updateMapVals_FromUI(upd);
 		setMorphSlices(upd.getNumMorphSlices());
 		updateMorphValsFromUI_Indiv(upd);
@@ -590,12 +715,12 @@ public abstract class baseMorph {
 		return yOff;
 	}
 	public final float drawMorphSliceRtSdMenuDescr(float yOff, float sideBarYDisp) {
-		if(null!=morphSliceAra) {
+		if(null!=morphSliceAras[curMorphSliceAraIDX]) {
 			float modYAmt = sideBarYDisp*.9f;
 			yOff += modYAmt;
 			//pa.translate(10.0f,modYAmt, 0.0f);		
-			for(float key : morphSliceAra.keySet()) {
-				yOff = morphSliceAra.get(key).drawRtSdMenuDescr(yOff, modYAmt, true, false);
+			for(float key : morphSliceAras[curMorphSliceAraIDX].keySet()) {
+				yOff = morphSliceAras[curMorphSliceAraIDX].get(key).drawRtSdMenuDescr(yOff, modYAmt, true, false);
 			}
 		}
 		return yOff;
@@ -707,6 +832,7 @@ public abstract class baseMorph {
 	}
 	
 	public final void drawMorphSlices( boolean _showDistColors, boolean _isFill, boolean _drawMorphSliceMap, boolean _drawCircles, boolean _drawCntlPts, boolean _showLabels, int _detail) {
+		TreeMap<Float, baseMap> morphSliceAra = morphSliceAras[curMorphSliceAraIDX];
 		if(_drawMorphSliceMap) {
 			if(_showDistColors && morphSliceAraDistColorsSet) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_DistColor( currUIVals.getMorphDistMult(), currUIVals.getDistDimToShow());	}} 
 			else if(_isFill) {	for(Float t : morphSliceAra.keySet()) {		morphSliceAra.get(t).drawMap_Fill();}} 
@@ -751,10 +877,10 @@ public abstract class baseMorph {
 	 * this will return an array of k, i,j control point arrays, where i and j are map column and row, and k is slice idx
 	 * @return
 	 */
-	public final baseMap[][][] buildAllSliceCellMaps(){		
+	public final baseMap[][][] buildAllSliceCellMaps(TreeMap<Float, baseMap> sliceAra){		
 		baseMap[][][] res = new baseMap[numMorphSlices][][];
 		int i = 0;
-		for(Float key : morphSliceAra.keySet()) {res[i++] = morphSliceAra.get(key).buildPolyMaps();}		
+		for(Float key : sliceAra.keySet()) {res[i++] = sliceAra.get(key).buildPolyMaps();}		
 		return res;
 	}
 	
@@ -773,14 +899,18 @@ public abstract class baseMorph {
 	}
 
 	protected final void setMorphSliceAra() {
-		morphSliceAra = buildArrayOfMorphMaps(numMorphSlices, "_MrphSlc");
+		morphSliceAras[equalRawT_MorphSlicesIDX] = _buildArrayOfMorphMaps_Fade(morphSliceAras[equalRawT_MorphSlicesIDX],numMorphSlices, "_MrphSlcFade");
+		morphSliceAras[equalDist_MorphSlicesIDX] = _buildArrayOfMorphMaps_Even(morphSliceAras[equalDist_MorphSlicesIDX],numMorphSlices, "_MrphSlcEven");
+		//morphSliceAra = buildArrayOfMorphMaps(numMorphSlices, "_MrphSlc");
 		morphSliceAraDistColorsSet = false;
 		setMorphMapAndSliceColors();
 	}//setMorphMapAra()	
 	
-	protected final TreeMap<Float, baseMap> buildArrayOfMorphMaps(int numMaps, String _name) {
+	
+	private final TreeMap<Float, baseMap> _buildArrayOfMorphMaps_Fade(TreeMap<Float, baseMap> morphMaps, int numMaps, String _name) {
 		baseMap tmpMap = getCopyOfMap(null, mapA.mapTitle);	
-		TreeMap<Float, baseMap> morphMaps = new TreeMap<Float, baseMap>();
+		morphMaps.clear();
+		//TreeMap<Float, baseMap> morphMaps = new TreeMap<Float, baseMap>();
 		//want incr so that i get numMaps back
 		Float tIncr = 1.0f/(numMaps-1.0f);  //getCurrAnimatorInterpolant
 		Float _rawt = 0.0f, t;
@@ -798,6 +928,28 @@ public abstract class baseMorph {
 		//
 		_calcMorphOnMap(tmpMap, true,_rawt);	
 		morphMaps.put(_rawt, tmpMap);				
+		return morphMaps;
+	}
+
+	private final TreeMap<Float, baseMap> _buildArrayOfMorphMaps_Even(TreeMap<Float, baseMap> morphMaps, int numMaps, String _name) {
+		baseMap tmpMap = getCopyOfMap(null, mapA.mapTitle);	
+		morphMaps.clear();
+		//TreeMap<Float, baseMap> morphMaps = new TreeMap<Float, baseMap>();
+		//want incr so that i get numMaps back
+		Float tIncr = 1.0f/(numMaps-1.0f);  //getCurrAnimatorInterpolant
+		Float t=0.0f;
+		for (int i=0;i<numMaps-1;++i) {				
+			tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
+			_calcMorphOnMap(tmpMap, true, t);
+			morphMaps.put(t, tmpMap);		
+			t+=tIncr;
+		}
+		t=1.0f;
+		//tmpMap = mapMgr.buildCopyMapOfPassedMapType(mapA, "Morph @ t="+String.format("%2.3f", t));
+		tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
+		//
+		_calcMorphOnMap(tmpMap, true,t);	
+		morphMaps.put(t, tmpMap);				
 		return morphMaps;
 	}
 

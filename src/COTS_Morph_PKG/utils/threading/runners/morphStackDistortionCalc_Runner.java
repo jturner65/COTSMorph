@@ -1,4 +1,4 @@
-package COTS_Morph_PKG.utils.runners;
+package COTS_Morph_PKG.utils.threading.runners;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -24,6 +24,8 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	 * output : these are all the control points for the current morphstack
 	 */
 	protected baseMap[][][] allPolyMaps;
+	//special frames  for start and end poly maps to be used for key frame animation distortion calculation in time direction based on animation motion
+	protected baseMap[][] kfStartPolyMap, kfEndPolyMap;
 	/**
 	 * output : scalar value of distortion at each cell k,i,j, with final index being direction of distortion measure
 	 */
@@ -68,7 +70,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	 * @param _currDistMsrMorph
 	 * @param _allPolyMaps
 	 */
-	public final void setAllInitMapVals( baseMorph _currDistMsrMorph, baseMap[] _morphSliceAra) {	
+	public final void setAllInitMapVals( baseMorph _currDistMsrMorph, baseMap[] _morphSliceAra, baseMap[][] _kfStartPolyMap, baseMap[][] _kfEndPolyMap) {	
 		currDistMsrMorph = _currDistMsrMorph;
 		currDistMsrMorph.setMorphSlices(3);
 		morphSliceAra  = _morphSliceAra;
@@ -85,7 +87,10 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 		ttlDistPerCell = new float[numMapSlices][numCellsPerSide][numCellsPerSide][3];
 		avgDistPerCell = new float[numMapSlices][numCellsPerSide][numCellsPerSide]; 
 		
-		morphMapRnr = new morphStackDistortionCalc(msgObj, 0, morphSliceAra.length, 0, distCalcType, perThdDistMsrMorphs[0],morphSliceAra,allPolyMaps,ttlDistPerCell, avgDistPerCell);
+		//start and end key frame poly maps, for use at actual keyframes if this calc operates on them (for slice distortion)
+		kfStartPolyMap = _kfStartPolyMap;
+		kfEndPolyMap = _kfEndPolyMap;		
+		morphMapRnr = new morphStackDistortionCalc(msgObj, 0, morphSliceAra.length, 0, distCalcType, perThdDistMsrMorphs[0],morphSliceAra,allPolyMaps,ttlDistPerCell, avgDistPerCell, kfStartPolyMap, kfEndPolyMap);
 	}
 	/**
 	 * call before runme, to set the type of calculation to execute
@@ -101,6 +106,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	
 	public final baseMap[][][] getAllPolyMaps(){return allPolyMaps;}
 	
+	
 	/**
 	 * add per-thread callable to be launched
 	 * baseMap[][][] _allPolyMaps, float[][][][] _ttlDistPerCell, float[][][] _avgDistPerCell
@@ -108,7 +114,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	@Override
 	protected void execPerPartition(List<Callable<Boolean>> ExMappers, int dataSt, int dataEnd, int pIdx, int ttlParts) {
 		//mapMgr.msgObj.dispInfoMessage("morphStackDistAnalyzer", "execPerPartition",  "Instancing mapper for pIdx : " + pIdx + " perThdDistMsrMorphs size : " + perThdDistMsrMorphs.length);
-		ExMappers.add(new morphStackDistortionCalc(msgObj, dataSt, dataEnd, pIdx, distCalcType,perThdDistMsrMorphs[pIdx],morphSliceAra,allPolyMaps,ttlDistPerCell, avgDistPerCell));		
+		ExMappers.add(new morphStackDistortionCalc(msgObj, dataSt, dataEnd, pIdx, distCalcType,perThdDistMsrMorphs[pIdx],morphSliceAra,allPolyMaps,ttlDistPerCell, avgDistPerCell, kfStartPolyMap, kfEndPolyMap));		
 	}
 	
 	//approx # of calcs per partition/thread - for this calc this should be maps so 1 per thread
@@ -117,7 +123,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	//code to execute single-threaded execution
 	@Override
 	protected void runMe_Indiv_ST() {
-		morphStackDistortionCalc rnr = new morphStackDistortionCalc(msgObj, 0, morphSliceAra.length, 0, distCalcType, perThdDistMsrMorphs[0],morphSliceAra,allPolyMaps,ttlDistPerCell, avgDistPerCell);
+		morphStackDistortionCalc rnr = new morphStackDistortionCalc(msgObj, 0, morphSliceAra.length, 0, distCalcType, perThdDistMsrMorphs[0],morphSliceAra,allPolyMaps,ttlDistPerCell, avgDistPerCell, kfStartPolyMap, kfEndPolyMap);
 		try {			rnr.call();		} 
 		catch (Exception e) {			e.printStackTrace();		}
 	}
@@ -127,9 +133,8 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 
 	}
 	
-	public float[][][] calcMorphMapDist(baseMap curMap, int lowIdx) {
-		if(lowIdx+1 >= morphSliceAra.length) {return null;}//should never execute this - should check before it gets here
-		return morphMapRnr.calcAllDistOnPassedMap(morphSliceAra[lowIdx], morphSliceAra[lowIdx+1], curMap);
+	public float[][][] calcMorphMapDist(baseMap stMap, baseMap endMap, baseMap curMap) {
+		return morphMapRnr.calcAllDistOnPassedMap(stMap, endMap, curMap);
 	}
 	
 	
@@ -148,16 +153,17 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 
 	@Override
 	public void run() {
+		
 		//NOTE : syntax errors here will just hang with no output or dump
 		//build arrays of i,j,k polys from control points
 		setCalcFuncType(morphStackDistortionCalc_Runner.buildPolyCntlPtAraIDX);
 		//mapMgr.msgObj.dispInfoMessage("morphStackDistAnalyzer", "calculateAllDistortions",  "Calling task buildPolyCntlPtAraIDX");
 		runMe();
 		//mapMgr.msgObj.dispInfoMessage("morphStackDistAnalyzer", "calculateAllDistortions",  "Finished task buildPolyCntlPtAraIDX");
-		//build distortion per map in i/j dir
+		//build distortion per map in i/j dir		
 		setCalcFuncType(morphStackDistortionCalc_Runner.mapWideDistCalcIDX);
 		//mapMgr.msgObj.dispInfoMessage("morphStackDistAnalyzer", "calculateAllDistortions",  "Calling task mapWideDistCalcIDX");
-		runMe();
+		runMe();		
 		//mapMgr.msgObj.dispInfoMessage("morphStackDistAnalyzer", "calculateAllDistortions",  "Finished task mapWideDistCalcIDX");
 		//build distortion per slice in k dir
 		setCalcFuncType(morphStackDistortionCalc_Runner.perMorphDistCalcIDX);

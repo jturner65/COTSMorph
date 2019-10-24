@@ -5,9 +5,9 @@ import processing.core.*;
 
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
-import COTS_Morph_PKG.ui.COTS_MorphSideBarMenu;
 import base_UI_Objects.*;
-import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
 /**
  * Experiment with self organizing maps in applications related to graphics and geometry
  * 
@@ -90,7 +90,7 @@ public class COTS_MorphMain extends my_procApplet {
 		buildInitMenuWin(showUIMenu);
 		//menu bar init
 		int wIdx = dispMenuIDX,fIdx=showUIMenu;
-		dispWinFrames[wIdx] = new COTS_MorphSideBarMenu(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);	
+		dispWinFrames[wIdx] = buildSideBarMenu(wIdx, fIdx, new String[]{"Load/Save Map Configuration","Save Curr Keyframes' Default Corners...","Set All Keyframes' Default Corners...","Functions 4"}, new int[] {3,4,4,4}, 5, true, true);//new COTS_MorphSideBarMenu(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);	
 		//instanced window dimensions when open and closed - only showing 1 open at a time
 		float[] _dimOpen  =  new float[]{menuWidth, 0, width-menuWidth, height}, _dimClosed  =  new float[]{menuWidth, 0, hideWinWidth, height};	
 		//setInitDispWinVals : use this to define the values of a display window
@@ -182,7 +182,7 @@ public class COTS_MorphMain extends my_procApplet {
 	//these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
 	public void handleShowWin(int btn, int val, boolean callFlags){//display specific windows - multi-select/ always on if sel
 		if(!callFlags){//called from setflags - only sets button state in UI to avoid infinite loop
-			setMenuBtnState(COTS_MorphSideBarMenu.btnShowWinIdx,btn, val);
+			setMenuBtnState(mySideBarMenu.btnShowWinIdx,btn, val);
 		} else {//called from clicking on buttons in UI
 		
 			//val is btn state before transition 
@@ -223,7 +223,7 @@ public class COTS_MorphMain extends my_procApplet {
 		//init boolean state machine flags for program
 	public void initVisFlags(){
 		visFlags = new int[1 + numVisFlags/32];for(int i =0; i<numVisFlags;++i){forceVisFlag(i,false);}	
-		((COTS_MorphSideBarMenu)dispWinFrames[dispMenuIDX]).initPFlagColors();			//init sidebar window flags
+		((mySideBarMenu)dispWinFrames[dispMenuIDX]).initPFlagColors();			//init sidebar window flags
 	}		
 	@Override
 	//address all flag-setting here, so that if any special cases need to be addressed they can be

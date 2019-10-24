@@ -94,7 +94,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 		if(isKeyFrameMap) {
 			if(reset) {
 				for(int i=0;i<cntlPtNorms.length;++i) {	
-					cntlPtNorms[i].set(new myVectorf(origCntlPtNorms[i]));
+					cntlPtNorms[i].set(origCntlPtNorms[i]);
 					cntlPtNormEndPts[i].set(myPointf._add(cntlPts[i], normDispVecOffset, cntlPtNorms[i]));
 				}		
 				Qpt = new myPointf(cntlPts[0], .5f, cntlPtCOV);

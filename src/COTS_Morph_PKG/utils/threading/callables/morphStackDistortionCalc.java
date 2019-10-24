@@ -4,7 +4,7 @@ import java.util.concurrent.Callable;
 
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.morph.base.baseMorph;
-import COTS_Morph_PKG.utils.runners.morphStackDistortionCalc_Runner;
+import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
 import base_Utils_Objects.io.MessageObject;
 import base_Utils_Objects.vectorObjs.myPointf;
 
@@ -32,6 +32,8 @@ public class morphStackDistortionCalc implements Callable<Boolean>{
 	 * these are all the control points for the current morphstack
 	 */
 	protected baseMap[][][] allPolyMaps;
+	//special frames  for start and end poly maps to be used for key frame animation distortion calculation in time direction
+	protected baseMap[][] kfStartPolyMap, kfEndPolyMap;
 	/**
 	 * output : scalar value of distortion at each cell k,i,j, with final index being direction of distortion measure
 	 */
@@ -53,19 +55,22 @@ public class morphStackDistortionCalc implements Callable<Boolean>{
 	private static final float progAmt = .2f;
 	protected double progress = -progAmt;
 
-	public morphStackDistortionCalc(MessageObject _msgObj, int _stExIDX, int _endExIDX, int _thdIDX, int _distCalcType, baseMorph _currDistMsrMorph, baseMap[] _morphSliceAra,baseMap[][][] _allPolyMaps, float[][][][] _ttlDistPerCell, float[][][] _avgDistPerCell) {
+	public morphStackDistortionCalc(MessageObject _msgObj, int _stExIDX, int _endExIDX, int _thdIDX, int _distCalcType, baseMorph _currDistMsrMorph, baseMap[] _morphSliceAra,baseMap[][][] _allPolyMaps, float[][][][] _ttlDistPerCell, float[][][] _avgDistPerCell, baseMap[][] _kfStartPolyMap, baseMap[][] _kfEndPolyMap) {
 		msgObj = _msgObj;
 		stIdx = _stExIDX;
 		endIdx = _endExIDX;
 		thdIDX= _thdIDX;
+		//start and end key frame poly maps, for use at actual keyframes if this calc operates on them (for slice distortion)
+		kfStartPolyMap = _kfStartPolyMap;
+		kfEndPolyMap = _kfEndPolyMap;
+		
 		morphSliceAra = _morphSliceAra;
 		avgDistPerCell = _avgDistPerCell;
 		allPolyMaps = _allPolyMaps;
 		ttlDistPerCell = _ttlDistPerCell;
 		currDistMsrMorph = _currDistMsrMorph;
 		currDistMsrMorph.setMorphSlices(3);
-		distCalcType = _distCalcType;		
-		
+		distCalcType = _distCalcType;			
 	}
 	
 	protected final void incrProgress(int idx, String task) {
@@ -210,21 +215,56 @@ public class morphStackDistortionCalc implements Callable<Boolean>{
 		return (float) Math.sqrt(res);
 	}
 	
+	private int _calcPerSliceDist(int k, baseMap[][] stPolyAra, baseMap[][] endPolyAra, int incr) {
+		baseMap stPoly, endPoly, midPoly;
+		for(int i=0;i<allPolyMaps[k].length;++i) {
+			for(int j=0;j<allPolyMaps[k][i].length;++j) {
+				stPoly = stPolyAra[i][j];
+				endPoly = endPolyAra[i][j];
+				midPoly = allPolyMaps[k][i][j];
+				ttlDistPerCell[k][i][j][2] = calcDistortion(stPoly,endPoly, midPoly);
+				incrProgress(++incr, "Build PerMorph Dist Calc");
+			}
+		}
+		return incr;
+	}
+	
 	private void calcPerMorphStackDist() {
-		int incr = 0;
+		int incr = 0;//, stSliceIDX, endSliceIDX;
+		baseMap[][] stPolyAra, endPolyAra;
 		baseMap stPoly, endPoly, midPoly;
 		//calc "lateral" distortion
-		for(int k=stIdx;k<endIdx;++k) {	//for(int k=1;k<numMapSlices-1;++k) {		
-			if((k==0) || (k==allPolyMaps.length-1)) {continue;}
-			for(int i=0;i<allPolyMaps[k].length;++i) {
-				for(int j=0;j<allPolyMaps[k][i].length;++j) {
-					stPoly = allPolyMaps[k-1][i][j];
-					endPoly = allPolyMaps[k+1][i][j];
-					midPoly = allPolyMaps[k][i][j];
-					ttlDistPerCell[k][i][j][2] = calcDistortion(stPoly,endPoly, midPoly);
-					incrProgress(++incr, "Build PerMorph Dist Calc");
-				}
-			}					
+		for(int k=stIdx;k<endIdx;++k) {	//for(int k=1;k<numMapSlices-1;++k) {	
+			if(k==0) {
+//				if(null==keyFrameStartPolyMap) {
+//					System.out.println("Null map dupeStartPolyMap stIdx == : " + stIdx);
+//				}
+				stPolyAra = kfStartPolyMap;
+				endPolyAra = allPolyMaps[k+1]; 
+			} else if(k==(allPolyMaps.length-1)) {
+//				if(null==keyFrameEndPolyMap) {
+//					System.out.println("Null map dupeEndPolyMap endIdx == : " + endIdx);
+//				}
+				stPolyAra =  allPolyMaps[k-1];
+				endPolyAra = kfEndPolyMap;
+			} else {
+				stPolyAra = allPolyMaps[k-1];
+				endPolyAra = allPolyMaps[k+1];
+			}	
+			
+			incr = _calcPerSliceDist(k, stPolyAra, endPolyAra, incr);
+			
+			
+//			//if((k==0) || (k==allPolyMaps.length-1)) {continue;}
+//			for(int i=0;i<allPolyMaps[k].length;++i) {
+//				for(int j=0;j<allPolyMaps[k][i].length;++j) {
+//					stPoly = stPolyAra[i][j];
+//					endPoly = endPolyAra[i][j];
+//					midPoly = allPolyMaps[k][i][j];
+//					ttlDistPerCell[k][i][j][2] = calcDistortion(stPoly,endPoly, midPoly);
+//					incrProgress(++incr, "Build PerMorph Dist Calc");
+//				}
+//			}					
 		}		
 	}
 	

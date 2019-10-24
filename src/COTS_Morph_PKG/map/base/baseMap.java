@@ -9,7 +9,7 @@ import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_UI_Objects.IRenderInterface;
 import base_UI_Objects.my_procApplet;
-import base_UI_Objects.windowUI.myDispWindow;
+import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Utils_Objects.MyMathUtils;
 import base_Utils_Objects.vectorObjs.myPointf;
 import base_Utils_Objects.vectorObjs.myVectorf;
@@ -17,7 +17,7 @@ import processing.core.PConstants;
 import processing.core.PImage;
 
 /**
- * base class describing a mapping
+ * base class describing a control-point-derived mapping polygon (either 3 or 4 sided)
  * @author john
  *
  */
@@ -29,7 +29,7 @@ public abstract class baseMap {
 	/**
 	 * array of corner cntl points in current state;array of original control points - initial configuration
 	 */
-	protected myPointf[] cntlPts,origCntlPts;
+	protected myPointf[] cntlPts;//,origCntlPts;
 	/**
 	 * angles at each cntl pt
 	 */
@@ -49,7 +49,7 @@ public abstract class baseMap {
 	 * the control point that is furthest from the cntlPtCOV - this will be used to scale the image for the lineup picture
 	 * a distant point in the plane for use with area calcs
 	 */
-	protected myPointf cntlPtCOV,origCntlPtCOV, currMseModCntlPt, cntlPtCOM, mostDistCntlPt, distPlanarPt;	
+	protected myPointf cntlPtCOV, origCntlPtCOV, currMseModCntlPt, cntlPtCOM, mostDistCntlPt, distPlanarPt;	
 	/**
 	 * area of map in current configuration; polygon equivalent area
 	 */
@@ -138,11 +138,12 @@ public abstract class baseMap {
 		mapTitle = _mapTitle;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
 		isKeyFrameMap = _isKeyFrame;
 		//init point structures
-		initCtorMethodVars(_pClrs, _cntlPts,_cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 	
-		//initCtorMethodVars(_pClrs, _cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 	
+		//initCtorMethodVars(_pClrs, _cntlPts,_cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 		
+		initCtorMethodVars(_pClrs, _cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 	
+		
 		//set control points and initialize 
 		setCntlPts(_cntlPts, resetMapUpdateFlags, currUIVals.getNumCellsPerSide());
-		
+		origCntlPtCOV = new myPointf(this.cntlPtCOV);
 	}//ctor	
 	/**
 	 * make a deep copy of passed map
@@ -155,11 +156,12 @@ public abstract class baseMap {
 		//keyframes are never copies;
 		isKeyFrameMap = false;
 		//points and labels for points, basis vectors, and map flags structures
-		initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.origCntlPts, _otr.basisVecs[0]);
-		//initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.basisVecs[0]);
+		//initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.origCntlPts, _otr.basisVecs[0]);
+		initCtorMethodVars(_otr.polyColors, _otr.cntlPts, _otr.basisVecs[0]);
 		//set inited values to copies
 		cntlPtCOV = new myPointf(_otr.cntlPtCOV);
 		cntlPtCOM = new myPointf(_otr.cntlPtCOM);
+		origCntlPtCOV = new myPointf(_otr.cntlPtCOV);
 		//configure for future calls to setCntlPts
 		updateNumCellsPerSide(_otr.numCellsPerSide);
 		dispTitleOn2Lines = _otr.dispTitleOn2Lines;
@@ -172,8 +174,8 @@ public abstract class baseMap {
 	 * @param _cntlPts
 	 * @param _origCntlPts
 	 */	
-	private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myPointf[] _origCntlPts, myVectorf tmpNorm) {
-	//private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myVectorf tmpNorm) {
+	//private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myPointf[] _origCntlPts, myVectorf tmpNorm) {
+	private void initCtorMethodVars(int[][] _pClrs, myPointf[] _cntlPts, myVectorf tmpNorm) {
 		//init mse click obj refs - not really necessary
 		currMseModCntlPt = null;			currMseClkLocVec = null; distPlanarPtMade = false;
 		cntlPtCOV = new myPointf(0,0,0);	cntlPtCOM = new myPointf(0,0,0);
@@ -192,7 +194,7 @@ public abstract class baseMap {
 		//build display-only ortho frame
 		buildOrthoFrame();
 		
-		setOrigCntlPts(_origCntlPts);
+		//setOrigCntlPts(_origCntlPts);
 		cntlPts = new myPointf[_cntlPts.length];
 		cntlPtLbls = new String[cntlPts.length];
 		for(int i=0;i<cntlPts.length;++i) {	
@@ -204,20 +206,20 @@ public abstract class baseMap {
 		resetMapUpdateFlags.setResetBranching(true);	
 	}//initCntlPtsBasisVecsMapUpdateFlags
 
-	/**
-	 * set/reset original control points to be equal to passed points
-	 * @param _origCntlPts
-	 */
-	public final void setOrigCntlPts(myPointf[] _origCntlPts) {
-		origCntlPtCOV = new myPointf();
-		origCntlPts = new myPointf[_origCntlPts.length];
-		for(int i=0;i<_origCntlPts.length;++i) {	
-			origCntlPts[i] = new myPointf(_origCntlPts[i]);
-			origCntlPtCOV._add(origCntlPts[i]);
-		}
-		origCntlPtCOV._div(origCntlPts.length);		
-		
-	}
+//	/**
+//	 * set/reset original control points to be equal to passed points
+//	 * @param _origCntlPts
+//	 */
+//	public final void setOrigCntlPts(myPointf[] _origCntlPts) {
+//		origCntlPtCOV = new myPointf();
+//		origCntlPts = new myPointf[_origCntlPts.length];
+//		for(int i=0;i<_origCntlPts.length;++i) {	
+//			origCntlPts[i] = new myPointf(_origCntlPts[i]);
+//			origCntlPtCOV._add(origCntlPts[i]);
+//		}
+//		origCntlPtCOV._div(origCntlPts.length);		
+//		
+//	}
 	
 	/**
 	 * move this map to the passed values
