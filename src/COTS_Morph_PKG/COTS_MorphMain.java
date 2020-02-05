@@ -1,7 +1,5 @@
 package COTS_Morph_PKG;
 
-import processing.core.*;
-
 
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
@@ -18,7 +16,6 @@ public class COTS_MorphMain extends my_procApplet {
 	//project-specific variables
 	public String prjNmLong = "Morphing between two COTS-mapped Quads", prjNmShrt = "COTS_Morph";
 	
-	private int[] visFlags;
 	private final int
 		showUIMenu = 0,
 		showCOTS_2DMorph = 1,
@@ -32,7 +29,6 @@ public class COTS_MorphMain extends my_procApplet {
 		dispCOTS_3DMorph = 2
 		;
 																		//set array of vector values (sceneFcsVals) based on application
-	//private boolean cyclModCmp;										//comparison every draw of cycleModDraw			
 	private final int[] bground = new int[]{220,244,244,255};		//bground color	
 	
 	/**
@@ -48,14 +44,22 @@ public class COTS_MorphMain extends my_procApplet {
 	//needs main to run project - do not modify this code in any way
 	public static void main(String[] passedArgs) {		
 		String[] appletArgs = new String[] { "COTS_Morph_PKG.COTS_MorphMain" };
-	    if (passedArgs != null) {PApplet.main(PApplet.concat(appletArgs, passedArgs)); } else {PApplet.main(appletArgs);		    }
+		my_procApplet._invokedMain(appletArgs, passedArgs);
 	}//main	
 	
 	@Override
 	protected void setSmoothing() {	smooth(8);}
 	
+	/**
+	 * whether or not we want to restrict window size on widescreen monitors
+	 * 
+	 * @return 0 - use monitor size regardless
+	 * 			1 - use smaller dim to be determine window 
+	 * 			2+ - TBD
+	 */
 	@Override
-	protected int[] getDesiredAppDims() {return new int[] {(int)(getDisplayWidth()*.95f), (int)(getDisplayHeight()*.92f)};}
+	protected int setAppWindowDimRestrictions() {	return 1;}	
+	
 	//instance-specific setup code
 	protected void setup_indiv() {		
 		setBkgrnd();
@@ -219,17 +223,16 @@ public class COTS_MorphMain extends my_procApplet {
 	//////////////////////////////////////////
 	/// graphics and base functionality utilities and variables
 	//////////////////////////////////////////
+	
+	/**
+	 * return the number of visible window flags for this application
+	 * @return
+	 */
 	@Override
-		//init boolean state machine flags for program
-	public void initVisFlags(){
-		visFlags = new int[1 + numVisFlags/32];for(int i =0; i<numVisFlags;++i){forceVisFlag(i,false);}	
-		((mySideBarMenu)dispWinFrames[dispMenuIDX]).initPFlagColors();			//init sidebar window flags
-	}		
+	public int getNumVisFlags() {return numVisFlags;}
 	@Override
 	//address all flag-setting here, so that if any special cases need to be addressed they can be
-	public void setVisFlag(int idx, boolean val ){
-		int flIDX = idx/32, mask = 1<<(idx%32);
-		visFlags[flIDX] = (val ?  visFlags[flIDX] | mask : visFlags[flIDX] & ~mask);
+	protected void setVisFlag_Indiv(int idx, boolean val ){
 		switch (idx){
 			case showUIMenu 	    : { dispWinFrames[dispMenuIDX].setFlags(myDispWindow.showIDX,val);    break;}											//whether or not to show the main ui window (sidebar)			
 			case showCOTS_2DMorph	: {setWinFlagsXOR(dispCOTS_2DMorph, val);break;}
@@ -237,16 +240,6 @@ public class COTS_MorphMain extends my_procApplet {
 			default : {break;}
 		}
 	}//setFlags  
-	
-	@Override
-	//get vis flag
-	public boolean getVisFlag(int idx){int bitLoc = 1<<(idx%32);return (visFlags[idx/32] & bitLoc) == bitLoc;}	
-	@Override
-	public void forceVisFlag(int idx, boolean val) {
-		int flIDX = idx/32, mask = 1<<(idx%32);
-		visFlags[flIDX] = (val ?  visFlags[flIDX] | mask : visFlags[flIDX] & ~mask);
-		//doesn't perform any other ops - to prevent looping
-	}
 
 
 	@Override

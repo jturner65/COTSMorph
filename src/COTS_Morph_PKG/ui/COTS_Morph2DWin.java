@@ -156,7 +156,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	protected final void mouseRelease_IndivMorphWin(){}
 
 	@Override
-	protected final myPoint getMsePtAs3DPt(myPoint mseLoc) {	return new myPoint(mseLoc.x, mseLoc.y, 0);}	
+	protected final myPoint getMsePtAs3DPt(myPoint mseLoc) {	return new myPoint(mseLoc.x, mseLoc.y, 0);}
 
 
 }//class COTS_Morph2DWin

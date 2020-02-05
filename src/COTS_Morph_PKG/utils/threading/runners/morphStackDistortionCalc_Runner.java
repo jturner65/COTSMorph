@@ -171,7 +171,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 		runMe();
 		//mapMgr.msgObj.dispInfoMessage("morphStackDistAnalyzer", "calculateAllDistortions",  "Finished task perMorphDistCalcIDX");
 
-		mapMgr.msgObj.dispInfoMessage("morphStackDistAnalyzer", "calculateAllDistortions",  "allPolyMaps has : " + allPolyMaps.length + " slices with : "+ allPolyMaps[0].length +" columns and " + allPolyMaps[0][0].length + " rows ");
+		msgObj.dispInfoMessage("morphStackDistAnalyzer", "calculateAllDistortions",  "allPolyMaps has : " + allPolyMaps.length + " slices with : "+ allPolyMaps[0].length +" columns and " + allPolyMaps[0][0].length + " rows ");
 
 		maxDistPerCell = new float[] {Float.MIN_VALUE,Float.MIN_VALUE,Float.MIN_VALUE};
 		minDistPerCell = new float[] {Float.MAX_VALUE,Float.MAX_VALUE,Float.MAX_VALUE};

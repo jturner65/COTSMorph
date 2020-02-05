@@ -4,76 +4,31 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import base_UI_Objects.windowUI.base.base_UpdateFromUIData;
 
 /**
  * structure holding UI-derived/modified data used to update maps
  * @author john
  *
  */
-public class mapUpdFromUIData {
-	private final COTS_MorphWin win;
-	/**
-	 * map to hold UI-driven int values, using the UI object idx's as keys
-	 */
-	private TreeMap<Integer, Integer> intValues;
-	/**
-	 * map to hold UI-driven float values, using the UI object idx's as keys
-	 */
-	private TreeMap<Integer, Float> floatValues;
-	/**
-	 * map to hold UI-driven boolean values, using the UI object flags' idx's as keys 
-	 */
-	private TreeMap<Integer, Boolean> boolValues;
+public class mapUpdFromUIData extends base_UpdateFromUIData {
 
 	/**
 	 * 
 	 * @param ints : idx 0 : numCellsPerSide; idx 1 : branchSharingStrategy
 	 * @param bools : idx 0 : forceUpdate;
 	 */
-	public mapUpdFromUIData(COTS_MorphWin _win) {	win=_win;	initMaps();}
+	public mapUpdFromUIData(COTS_MorphWin _win) {super(_win);}
 	public mapUpdFromUIData(COTS_MorphWin _win, TreeMap<Integer, Integer> _iVals, TreeMap<Integer, Float> _fVals,TreeMap<Integer, Boolean> _bVals) {
-		win=_win;
-		initMaps();
-		setAllVals(_iVals, _fVals, _bVals);
+		super(_win,_iVals,_fVals,_bVals);
 	}
 	
 	public mapUpdFromUIData(mapUpdFromUIData _otr) {
-		win=_otr.win;
-		initMaps();
-		setAllVals(_otr);
+		super(_otr);
 	}
-	
-	private void initMaps() {
-		intValues = new TreeMap<Integer, Integer>();
-		floatValues = new TreeMap<Integer, Float>(); 
-		boolValues = new TreeMap<Integer, Boolean>();
-	}
-	
-	public void setAllVals(mapUpdFromUIData _otr) {
-//		_otr.checkValsForChanged();
-//		setAllVals(_otr.oldIntVals,_otr.oldFloatVals,_otr.oldBoolVals);
-		setAllVals(_otr.intValues,_otr.floatValues,_otr.boolValues);
-//		changedVals.clear();
-//		for(Integer key : changedVals.keySet()) {changedVals.put(key, _otr.changedVals.get(key));}
-		
-	}
-	
-	public void setAllVals(TreeMap<Integer, Integer> _intValues, TreeMap<Integer, Float> _floatValues,TreeMap<Integer, Boolean> _boolValues) {
-		for(Integer key : _intValues.keySet()) {intValues.put(key, _intValues.get(key));}
-		for(Integer key : _floatValues.keySet()) {floatValues.put(key, _floatValues.get(key));}
-		for(Integer key : _boolValues.keySet()) {boolValues.put(key, _boolValues.get(key));}
-	}
-	
-	public boolean compareIntValue(Integer idx, Integer value) {	return (intValues.get(idx) != null) && (intValues.get(idx).equals(value));	}
-	public boolean compareFloatValue(Integer idx, Float value) {	return (floatValues.get(idx) != null) && (floatValues.get(idx).equals(value));	}
-	public boolean compareBoolValue(Integer idx, Boolean value) {	return (boolValues.get(idx) != null) && (boolValues.get(idx).equals(value));	}
-	
-	public void setIntValue(Integer idx, Integer value){	intValues.put(idx,value);  }
-	public void setFloatValue(Integer idx, Float value){	floatValues.put(idx,value);}
-	public void setBoolValue(Integer idx, Boolean value){	boolValues.put(idx,value);}
 	
 	/**
-	 * access ints
+	 * access app-specific ints
 	 */
 	public int getNumCellsPerSide() {return intValues.get(COTS_MorphWin.gIDX_NumCellsPerSide);}
 	public int getBranchSharingStrategy() {return intValues.get(COTS_MorphWin.gIDX_SetBrnchStrat);}
@@ -98,7 +53,6 @@ public class mapUpdFromUIData {
 	 * 
 	 * access bools
 	 */
-	public boolean getFlags(int idx) {return boolValues.get(idx);}
 	public boolean forceUpdate() {return false;}//TODO update this if desired to have UI able to force map to update cntl point values;  boolValues.get(COTS_MorphWin.<flag idx>);}
 	
 	/**
@@ -137,12 +91,12 @@ public class mapUpdFromUIData {
 	 * set morph progress and update win ui object from morph object
 	 * @param _prog
 	 */
-	public void setMorphProgress(float _prog) {floatValues.put(COTS_MorphWin.gIDX_MorphTVal,_prog);	win.updateFloatValFromMapMgr(COTS_MorphWin.gIDX_MorphTVal,_prog);}
+	public void setMorphProgress(float _prog) {floatValues.put(COTS_MorphWin.gIDX_MorphTVal,_prog);	win.updateFloatValFromExecCode(COTS_MorphWin.gIDX_MorphTVal,_prog);}
 	/**
 	 * set morph speed and update win ui object from morph object
 	 * @param _prog
 	 */
-	public void setMorphSpeed(float _speed) {floatValues.put(COTS_MorphWin.gIDX_MorphSpeed,_speed);	win.updateFloatValFromMapMgr(COTS_MorphWin.gIDX_MorphSpeed,_speed);		}
+	public void setMorphSpeed(float _speed) {floatValues.put(COTS_MorphWin.gIDX_MorphSpeed,_speed);	win.updateFloatValFromExecCode(COTS_MorphWin.gIDX_MorphSpeed,_speed);		}
 
 
 }//class mapUpdateFromUIData
