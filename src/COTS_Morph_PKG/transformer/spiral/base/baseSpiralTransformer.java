@@ -4,8 +4,8 @@ import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transform.base.baseTransform;
 import COTS_Morph_PKG.transformer.base.baseTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * this class describes a proper similarity transformation driven by one or more spiral transforms 

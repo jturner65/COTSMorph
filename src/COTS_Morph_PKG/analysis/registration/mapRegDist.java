@@ -2,9 +2,9 @@ package COTS_Morph_PKG.analysis.registration;
 
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
-import base_Utils_Objects.MyMathUtils;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.MyMathUtils;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * this class acts as an augmented struct to hold and calculate registration distances between fromMap and toMap

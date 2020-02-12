@@ -7,12 +7,12 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
-import base_UI_Objects.IRenderInterface;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
-import base_Utils_Objects.MyMathUtils;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.MyMathUtils;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 import processing.core.PConstants;
 import processing.core.PImage;
 
@@ -740,12 +740,12 @@ public abstract class baseMap {
 	 */
 	public void drawOrthoFrame() {
 		pa.pushMatrix();pa.pushStyle();	
-			cntlPtCOV.showMeSphere(pa, 5.0f);
+			pa.showPtAsSphere(cntlPtCOV,5.0f);
 			pa.strokeWeight(3.0f);
 			pa.translate(cntlPtCOV);
-			pa.stroke(255,0,0,255);	pa.line(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);orthoFrame[0].showMeSphere(pa, 6.0f);
-			pa.stroke(0,255,0,255);	pa.line(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);orthoFrame[1].showMeSphere(pa, 6.0f);
-			pa.stroke(0,0,255,255);	pa.line(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);orthoFrame[2].showMeSphere(pa, 6.0f);
+			pa.stroke(255,0,0,255);	pa.line(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);pa.showPtAsSphere(orthoFrame[0], 6.0f);
+			pa.stroke(0,255,0,255);	pa.line(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);pa.showPtAsSphere(orthoFrame[1], 6.0f);
+			pa.stroke(0,0,255,255);	pa.line(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);pa.showPtAsSphere(orthoFrame[2], 6.0f);
 		pa.popStyle();pa.popMatrix();				
 	}//_drawOrthoFrame
 	

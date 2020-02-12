@@ -5,7 +5,7 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.analysis.stats.myProbSummary_ptOrVec;
 import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
-import base_UI_Objects.IRenderInterface;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 
 /**

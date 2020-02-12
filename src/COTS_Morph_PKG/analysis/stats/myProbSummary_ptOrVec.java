@@ -3,8 +3,8 @@ package COTS_Morph_PKG.analysis.stats;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * provides a summary of values' stats by using x,y,z summaries

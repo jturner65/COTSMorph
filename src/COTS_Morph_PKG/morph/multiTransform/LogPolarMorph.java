@@ -8,8 +8,8 @@ import COTS_Morph_PKG.morph.multiTransform.base.baseMultiTransformMorphs;
 import COTS_Morph_PKG.transformer.spiral.LogPolarTransformer;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 
 /**

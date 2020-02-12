@@ -4,8 +4,8 @@ import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_UI_Objects.my_procApplet;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 public class LogPolarTransformer extends baseSpiralTransformer {
 	protected final int numTransforms;

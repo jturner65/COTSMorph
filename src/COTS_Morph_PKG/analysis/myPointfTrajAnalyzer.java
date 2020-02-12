@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import COTS_Morph_PKG.analysis.base.baseVecTrajAnalyzer;
 import COTS_Morph_PKG.analysis.stats.myProbSummary_ptOrVec;
-import base_Utils_Objects.vectorObjs.myPointf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
 
 /**
  * a class that analyzes the performance of a morph trajectory

@@ -13,12 +13,12 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
-import base_UI_Objects.IRenderInterface;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
-import base_Utils_Objects.interpolants.InterpolantBehavior;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.interpolants.InterpolantBehavior;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * class holding common functionality to morph between two image maps

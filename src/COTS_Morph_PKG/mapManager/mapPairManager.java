@@ -22,15 +22,15 @@ import COTS_Morph_PKG.morph.singleTransform.LERPMorph;
 import COTS_Morph_PKG.morph.singleTransform.RigidMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
-import base_UI_Objects.IRenderInterface;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
-import base_Utils_Objects.interpolants.InterpolantTypes;
-import base_Utils_Objects.interpolants.base.baseInterpolant;
+import base_Math_Objects.interpolants.InterpolantTypes;
+import base_Math_Objects.interpolants.base.baseInterpolant;
 import base_Utils_Objects.io.MessageObject;
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 import processing.core.PImage;
 
 /**

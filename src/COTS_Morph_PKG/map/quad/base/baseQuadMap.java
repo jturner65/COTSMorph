@@ -7,9 +7,9 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
-import base_UI_Objects.IRenderInterface;
-import base_Utils_Objects.MyMathUtils;
-import base_Utils_Objects.vectorObjs.myPointf;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Math_Objects.MyMathUtils;
+import base_Math_Objects.vectorObjs.floats.myPointf;
 import processing.core.PConstants;
 import processing.core.PImage;
 

@@ -4,10 +4,10 @@ import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
-import base_UI_Objects.IRenderInterface;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.my_procApplet;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * similarity transform that is built using registration information

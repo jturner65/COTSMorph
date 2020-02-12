@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import COTS_Morph_PKG.analysis.base.baseVecTrajAnalyzer;
 import COTS_Morph_PKG.analysis.stats.myProbSummary_ptOrVec;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * measure and record the morph trajecto

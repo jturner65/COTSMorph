@@ -2,8 +2,8 @@ package COTS_Morph_PKG.transformer.base;
 
 import COTS_Morph_PKG.transform.base.baseTransform;
 import base_UI_Objects.my_procApplet;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * class to manage the execution of one or more transforms

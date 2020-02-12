@@ -2,7 +2,7 @@ package COTS_Morph_PKG.analysis.stats.base;
 
 import java.util.TreeMap;
 
-import base_Utils_Objects.MyMathUtils;
+import base_Math_Objects.MyMathUtils;
 
 /**
  * abstract class to provide the backbone for analysis of data sets

@@ -5,10 +5,10 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_UI_Objects.my_procApplet;
-import base_Utils_Objects.vectorObjs.myPoint;
-import base_Utils_Objects.vectorObjs.myPointf;
-import base_Utils_Objects.vectorObjs.myVector;
-import base_Utils_Objects.vectorObjs.myVectorf;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 public class COTS_Morph2DWin extends COTS_MorphWin {
 	
