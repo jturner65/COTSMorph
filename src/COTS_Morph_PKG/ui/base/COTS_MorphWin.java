@@ -6,10 +6,11 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
-import base_UI_Objects.my_procApplet;
-import base_UI_Objects.drawnObjs.myDrawnSmplTraj;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.base_UpdateFromUIData;
 import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_Math_Objects.interpolants.InterpolantBehavior;
 import base_Math_Objects.interpolants.InterpolantTypes;
 import base_Utils_Objects.io.MsgCodes;
@@ -18,6 +19,8 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import processing.core.PImage;
+
+import base_UI_Objects.my_procApplet;
 
 public abstract class COTS_MorphWin extends myDispWindow {
 	
@@ -197,8 +200,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 	public final boolean is3D;
 	
-	public COTS_MorphWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt, boolean _is3D) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);
+	public COTS_MorphWin(IRenderInterface _p,  GUI_AppManager _AppMgr, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt, boolean _is3D) {
+		super(_p, _AppMgr, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);
 		is3D = _is3D;
 	}
 	
@@ -228,7 +231,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		//initialize all morphs
 		//_initMorphs();
 		//updateMapsWithCurrMorphs();
-		pa.setAllMenuBtnNames(menuBtnNames);
+		AppMgr.setAllMenuBtnNames(menuBtnNames);
 
 		initMe_Indiv();
 	}//initMe
@@ -300,7 +303,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * initialize all maps - only call once
 	 */
 	private void _initMapManagers() {
-		textureImgs = new PImage[2];textureImgs[0]=pa.loadImage("faceImage_0.jpg");	textureImgs[1]=pa.loadImage("faceImage_1.jpg");		
+		textureImgs = new PImage[2];textureImgs[0]=((my_procApplet) pa).loadImage("faceImage_0.jpg");	textureImgs[1]=((my_procApplet) pa).loadImage("faceImage_1.jpg");		
 		mapManagers = new mapPairManager[mapPairManager.mapTypes.length];
 		
 		for(int i=0;i<mapManagers.length;++i) {		
@@ -719,14 +722,14 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	@Override
 	protected final void setCameraIndiv(float[] camVals) {
 		// , float rx, float ry, float dz are now member variables of every window
-		pa.camera(camVals[0], camVals[1], camVals[2], camVals[3], camVals[4], camVals[5], camVals[6], camVals[7], camVals[8]);
+		pa.setCameraWinVals(camVals);//(camVals[0], camVals[1], camVals[2], camVals[3], camVals[4], camVals[5], camVals[6], camVals[7], camVals[8]);
 		// puts origin of all drawn objects at screen center and moves forward/away by dz
 		pa.translate(camVals[0], camVals[1], (float) dz);
 		setCamOrient();
 	}
 //	@Override
 //	protected final void drawMe(float animTimeMod) {
-//		pa.pushMatrix();pa.pushStyle();
+//		pa.pushMatState();
 //		boolean debug = getPrivFlags(debugAnimIDX), showLbls = getPrivFlags(drawMap_CntlPtLblsIDX), drawCircles = getPrivFlags(drawMap_CellCirclesIDX);
 //		boolean drawMorphMap = getPrivFlags(drawMorph_MapIDX), drawMorphSlices = getPrivFlags(drawMorph_SlicesIDX), drawCntlPts = getPrivFlags(drawMap_CntlPtsIDX);
 //		boolean drawMap = getPrivFlags(drawMapIDX), drawMorphCntlPtTraj = getPrivFlags(drawMorph_CntlPtTrajIDX), drawCopy = getPrivFlags(drawMap_RegCopyIDX);
@@ -747,17 +750,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 //		}
 //		
 //		_drawMe_Indiv(animTimeMod);
-//		pa.popStyle();pa.popMatrix();	
+//		pa.popMatState();	
 //	}
 	
 	@Override
 	protected final void drawMe(float animTimeMod) {
-		pa.pushMatrix();pa.pushStyle();
+		pa.pushMatState();
 		//draw maps with dependenc on wireframe/filled setting
 		mapManagers[currMapTypeIDX].drawMapsAndMorphs(animTimeMod, drawMapDetail);
 		
 		_drawMe_Indiv(animTimeMod);
-		pa.popStyle();pa.popMatrix();	
+		pa.popMatState();	
 	}
 	protected abstract int[] getRowColSliceIDXs();
 
@@ -771,12 +774,12 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {
 		float _yOff = yOff - 4;
 		//start with yOff
-		pa.pushMatrix();pa.pushStyle();
+		pa.pushMatState();
 		pa.scale(1.05f);
 		//draw map values
 		_yOff = drawRightSideMaps(_yOff);
 		
-		pa.popStyle();pa.popMatrix();	
+		pa.popMatState();	
 	}
 	/**
 	 * translated already to left top corner of visible screen, already in 2D

@@ -14,7 +14,7 @@ import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
-import base_UI_Objects.my_procApplet;
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Math_Objects.interpolants.InterpolantBehavior;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -26,10 +26,17 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
  *
  */
 public abstract class baseMorph {
+	
+	public IRenderInterface pa;
+	public COTS_MorphWin win;	
 	/**
 	 * current map manager, managing key frames of a specific type that this morph is working on
 	 */
 	protected final mapPairManager mapMgr;
+	/**
+	 * application manager
+	 */
+	public static GUI_AppManager AppMgr;
 	/**
 	 * type index of this morph
 	 */
@@ -66,9 +73,7 @@ public abstract class baseMorph {
 	protected int curMorphSliceAraIDX = 0;
 	
 	protected int numMorphSlices = 8;
-	
-	public my_procApplet pa;
-	public COTS_MorphWin win;
+
 	public final String morphTitle;
 	/**
 	 * vector to add to displacement to manage morphing between frames in 3D
@@ -132,7 +137,7 @@ public abstract class baseMorph {
 	 * @param _morphTitle
 	 */
 	public baseMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {
-		win=_win; pa=myDispWindow.pa;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
+		win=_win; pa=myDispWindow.pa;AppMgr = myDispWindow.AppMgr;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
 		initMorphSliceAras();
 		mapA = _mapA;
 		mapB = _mapB;	
@@ -677,14 +682,14 @@ public abstract class baseMorph {
 	 */
 	public final void drawTrajAnalyzerData(String[] mmntDispLabels, int dispDetail, float[] trajWinDims) {
 		//float yDisp = trajWinDims[3];
-		pa.pushMatrix();pa.pushStyle();		
+		pa.pushMatState();		
 		for(String key : trajAnalyzers.keySet()) {//per control point	
 			if(key.equals(baseMap.COV_Label) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_IDX)){continue;}
 			if(key.equals(baseMap.SpiralCtrLbl) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX)){continue;}
 			trajAnalyzers.get(key).drawAnalyzerData(pa, mmntDispLabels,trajWinDims, "Cntl Pt Traj : " + key);
 		}
 		areaTrajAnalyzer.drawAnalyzerData(pa, mmntDispLabels,trajWinDims, "Area :");
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 		
 	}
 	
@@ -694,24 +699,24 @@ public abstract class baseMorph {
 	 */
 	public final void drawTrajAnalyzerGraphs(String[] mmntDispLabels, int dispDetail, float[] trajWinDims) {
 		//float yDisp = trajWinDims[3];
-		pa.pushMatrix();pa.pushStyle();		
+		pa.pushMatState();		
 		for(String key : trajAnalyzers.keySet()) {//per control point
 			if(key.equals(baseMap.COV_Label) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_IDX)){continue;}
 			if(key.equals(baseMap.SpiralCtrLbl) && (dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX)){continue;}
 			trajAnalyzers.get(key).drawAnalyzerGraphs(pa, mmntDispLabels,trajWinDims, "Cntl Pt Traj : " + key);
 		}
 		areaTrajAnalyzer.drawAnalyzerGraphs(pa, mmntDispLabels,trajWinDims, "Area :");
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 		
 	}
 
 	
 	public final float drawMapRtSdMenuDescr(float yOff, float sideBarYDisp) {		
-		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, morphTitle);
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.6f, " Morph Frame @ Time : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(baseMap.strPointDispFrmt8,morphT));
-		pa.popStyle();pa.popMatrix();
+		pa.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, morphTitle);
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.6f, " Morph Frame @ Time : ");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(baseMap.strPointDispFrmt8,morphT));
+		pa.popMatState();
 	
 		yOff += sideBarYDisp;
 		pa.translate(10.0f,sideBarYDisp, 0.0f);		
@@ -731,7 +736,7 @@ public abstract class baseMorph {
 	}
 	
 	public final float drawMorphTitle(float yOff, float sideBarYDisp) {
-		pa.showOffsetText(0,IRenderInterface.gui_Cyan, morphTitle + " Morph : ");
+		AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, morphTitle + " Morph : ");
 		yOff += sideBarYDisp;
 		pa.translate(0.0f, sideBarYDisp, 0.0f);
 		return yOff;
@@ -741,14 +746,14 @@ public abstract class baseMorph {
 	 * @param vals
 	 */
 	private final void _drawRtSideMenuDistSummaries(float[] vals,  String label, int curIdx) {
-		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.2f, label + " :[");
+		pa.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.2f, label + " :[");
 			for(int i=0;i<vals.length-1;++i) {
-				pa.showOffsetText_RightSideMenu(pa.getClr((i==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(baseMap.strPointDispFrmt85,vals[i])+", ");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr((i==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(baseMap.strPointDispFrmt85,vals[i])+", ");
 			}
-			pa.showOffsetText_RightSideMenu(pa.getClr((vals.length-1==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(baseMap.strPointDispFrmt85,vals[vals.length-1]));
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.2f, "]");
-		pa.popStyle();pa.popMatrix();	
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr((vals.length-1==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(baseMap.strPointDispFrmt85,vals[vals.length-1]));
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.2f, "]");
+		pa.popMatState();	
 	}
 	
 	
@@ -765,21 +770,21 @@ public abstract class baseMorph {
 	}
 	
 	public final float drawMorphRtSdMenuDescr(float yOff, float sideBarYDisp, float _morphSpeed) {//, String[] _scopeList) {
-		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.2f, "Morph Between :");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapA.mapTitle);
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.2f, " and");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapB.mapTitle);
-		pa.popStyle();pa.popMatrix();		
+		pa.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.2f, "Morph Between :");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapA.mapTitle);
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.2f, " and");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapB.mapTitle);
+		pa.popMatState();		
 		yOff += sideBarYDisp;
 		pa.translate(0.0f,sideBarYDisp, 0.0f);		
 		
-		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.0f, "Currently at time :");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(baseMap.strPointDispFrmt8,morphT));
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, " | Speed :");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(baseMap.strPointDispFrmt8,_morphSpeed));
-		pa.popStyle();pa.popMatrix();		
+		pa.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.0f, "Currently at time :");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(baseMap.strPointDispFrmt8,morphT));
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, " | Speed :");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(baseMap.strPointDispFrmt8,_morphSpeed));
+		pa.popMatState();		
 		
 		yOff += sideBarYDisp;
 		pa.translate(0.0f,sideBarYDisp, 0.0f);			
@@ -801,11 +806,11 @@ public abstract class baseMorph {
 	 * builds cntl point trajectories using current morph
 	 */
 	public final void drawMorphedMap_CntlPtTraj(int _detail) {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.sphereDetail(5);
-		pa.stroke(0,0,0,255);
+		pa.pushMatState();	
+		pa.setSphereDetail(5);
+		pa.setStroke(0,0,0,255);
 	
-		pa.strokeWeight(1.0f);
+		pa.setStrokeWt(1.0f);
 		for(float t = 0.01f;t<=1.0f;t+=.01f) {
 			//float tA = 1.0f-t, tB = t;
 			//initCalcMorph_Indiv(tA, tB);
@@ -813,22 +818,22 @@ public abstract class baseMorph {
 			myPointf[][][] edgePts = edgePtTrajs.get(t);
 			//idx 5 is cov, idx 6 is ctr pt
 			if(null != cntlPts) {
-				for(int i = 0;i<cntlPts[0].length-2;++i) {		mapMgr._drawPt(cntlPts[1][i], 2.0f); pa.line(cntlPts[0][i], cntlPts[1][i]);}
+				for(int i = 0;i<cntlPts[0].length-2;++i) {		mapMgr._drawPt(cntlPts[1][i], 2.0f); pa.drawLine(cntlPts[0][i], cntlPts[1][i]);}
 			}
 			//following not nested in case their values change
 			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {
 				int k=cntlPts[0].length-2;
-				mapMgr._drawPt(cntlPts[1][k], 2.0f); pa.line(cntlPts[0][k], cntlPts[1][k]);				
+				mapMgr._drawPt(cntlPts[1][k], 2.0f); pa.drawLine(cntlPts[0][k], cntlPts[1][k]);				
 			}
 			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_IDX) {
-				for(int i=0;i<edgePts[0].length;++i) {	for(int j=0;j<edgePts[0][i].length;++j) {	pa.line(edgePts[0][i][j], edgePts[1][i][j]);}}
+				for(int i=0;i<edgePts[0].length;++i) {	for(int j=0;j<edgePts[0][i].length;++j) {	pa.drawLine(edgePts[0][i][j], edgePts[1][i][j]);}}
 			}
 			if(_detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX) {
 				int k=cntlPts[0].length-1;
-				mapMgr._drawPt(cntlPts[1][k], 2.0f); pa.line(cntlPts[0][k], cntlPts[1][k]);
+				mapMgr._drawPt(cntlPts[1][k], 2.0f); pa.drawLine(cntlPts[0][k], cntlPts[1][k]);
 			}
 		}		
-		pa.popStyle();pa.popMatrix();	
+		pa.popMatState();	
 	}
 	
 	public final void drawCurrMorphedMap(boolean _showDistColors, boolean _isFill, boolean _drawMap, boolean _drawCircles) {

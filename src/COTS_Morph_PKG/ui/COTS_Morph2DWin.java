@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import base_UI_Objects.my_procApplet;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.doubles.myVector;
@@ -14,8 +15,8 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	
 	private int _numPrivButtons = numBaseCOTSWinPrivFlags + 0;
 
-	public COTS_Morph2DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, false);		
+	public COTS_Morph2DWin(IRenderInterface _p,  GUI_AppManager _AppMgr, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
+		super(_p, _AppMgr, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, false);		
 		super.initThisWin(false);
 	}
 	@Override
@@ -112,11 +113,11 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 * @param yOff
 	 */
 	public final void _drawLabelAtPt(myPointf p, String lbl, float xOff, float yOff) {
-		pa.pushMatrix();pa.pushStyle();	
+		pa.pushMatState();	
 		pa.translate(p);
 		pa.scale(txtSclVal);
-		pa.text(lbl, xOff,yOff,0); 
-		pa.popStyle();pa.popMatrix();
+		pa.showText(lbl, xOff,yOff,0); 
+		pa.popMatState();
 	}
 
 		

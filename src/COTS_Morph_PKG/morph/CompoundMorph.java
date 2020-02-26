@@ -166,11 +166,11 @@ public class CompoundMorph extends baseMorph {
 	@Override
 	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		for(int i=0;i<_currPerMorphMaps.length;++i) {
-			pa.pushMatrix();pa.pushStyle();
+			pa.pushMatState();
 				pa.translate(-10.0f,0.0f,0.0f);
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, "Morph For :");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, morphFtrNames[i]);
-			pa.popStyle();pa.popMatrix();		
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, "Morph For :");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, morphFtrNames[i]);
+			pa.popMatState();		
 			yOff += sideBarYDisp;
 			pa.translate(0.0f,sideBarYDisp, 0.0f);			
 			yOff =  morphsAvailable[i][currMorphToUseIDX[i]].drawMorphTitle(yOff, sideBarYDisp);
@@ -184,14 +184,14 @@ public class CompoundMorph extends baseMorph {
 
 	@Override
 	public void drawMorphSpecificValues(boolean debug, boolean drawCntlPts, boolean showLbls) {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.fill(0,0,0,255);
-		pa.stroke(0,0,0,255);
-		pa.strokeWeight(1.0f);
+		pa.pushMatState();	
+		pa.setFill(0,0,0,255);
+		pa.setStroke(0,0,0,255);
+		pa.setStrokeWt(1.0f);		
 		for(int i=0;i<numMorphFeatures;++i) {
 			morphsAvailable[i][currMorphToUseIDX[i]].drawMorphSpecificValues(debug, drawCntlPts, showLbls);
 		}
-		pa.popStyle();pa.popMatrix();		
+		pa.popMatState();
 	}
 
 	

@@ -113,34 +113,34 @@ public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 			}		
 		}
 		if(debug) {
-			pa.pushMatrix();pa.pushStyle();	
-			pa.fill(0,0,0,255);
-			pa.stroke(0,0,0,255);
-			pa.strokeWeight(1.0f);
+			pa.pushMatState();	
+			pa.setFill(0,0,0,255);
+			pa.setStroke(0,0,0,255);
+			pa.setStrokeWt(1.0f);
 			for(int i=0;i<transforms.length;++i) {
 				for(float t=0.0f; t<=1.0f;t+=.1f) {
 //					myPointf ea0 = myPointf._add(transforms[i].transformPoint(edgesA[i][0], 1.0f-t), myVectorf._mult(normDispTimeVec,1.0f-t)),
 //							ea1 = myPointf._add(transforms[i].transformPoint(edgesA[i][1], 1.0f-t),myVectorf._mult(normDispTimeVec, 1.0f-t));
 					myPointf ea0 = myPointf._add(transforms[i].transformPoint(crnrPtAras[i][0], 1.0f-t), myVectorf._mult(normDispTimeVec,1.0f-t)),
 							ea1 = myPointf._add(transforms[i].transformPoint(crnrPtAras[i][1], 1.0f-t),myVectorf._mult(normDispTimeVec, 1.0f-t));
-					pa.line(ea0, ea1);
+					pa.drawLine(ea0, ea1);
 				}
 			}	
-			pa.popStyle();pa.popMatrix();	
+			pa.popMatState();
 		}
 		if(drawCntlPts) {
-			pa.pushMatrix();pa.pushStyle();	
-			pa.fill(0,0,0,255);
-			pa.stroke(0,0,0,255);
-			pa.strokeWeight(1.0f);
-			pa.sphereDetail(5);
+			pa.pushMatState();	
+			pa.setFill(0,0,0,255);
+			pa.setStroke(0,0,0,255);
+			pa.setStrokeWt(1.0f);
+			pa.setSphereDetail(5);
 			pa.setStroke(mapA.getPolyColors()[1], 255);
 			for(int i=0;i<transforms.length;++i) {			
 				myPointf F = new myPointf(transforms[i].getF()); 				
 				F.set(myPointf._add(F, myVectorf._mult(normDispTimeVec, morphT)));
 				mapMgr._drawPt(F, baseMap.sphereRad*1.5f);	
 			}
-			pa.popStyle();pa.popMatrix();	
+			pa.popMatState();	
 		}
 	}//drawMorphSpecificValues
 

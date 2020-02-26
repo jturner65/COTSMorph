@@ -8,6 +8,7 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Math_Objects.MyMathUtils;
@@ -22,6 +23,9 @@ import processing.core.PImage;
  *
  */
 public abstract class baseMap {
+	public static IRenderInterface pa;
+	public COTS_MorphWin win;
+	public static GUI_AppManager AppMgr;
 	/**
 	 * owning/controlling map manager - if null then map is not part of key frames
 	 */
@@ -100,8 +104,6 @@ public abstract class baseMap {
 	private static final float rotScl = .0025f;
 		//base radius of drawn sphere
 	public static final float sphereRad = 5.0f;
-	public static my_procApplet pa;
-	public COTS_MorphWin win;
 		//title of map for display	
 	public final String mapTitle;
 	public final float mapTtlXOff;	
@@ -133,7 +135,7 @@ public abstract class baseMap {
 
 	protected static final int[] whiteClr = new int[] {255,255,255,255};
 	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
-		win=_win; pa=myDispWindow.pa; mgr = _mapMgr; currUIVals = _currUIVals;
+		win=_win; pa=myDispWindow.pa;AppMgr = myDispWindow.AppMgr; mgr = _mapMgr; currUIVals = _currUIVals;
 		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		curMorphTVal = 1.0f * mapIdx;
 		mapTitle = _mapTitle;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
 		isKeyFrameMap = _isKeyFrame;
@@ -600,14 +602,14 @@ public abstract class baseMap {
 	 * @param pa
 	 */
 	private void _drawCntlPts(boolean isCurMap, int detail) {
-		pa.sphereDetail(5);
-		pa.stroke(0,0,0,255);
+		pa.setSphereDetail(5);
+		pa.setStroke(0,0,0,255);
 		for(int i=0;i<cntlPts.length;++i) {	myPointf p = cntlPts[i];mgr._drawPt(p, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));}
 		if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {		
 			mgr._drawPt(cntlPtCOV,sphereRad*1.5f);	
-			pa.stroke(255,0,0,255);
+			pa.setStroke(255,0,0,255);
 			mgr._drawPt(cntlPtCOM, sphereRad*1.5f);	
-			pa.stroke(0,0,0,255);
+			pa.setStroke(0,0,0,255);
 		}		
 		//instance specific 
 		_drawCntlPoints_Indiv(isCurMap, detail);
@@ -618,9 +620,9 @@ public abstract class baseMap {
 	 * draw polygon around control points
 	 */
 	protected final void _drawCntlPtPoly() {
-		pa.beginShape();
-		for(int i=0;i<cntlPts.length;++i) {		pa.vertex(cntlPts[i].x,cntlPts[i].y,cntlPts[i].z);	}
-		pa.endShape(PConstants.CLOSE);	
+		((my_procApplet)pa).beginShape();
+		for(int i=0;i<cntlPts.length;++i) {		((my_procApplet)pa).vertex(cntlPts[i].x,cntlPts[i].y,cntlPts[i].z);	}
+		((my_procApplet)pa).endShape(PConstants.CLOSE);	
 	}
 	
 	/**
@@ -633,20 +635,20 @@ public abstract class baseMap {
 			clrIdx = i % 2;
 			pa.setStroke(polyColors[clrIdx], polyColors[clrIdx][3]);
 			for(int j=0;j<edgePts[i].length;++j) {
-				pa.line(edgePts[i][j],otrMap.edgePts[i][j]);
+				pa.drawLine(edgePts[i][j],otrMap.edgePts[i][j]);
 			}
 		}		
 	}
 		
 	public void drawMap_CntlPts(boolean isCurMap, int detail) {
-		pa.pushMatrix();pa.pushStyle();	
+		pa.pushMatState();	
 		_drawCntlPts(isCurMap, detail);
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}	
 
 	public void drawMap_Fill() {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.stroke(255,255,255,255);
+		pa.pushMatState();	
+		pa.setStroke(255,255,255,255);
 		pa.setStrokeWt(1.0f);
 		int clrIdx = 0;
 		
@@ -658,16 +660,16 @@ public abstract class baseMap {
 				clrIdx = (clrIdx + 1) % 2;
 			}				
 		}	
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawMap_Fill
 	
 	public void drawMap_Wf() {
-		pa.pushMatrix();pa.pushStyle();	
+		pa.pushMatState();	
 		pa.noFill();
 		pa.setStroke(gridColor, gridColor[3]);
 		pa.setStrokeWt(2.0f);	
 		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals.length-1;++j) {_drawPoly(i,j);}}	
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawMap_Wf
 	
 	/**
@@ -678,18 +680,18 @@ public abstract class baseMap {
 	 */
 	public void drawMap_DistColor(float mult, int dimIDX) {
 		if(distCellColors==null) {return;}
-		pa.pushMatrix();pa.pushStyle();	
-		pa.stroke(255,255,255,255);
+		pa.pushMatState();	
+		pa.setStroke(255,255,255,255);
 		pa.setStrokeWt(1.0f);		
 		for(int i=0;i<polyPointTVals.length-1;++i) {			
 			for(int j=0;j<polyPointTVals.length-1;++j) {
 				float redMult = mult*distCellColors[i][j][dimIDX],
 					greenMult = (redMult == 0 ? 1.0f : 1.0f/redMult);
-				pa.fill((int)(redMult* 255), (int)(greenMult * 255),0,255);
+				pa.setFill((int)(redMult* 255), (int)(greenMult * 255),0,255);
 				_drawPoly(i,j);					
 			}				
 		}	
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawMap_Fill
 	
 	
@@ -708,7 +710,7 @@ public abstract class baseMap {
 	 */
 	public final void drawMap_LineUp(boolean fillOrWf, boolean drawCircles, boolean drawTexture, float frameDim) {
 		//need to center map and shrink to fit in square of size frameDim
-		pa.pushMatrix();pa.pushStyle();	
+		pa.pushMatState();	
 		if(win.is3D) {//rotate to bring into plane
 			float[] axisAngle = MyMathUtils.toAxisAngle(basisVecs, 2,1,0);
 			//win.getMsgObj().dispInfoMessage("baseMap::"+mapTitle, "drawMap_LineUp", " axis angle result : " + axisAngle[0]+","+axisAngle[1]+","+axisAngle[2]+","+axisAngle[3]);
@@ -719,7 +721,7 @@ public abstract class baseMap {
 		pa.scale(scaleVal);		
 		pa.translate(-cntlPtCOV.x,-cntlPtCOV.y, -cntlPtCOV.z );
 		drawMap_LineUp_Indiv(fillOrWf, drawCircles, drawTexture);
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	};
 	
 	protected abstract void drawMap_LineUp_Indiv(boolean fillOrWf, boolean drawCircles, boolean drawTexture);
@@ -727,26 +729,26 @@ public abstract class baseMap {
 	
 	public void drawMap_EdgeLines() {
 		if(null==otrMap) {return;}
-		pa.pushMatrix();pa.pushStyle();	
+		pa.pushMatState();	
 		pa.noFill();
 		pa.setStrokeWt(1.5f);	
 		//draw lines from this map's edges to other map's edges
 		_drawLineBtwnMapEdges();
-		pa.popStyle();pa.popMatrix();		
+		pa.popMatState();		
 	}
 	
 	/**
 	 * draw orthogonal frame - red is normal to map plane
 	 */
 	public void drawOrthoFrame() {
-		pa.pushMatrix();pa.pushStyle();	
-			pa.showPtAsSphere(cntlPtCOV,5.0f);
-			pa.strokeWeight(3.0f);
+		pa.pushMatState();	
+			pa.showPtAsSphere(cntlPtCOV,5.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
+			pa.setStrokeWt(3.0f);
 			pa.translate(cntlPtCOV);
-			pa.stroke(255,0,0,255);	pa.line(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);pa.showPtAsSphere(orthoFrame[0], 6.0f);
-			pa.stroke(0,255,0,255);	pa.line(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);pa.showPtAsSphere(orthoFrame[1], 6.0f);
-			pa.stroke(0,0,255,255);	pa.line(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);pa.showPtAsSphere(orthoFrame[2], 6.0f);
-		pa.popStyle();pa.popMatrix();				
+			pa.setStroke(255,0,0,255);	pa.drawLine(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);pa.showPtAsSphere(orthoFrame[0], 6.0f, 5, IRenderInterface.gui_Red, IRenderInterface.gui_Red);
+			pa.setStroke(0,255,0,255);	pa.drawLine(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);pa.showPtAsSphere(orthoFrame[1], 6.0f, 5, IRenderInterface.gui_Green, IRenderInterface.gui_Green);
+			pa.setStroke(0,0,255,255);	pa.drawLine(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);pa.showPtAsSphere(orthoFrame[2], 6.0f, 5, IRenderInterface.gui_Blue, IRenderInterface.gui_Blue);
+		pa.popMatState();				
 	}//_drawOrthoFrame
 	
 	public static final String strPointDispFrmt8 = "%8.3f";
@@ -754,9 +756,9 @@ public abstract class baseMap {
 	public static final String strPointDispFrmt6 = "%6.3f";
 
 	public void drawHeaderAndLabels(boolean _drawLabels, int detail) {
-		pa.pushMatrix();pa.pushStyle();
-		pa.fill(0,0,0,255);
-		pa.stroke(0,0,0,255);
+		pa.pushMatState();
+		pa.setFill(0,0,0,255);
+		pa.setStroke(0,0,0,255);
 		win._drawLabelAtPt(mapTitleOffset, mapTitle, 0.0f, 0.0f);
 		if(_drawLabels) {
 			for(int i=0; i< cntlPts.length;++i) {	win._drawLabelAtPt(cntlPts[i],cntlPtLbls[i] + "_"+mapIdx + " : (" + cntlPts[i].toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f);}
@@ -766,7 +768,7 @@ public abstract class baseMap {
 			}
 			_drawPointLabels_Indiv(detail);
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawHeaderAndLabels
 
 	/**
@@ -774,58 +776,58 @@ public abstract class baseMap {
 	 */
 	public final float drawRtSdMenuDescr(float yOff, float sideBarYDisp, boolean showTitle, boolean showCntlPtsAndCentroid) {
 		if(showTitle) {
-			pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.2f, mapTitle);
+			pa.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.2f, mapTitle);
 			if(dispTitleOn2Lines) {
-				pa.popStyle();pa.popMatrix();
+				pa.popMatState();
 				yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
-				pa.pushMatrix();pa.pushStyle();
+				pa.pushMatState();
 			}
 				
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, " | # Cells Per Side : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, " | # Cells Per Side : ");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
 			if (otrMap!=null) {
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, " | Other Map : ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, otrMap.mapTitle);
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, " | Other Map : ");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, otrMap.mapTitle);
 			}
 			
-			pa.popStyle();pa.popMatrix();
+			pa.popMatState();
 			yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
 			drawRtSdMenuTitle_Indiv();
 		} else {
-			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, "# Cells Per Side : ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
-			pa.popStyle();pa.popMatrix();
+			pa.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, "# Cells Per Side : ");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
+			pa.popMatState();
 		}
 		yOff += sideBarYDisp;		
 		if(showCntlPtsAndCentroid) {
 			pa.translate(20.0f,sideBarYDisp, 0.0f);
-			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Area of Map :  ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, String.format(strPointDispFrmt8,areaOfMap));
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Cntl Pt Poly Area :  ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 6.0f, String.format(strPointDispFrmt8,polyAreaOfMap));
-			pa.popStyle();pa.popMatrix();
+			pa.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Area of Map :  ");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, String.format(strPointDispFrmt8,areaOfMap));
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Cntl Pt Poly Area :  ");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 6.0f, String.format(strPointDispFrmt8,polyAreaOfMap));
+			pa.popMatState();
 			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
 			
-			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Centroid :  ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
-			pa.popStyle();pa.popMatrix();
+			pa.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Centroid :  ");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
+			pa.popMatState();
 			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
-			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "COM :  ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOM.toStrCSV(strPointDispFrmt8)+")");
-			pa.popStyle();pa.popMatrix();
+			pa.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "COM :  ");
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOM.toStrCSV(strPointDispFrmt8)+")");
+			pa.popMatState();
 			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
 			for(int i=0;i<cntlPts.length;++i) {
-				pa.pushMatrix();pa.pushStyle();
-					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.3f, "Cntl Pt " + i + " : ");
-					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.8f, "("+cntlPts[i].toStrCSV(strPointDispFrmt8)+")");
-					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.0f, "Theta : ");
-					pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 4.0f, String.format(strPointDispFrmt8, cntlPtAngles[i]));
-				pa.popStyle();pa.popMatrix();
+				pa.pushMatState();
+					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.3f, "Cntl Pt " + i + " : ");
+					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.8f, "("+cntlPts[i].toStrCSV(strPointDispFrmt8)+")");
+					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.0f, "Theta : ");
+					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 4.0f, String.format(strPointDispFrmt8, cntlPtAngles[i]));
+				pa.popMatState();
 				yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
 			}		
 			pa.translate(-20.0f,sideBarYDisp, 0.0f);

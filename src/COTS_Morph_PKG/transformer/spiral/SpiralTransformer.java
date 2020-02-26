@@ -2,7 +2,7 @@ package COTS_Morph_PKG.transformer.spiral;
 
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
-import base_UI_Objects.my_procApplet;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -46,7 +46,7 @@ public class SpiralTransformer extends baseSpiralTransformer {
 	}
 
 	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(my_procApplet pa, float yOff, float sideBarYDisp) {
+	protected float drawRightSideBarMenuDescr_Indiv(IRenderInterface pa, float yOff, float sideBarYDisp) {
 		return yOff;
 	}
 

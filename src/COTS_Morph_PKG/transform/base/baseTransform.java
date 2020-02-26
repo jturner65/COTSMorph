@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.transform.base;
 
 import COTS_Morph_PKG.utils.mapCntlFlags;
-import base_UI_Objects.my_procApplet;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -34,6 +34,13 @@ public abstract class baseTransform {
 		reset_Indiv();
 	}
 	protected abstract void reset_Indiv();
+	
+	protected final void showOffsetText_RightSideMenu(IRenderInterface pa, int[] tclr, float mult,  String txt) {
+		pa.setFill(tclr,tclr[3]);pa.setStroke(tclr,tclr[3]);
+		pa.showText(txt,0.0f,0.0f,0.0f);
+		pa.translate(txt.length()*mult, 0.0f,0.0f);		
+	}
+
 	
 	/**
 	 * modify the frame for this transformation
@@ -92,7 +99,7 @@ public abstract class baseTransform {
 	 * @param coordName
 	 * @return
 	 */
-	public abstract float drawRightSideBarMenuDescr(my_procApplet pa, float yOff, float sideBarYDisp, String coordName);
+	public abstract float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp, String coordName);
 	
 	
 	public final String getDebugStr() {

@@ -180,7 +180,7 @@ public class COTSMap extends baseQuadMap {
 	@Override
 	protected void _drawCntlPoints_Indiv(boolean isCurMap, int detail) {
 		if(detail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX) {return;}
-		pa.sphereDetail(5);
+		pa.setSphereDetail(5);
 		pa.setStroke(polyColors[1], 255);
 		mgr._drawPt(cots.getF(), sphereRad*1.5f);		
 	}
@@ -194,10 +194,10 @@ public class COTSMap extends baseQuadMap {
 	@Override
 	protected final void drawRtSdMenuTitle_Indiv() {
 		if(null == otrMap) {return;}
-		pa.pushMatrix();pa.pushStyle();
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Shares branching on edit with other map ? ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 4.5f,  ""+shouldShareBranching);
-		pa.popStyle();pa.popMatrix();
+		pa.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Shares branching on edit with other map ? ");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 4.5f,  ""+shouldShareBranching);
+		pa.popMatState();
 	}
 
 	@Override

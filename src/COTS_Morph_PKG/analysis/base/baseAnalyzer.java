@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import COTS_Morph_PKG.analysis.stats.base.baseProbSummary;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
-import base_UI_Objects.my_procApplet;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -48,27 +47,36 @@ public abstract class baseAnalyzer {
 	 * @param tclr
 	 * @param txt
 	 */
-	protected final void showOffsetText_RightSideMenuAbs(my_procApplet pa, int[] tclr, float dist,  String txt) {
+	protected final void showOffsetText_RightSideMenuAbs(IRenderInterface pa, int[] tclr, float dist,  String txt) {
 		pa.setFill(tclr,tclr[3]);pa.setStroke(tclr,tclr[3]);
-		pa.text(txt,0.0f,0.0f,0.0f);
+		pa.showText(txt,0.0f,0.0f,0.0f);
 		pa.translate(dist, 0.0f,0.0f);	
+	}
+	
+	protected final void showOffsetText_RightSideMenu(IRenderInterface pa, int[] tclr, float mult,  String txt) {
+		pa.setFill(tclr,tclr[3]);pa.setStroke(tclr,tclr[3]);
+		pa.showText(txt,0.0f,0.0f,0.0f);
+		pa.translate(txt.length()*mult, 0.0f,0.0f);		
+	}
+	protected void drawSingleMinMaxTxt(IRenderInterface pa, int clrLabel, String txt, float ltrMult) {
+		showOffsetText_RightSideMenu(pa,pa.getClr(clrLabel, 255),1.4f* ltrMult, txt);			
 	}
 	
 	
 	
-	public void drawAnalyzerData(my_procApplet pa, String[] mmntDispLabels, float[] trajWinDims, String name) {
+	public void drawAnalyzerData(IRenderInterface pa, String[] mmntDispLabels, float[] trajWinDims, String name) {
 		float yDisp = trajWinDims[3];
-		pa.pushMatrix();pa.pushStyle();		
+		pa.pushMatState();		
 		pa.translate(5.0f, yDisp, 0.0f);
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, name);
-		pa.popStyle();pa.popMatrix();
-		pa.pushMatrix();pa.pushStyle();
+			showOffsetText_RightSideMenu(pa,pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, name);
+		pa.popMatState();
+		pa.pushMatState();
 			pa.translate(5.0f, 2*yDisp, 0.0f);			
 			drawAllSummaryInfo(pa,mmntDispLabels, yDisp, trajWinDims[0]);
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 		
 		pa.translate(trajWinDims[0], 0.0f, 0.0f);
-		pa.line(0.0f,trajWinDims[2], 0.0f, 0.0f, trajWinDims[0]+ trajWinDims[2], 0.0f );
+		pa.drawLine(0.0f,trajWinDims[2], 0.0f, 0.0f, trajWinDims[0]+ trajWinDims[2], 0.0f );
 	}//_drawAnalyzerData
 	
 	/**
@@ -79,44 +87,44 @@ public abstract class baseAnalyzer {
 	 * @param yDisp
 	 * @param name
 	 */
-	public void drawAnalyzerGraphs(my_procApplet pa, String[] mmntDispLabels, float[] trajWinDims, String name) {
+	public void drawAnalyzerGraphs(IRenderInterface pa, String[] mmntDispLabels, float[] trajWinDims, String name) {
 		float yDisp = trajWinDims[3];
 		float[] graphRect = new float[] {10.0f,10.0f,trajWinDims[0]-20.0f,(trajWinDims[1]/(1.0f*summaries.length + 1))-20.0f};
-		pa.pushMatrix();pa.pushStyle();		
+		pa.pushMatState();		
 		pa.translate(5.0f, yDisp, 0.0f);
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, name);
-		pa.popStyle();pa.popMatrix();
-		pa.pushMatrix();pa.pushStyle();
+			showOffsetText_RightSideMenu(pa,pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, name);
+		pa.popMatState();
+		pa.pushMatState();
 			pa.translate(5.0f, 2*yDisp, 0.0f);			
 			drawAllGraphInfo(pa,mmntDispLabels,graphRect, yDisp, trajWinDims[0]);
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 		
 		pa.translate(trajWinDims[0], 0.0f, 0.0f);
-		pa.line(0.0f,trajWinDims[2], 0.0f, 0.0f, trajWinDims[0]+ trajWinDims[2], 0.0f );
+		pa.drawLine(0.0f,trajWinDims[2], 0.0f, 0.0f, trajWinDims[0]+ trajWinDims[2], 0.0f );
 	}//_drawAnalyzerData
 	
 	
 	
-	protected void drawAllSummaryInfo(my_procApplet pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {//
+	protected void drawAllSummaryInfo(IRenderInterface pa, String[] mmntDispLabels, float txtLineYDisp, float perDispBlockWidth) {//
 		float mult = (perDispBlockWidth)/((mmntDispLabels.length + 1) * 3.1f);
 		//System.out.println("perDispBlockWidth: " + perDispBlockWidth + " | mult : " + mult);
-		pa.pushMatrix();pa.pushStyle();
+		pa.pushMatState();
 		if(mult < 17) {pa.scale(1.0f,.93f,1.0f);}
 		for(int i=0;i<summaries.length;++i) {		//per summary - single summary for pos, vel, accel, jerk, etc of each point
 			//title of each summary 
-			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255),1.4f* mult, statDispLabels[i]);
+			pa.pushMatState();
+				showOffsetText_RightSideMenu(pa,pa.getClr(IRenderInterface.gui_Black, 255),1.4f* mult, statDispLabels[i]);
 				for(int j=0;j<mmntDispLabels.length;++j) {		showOffsetText_RightSideMenuAbs(pa,pa.getClr(IRenderInterface.gui_DarkBlue, 255), mult*3.5f, mmntDispLabels[j]);}
-			pa.popStyle();pa.popMatrix();			
+			pa.popMatState();			
 			pa.translate(0.0f,txtLineYDisp,0.0f);
 
 			
 			drawSingleSummary(pa,mmntDispLabels, summaries[i],txtLineYDisp,mult);
 			pa.translate(0.0f,.8f*txtLineYDisp,0.0f);
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}
-	protected abstract void drawSingleSummary(my_procApplet pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
+	protected abstract void drawSingleSummary(IRenderInterface pa, String[] mmntDispLabels, baseProbSummary smryRaw, float txtLineYDisp, float ltrMult);
 	
 	/**
 	 * draw stats graph info
@@ -124,28 +132,28 @@ public abstract class baseAnalyzer {
 	 * @param txtLineYDisp
 	 * @param perDispBlockWidth
 	 */
-	protected final void drawAllGraphInfo(my_procApplet pa, String[] mmntDispLabels, float[] graphRect, float txtLineYDisp, float perDispBlockWidth) {
+	protected final void drawAllGraphInfo(IRenderInterface pa, String[] mmntDispLabels, float[] graphRect, float txtLineYDisp, float perDispBlockWidth) {
 		float mult = (perDispBlockWidth)/((mmntDispLabels.length + 1) * 3.1f);
-		pa.pushMatrix();pa.pushStyle();
+		pa.pushMatState();
 		if(mult < 17) {pa.scale(1.0f,.93f,1.0f);}
 		for(int i=0;i<summaries.length;++i) {		//per summary - single summary for pos, vel, accel, jerk, etc of each point
 			//title of each summary graph 
-			pa.pushMatrix();pa.pushStyle();
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255),1.0f* mult, statDispLabels[i]);		
+			pa.pushMatState();
+				showOffsetText_RightSideMenu(pa,pa.getClr(IRenderInterface.gui_Black, 255),1.0f* mult, statDispLabels[i]);		
 				drawSingleSmryGraphMinMaxLbls(pa, i, mult);
-			pa.popStyle();pa.popMatrix();			
+			pa.popMatState();			
 			pa.translate(0.0f,txtLineYDisp,0.0f);		
-			pa.pushMatrix();pa.pushStyle();
-			pa.fill(50,50,50,255);
-			pa.rect(0.0f, -5.0f, graphRect[2], graphRect[3]+10.0f);
-			pa.popStyle();pa.popMatrix();
+			pa.pushMatState();
+			pa.setFill(50,50,50,255);
+			pa.drawRect(0.0f, -5.0f, graphRect[2], graphRect[3]+10.0f);
+			pa.popMatState();
 			drawSingleSmryGraph(pa,mmntDispLabels, i,graphRect,mult);
 			pa.translate(0.0f,1.5f*txtLineYDisp,0.0f);
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawAllGraphInfo
-	protected abstract void drawSingleSmryGraphMinMaxLbls(my_procApplet pa, int smryIdx, float ltrMult);
-	protected abstract void drawSingleSmryGraph(my_procApplet pa, String[] mmntDispLabels, int smryIdx, float[] graphRect,  float ltrMult);
+	protected abstract void drawSingleSmryGraphMinMaxLbls(IRenderInterface pa, int smryIdx, float ltrMult);
+	protected abstract void drawSingleSmryGraph(IRenderInterface pa, String[] mmntDispLabels, int smryIdx, float[] graphRect,  float ltrMult);
 	
 	/**
 	 * draw a single trajectory within the bounds defined by trajRect
@@ -155,18 +163,18 @@ public abstract class baseAnalyzer {
 	 * @param trajElems array of values 0->1 that lie between min (0) and max(1) 
 	 * @param widthPerElem how far to displace between each element in trajElems
 	 */
-	protected void drawSingleTraj(my_procApplet pa, int[] clr, float[] trajRect, float[] minMax, float[] trajElems, float widthPerElem) {
-		pa.pushMatrix();pa.pushStyle();
+	protected void drawSingleTraj(IRenderInterface pa, int[] clr, float[] trajRect, float[] minMax, float[] trajElems, float widthPerElem) {
+		pa.pushMatState();
 		pa.translate(0.0f,trajRect[3],0.0f);
-		pa.stroke(clr[0],clr[1],clr[2],clr[3]);
+		pa.setStroke(clr[0],clr[1],clr[2],clr[3]);
 		pa.setStrokeWt(1.0f);
 		float[] oldLoc = new float[] {0.0f, 0.0f}, loc;
 		for(int i=0;i<trajElems.length;++i) {
 			loc = new float[] {oldLoc[0]+widthPerElem, -trajElems[i]*trajRect[3]};
-			pa.line(oldLoc[0],oldLoc[1],0.0f, loc[0],loc[1],0.0f);
+			pa.drawLine(oldLoc[0],oldLoc[1],0.0f, loc[0],loc[1],0.0f);
 			oldLoc=loc;
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawSingleTraj
 	
 	/**
@@ -177,24 +185,20 @@ public abstract class baseAnalyzer {
 	 * @param trajElems array of values 0->1 that lie between min (0) and max(1) 
 	 * @param widthPerElem how far to displace between each element in trajElems
 	 */
-	protected void drawSingleTraj(my_procApplet pa, int[] clr, double[] trajRect, double[] minMax, double[] trajElems, double widthPerElem) {
-		pa.pushMatrix();pa.pushStyle();
+	protected void drawSingleTraj(IRenderInterface pa, int[] clr, double[] trajRect, double[] minMax, double[] trajElems, double widthPerElem) {
+		pa.pushMatState();
 		pa.translate(0.0f,trajRect[3],0.0f);
-		pa.stroke(clr[0],clr[1],clr[2],clr[3]);
+		pa.setStroke(clr[0],clr[1],clr[2],clr[3]);
 		pa.setStrokeWt(1.0f);
 		double[] oldLoc = new double[] {0.0f, 0.0f}, loc;
 		for(int i=0;i<trajElems.length;++i) {
 			loc = new double[] {oldLoc[0]+widthPerElem, -trajElems[i]*trajRect[3]};
-			pa.line(oldLoc[0],oldLoc[1],0.0f, loc[0],loc[1],0.0f);
+			pa.drawLine(oldLoc[0],oldLoc[1],0.0f, loc[0],loc[1],0.0f);
 			oldLoc=loc;
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}//drawSingleTraj
-	
-
-	protected void drawSingleMinMaxTxt(my_procApplet pa, int clrLabel, String txt, float ltrMult) {pa.showOffsetText_RightSideMenu(pa.getClr(clrLabel, 255),1.4f* ltrMult, txt);			}
-	
-	
+		
 	protected final myPointf[][] buildPtTrajVals(ArrayList<myPointf> pts){
 		int numVals = pts.size();
 		myPointf[][] res = new myPointf[numStatsToMeasure][];

@@ -49,12 +49,12 @@ public class AffineMorph extends baseSingleTransformMorph {
 	 */
 	@Override
 	public void drawMorphSpecificValues(boolean debug, boolean _isFill, boolean _drawCircles) {
-		pa.pushMatrix();pa.pushStyle();	
-		pa.fill(0,0,0,255);
-		pa.stroke(0,0,0,255);
-		pa.strokeWeight(1.0f);
+		pa.pushMatState();	
+		pa.setFill(0,0,0,255);
+		pa.setStroke(0,0,0,255);
+		pa.setStrokeWt(1.0f);
 		
-		pa.popStyle();pa.popMatrix();	
+		pa.popMatState();	
 	}
 
 }//class CarrierSimTransformMorph

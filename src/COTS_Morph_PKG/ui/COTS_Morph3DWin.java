@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import base_UI_Objects.my_procApplet;
+import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_UI_Objects.GUI_AppManager;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.doubles.myVector;
@@ -17,8 +18,8 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		//drag scale in 3D
 	private static final float mseDrag3DScl = 1.5f;
 	
-	public COTS_Morph3DWin(my_procApplet _p, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
-		super(_p, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, true);		
+	public COTS_Morph3DWin(IRenderInterface _p,  GUI_AppManager _AppMgr, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt) {
+		super(_p, _AppMgr, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt, true);		
 		super.initThisWin(false);
 	}
 	@Override
@@ -37,8 +38,8 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	protected final myPointf[][] getKeyFrameMapBndPts(){		
 		myPointf[][] bndPts = new myPointf[2][4];
 					
-		float minX = pa.cubeBnds[0][0], minY = pa.cubeBnds[0][1], minZ = pa.cubeBnds[0][2];
-		float maxX = pa.cubeBnds[0][0] + pa.cubeBnds[1][0], maxY = pa.cubeBnds[0][1] + pa.cubeBnds[1][1], maxZ = pa.cubeBnds[0][2] + pa.cubeBnds[1][2];
+		float minX = AppMgr.cubeBnds[0][0], minY = AppMgr.cubeBnds[0][1], minZ = AppMgr.cubeBnds[0][2];
+		float maxX = AppMgr.cubeBnds[0][0] + AppMgr.cubeBnds[1][0], maxY = AppMgr.cubeBnds[0][1] + AppMgr.cubeBnds[1][1], maxZ = AppMgr.cubeBnds[0][2] + AppMgr.cubeBnds[1][2];
 		
 		
 		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY+1.0f, maxZ-1.0f),
@@ -114,12 +115,12 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	 * @param yOff
 	 */
 	public final void _drawLabelAtPt(myPointf p, String lbl, float xOff, float yOff) {
-		pa.pushMatrix();pa.pushStyle();	
+		pa.pushMatState();	
 		pa.translate(p);
 		unSetCamOrient();
 		pa.scale(txtSclVal);
-		pa.text(lbl, xOff,yOff,0); 
-		pa.popStyle();pa.popMatrix();
+		pa.showText(lbl, xOff,yOff,0); 
+		pa.popMatState();
 	}
 	
 	////////////////////////

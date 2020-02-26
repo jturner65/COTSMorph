@@ -4,7 +4,6 @@ import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.transform.base.baseTransform;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
-import base_UI_Objects.my_procApplet;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -259,28 +258,28 @@ public class SpiralTransform extends baseTransform {
 	 * @return
 	 */
 	@Override
-	public final float drawRightSideBarMenuDescr(my_procApplet pa, float yOff, float sideBarYDisp, String coordName) {
+	public final float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp, String coordName) {
 		pa.translate(-10.0f, 0.0f, 0.0f);
 		String[] dispVals = new String[]{String.format(baseMap.strPointDispFrmt8,m),String.format(baseMap.strPointDispFrmt8,a),String.format(baseMap.strPointDispFrmt8,a_BranchDisp)};	
-		pa.pushMatrix();pa.pushStyle();
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, coordName + " :");
+		pa.pushMatState();
+		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, coordName + " :");
 		for(int j=0;j<rtMenuDispType.length;++j) {			
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.0f, rtMenuDispType[j]+" :");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightGreen, 255), 5.7f, dispVals[j]);
+			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.0f, rtMenuDispType[j]+" :");
+			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightGreen, 255), 5.7f, dispVals[j]);
 		}
 		
-//		pa.popStyle();pa.popMatrix();
+//		pa.popMatState();
 //		yOff += sideBarYDisp;
 //		pa.translate(0.0f,sideBarYDisp, 0.0f);
-//		pa.pushMatrix();pa.pushStyle();		
+//		pa.pushMatState();		
 		if(isDegenerate) {
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "No F");
+			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "No F");
 		} else {
 			
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
+			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
+			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 			
 		yOff += sideBarYDisp;
 		pa.translate(10.0f,sideBarYDisp, 0.0f);
@@ -288,15 +287,15 @@ public class SpiralTransform extends baseTransform {
 		return yOff;
 	};
 	
-	public final float drawFixedPoint(my_procApplet pa, float yOff, float sideBarYDisp){
+	public final float drawFixedPoint(IRenderInterface pa, float yOff, float sideBarYDisp){
 		pa.translate(10.0f, 0.0f, 0.0f);
 		if(isDegenerate) {
-			pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "Theta == 0 caused degenerate spiral.");
+			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "Theta == 0 caused degenerate spiral.");
 		} else {
-			pa.pushMatrix();pa.pushStyle();		
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
-				pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
-			pa.popStyle();pa.popMatrix();
+			pa.pushMatState();		
+				showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
+				showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
+			pa.popMatState();
 		}
 		yOff += sideBarYDisp;
 		pa.translate(-10.0f,sideBarYDisp, 0.0f);

@@ -172,24 +172,24 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 			myPointf p = cntlPts[i];
 			mgr._drawVec(p, cntlPtNormEndPts[i], new int[] {0,0,0,255}, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));
 		}
-		pa.pushMatrix();pa.pushStyle();
-		if(mapIdx==0) {		pa.stroke(255, 0 ,255,255);	} else {pa.stroke( 0, 255,255,255);}
+		pa.pushMatState();
+		if(mapIdx==0) {		pa.setStroke(255, 0 ,255,255);	} else {pa.setStroke(0, 255,255,255);}
 		
 		pa.setStrokeWt(1.0f);
 		for(int i=0;i<otrCntlPts.length;++i) {
 			myPointf p = otrCntlPts[i];
 			mgr._drawPt(p, sphereRad);
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 		
-		pa.pushMatrix();pa.pushStyle();	
-		pa.stroke(255,255,0,255);
+		pa.pushMatState();	
+		pa.setStroke(255,255,0,255);
 		pa.setStrokeWt(1.0f);		
 		mgr._drawPt(Qpt, sphereRad);
 		if((otrMap != null) && (mapIdx == 0)) {
-			pa.line(((PointNormTriPolyMap)otrMap).Qpt, Qpt);
+			pa.drawLine(((PointNormTriPolyMap)otrMap).Qpt, Qpt);
 		}
-		pa.popStyle();pa.popMatrix();
+		pa.popMatState();
 	}
 	
 	@Override

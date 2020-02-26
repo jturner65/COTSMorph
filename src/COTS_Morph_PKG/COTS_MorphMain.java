@@ -12,7 +12,7 @@ import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
  * John Turner
  * 
  */
-public class COTS_MorphMain extends my_procApplet {
+public class COTS_MorphMain extends GUI_AppManager {
 	//project-specific variables
 	public String prjNmLong = "Morphing between two COTS-mapped Quads", prjNmShrt = "COTS_Morph";
 	
@@ -43,12 +43,12 @@ public class COTS_MorphMain extends my_procApplet {
 	
 	//needs main to run project - do not modify this code in any way
 	public static void main(String[] passedArgs) {		
-		String[] appletArgs = new String[] { "COTS_Morph_PKG.COTS_MorphMain" };
-		my_procApplet._invokedMain(appletArgs, passedArgs);
+		COTS_MorphMain me = new COTS_MorphMain();
+		my_procApplet._invokedMain(me, passedArgs);
 	}//main	
 	
 	@Override
-	protected void setSmoothing() {	smooth(8);}
+	protected void setSmoothing() {	pa.setSmoothing(8);}
 	
 	/**
 	 * whether or not we want to restrict window size on widescreen monitors
@@ -65,12 +65,12 @@ public class COTS_MorphMain extends my_procApplet {
 		setBkgrnd();
 	}	
 	@Override
-	public void setBkgrnd(){background(bground[0],bground[1],bground[2],bground[3]);}//setBkgrnd	
+	public void setBkgrnd(){((my_procApplet)pa).background(bground[0],bground[1],bground[2],bground[3]);}//setBkgrnd	
 	/**
 	 * determine which main flags to show at upper left of menu 
 	 */
 	@Override
-	protected void initMainFlags_Priv() {
+	protected void initMainFlags_Indiv() {
 		setMainFlagToShow_debugMode(true);
 		setMainFlagToShow_saveAnim(true); 
 		setMainFlagToShow_runSim(false);
@@ -80,10 +80,9 @@ public class COTS_MorphMain extends my_procApplet {
 	
 	@Override
 	//build windows here
-	protected void initVisOnce_Priv() {
+	protected void initVisOnce_Indiv() {
 	
 		showInfo = true;
-		drawnTrajEditWidth = 10;
 		//includes 1 for menu window (never < 1) - always have same # of visFlags as myDispWindows
 		int numWins = numVisFlags;		
 		//titles and descs, need to be set before sidebar menu is defined
@@ -96,7 +95,7 @@ public class COTS_MorphMain extends my_procApplet {
 		int wIdx = dispMenuIDX,fIdx=showUIMenu;
 		dispWinFrames[wIdx] = buildSideBarMenu(wIdx, fIdx, new String[]{"Load/Save Map Configuration","Save Curr Keyframes' Default Corners...","Set All Keyframes' Default Corners...","Functions 4"}, new int[] {3,4,4,4}, 5, true, true);//new COTS_MorphSideBarMenu(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);	
 		//instanced window dimensions when open and closed - only showing 1 open at a time
-		float[] _dimOpen  =  new float[]{menuWidth, 0, width-menuWidth, height}, _dimClosed  =  new float[]{menuWidth, 0, hideWinWidth, height};	
+		float[] _dimOpen  =  new float[]{menuWidth, 0, pa.getWidth()-menuWidth, pa.getHeight()}, _dimClosed  =  new float[]{menuWidth, 0, hideWinWidth, pa.getHeight()};	
 		//setInitDispWinVals : use this to define the values of a display window
 		//int _winIDX, 
 		//float[] _dimOpen, float[] _dimClosed  : dimensions opened or closed
@@ -110,19 +109,19 @@ public class COTS_MorphMain extends my_procApplet {
 
 		wIdx = dispCOTS_2DMorph; fIdx= showCOTS_2DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,false,true,false}, new int[]{210,220,250,255},new int[]{255,255,255,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph2DWin(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);		
+		dispWinFrames[wIdx] = new COTS_Morph2DWin(pa, this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);		
 
 		//3d window
 		wIdx = dispCOTS_3DMorph; fIdx= showCOTS_3DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,true,true,true}, new int[]{220,244,244,255},new int[]{0,0,0,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph3DWin(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);		
+		dispWinFrames[wIdx] = new COTS_Morph3DWin(pa, this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);		
 	
 	}//	initVisOnce_Priv
 	
 	
 	@Override
 	//called from base class, once at start of program after vis init is called - set initial windows to show - always show UI Menu
-	protected void initOnce_Priv(){
+	protected void initOnce_Indiv(){
 		//which objects to initially show
 		setVisFlag(showUIMenu, true);					//show input UI menu	
 		//setVisFlag(showSpereAnimRes, true);
@@ -166,7 +165,7 @@ public class COTS_MorphMain extends my_procApplet {
 			case 'a' :
 			case 'A' : {toggleSaveAnim();break;}						//start/stop saving every frame for making into animation
 			case 's' :
-			case 'S' : {save(getScreenShotSaveName(prjNmShrt));break;}//save picture of current image			
+			case 'S' : {break;}//save(getScreenShotSaveName(prjNmShrt));break;}//save picture of current image			
 			default : {	}
 		}//switch	
 	}
@@ -243,7 +242,7 @@ public class COTS_MorphMain extends my_procApplet {
 
 
 	@Override
-	protected int[] getClr_Custom(int colorVal, int alpha) {	return new int[] {255,255,255,alpha};}
+	public int[] getClr_Custom(int colorVal, int alpha) {	return new int[] {255,255,255,alpha};}
 
 	
 }//class SOM_GeometryMain

@@ -8,6 +8,7 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_UI_Objects.my_procApplet;
 import processing.core.PConstants;
 
 /**
@@ -144,46 +145,46 @@ public abstract class baseTriangleMap extends baseMap {
 		myPointf pt;
 		float tv, tw;
 		if(i+j < polyPointTVals.length-1) {
-			pa.beginShape();		
-			pa.normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
+			((my_procApplet)pa).beginShape();		
+			((my_procApplet)pa).normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
 			for(tv = polyPointTVals[i]; tv <= polyPointTVals[i+1]; tv +=subDivLenPerPoly) {
 				pt = calcMapPt(tv, polyPointTVals[j]);
-				pa.vertex(pt.x,pt.y,pt.z);
+				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
 			}
 			for(tv = polyPointTVals[i+1], tw = polyPointTVals[j]; 
 					tv >= polyPointTVals[i] && tw <=polyPointTVals[j+1]; 
 					tv -=subDivLenPerPoly, tw+=subDivLenPerPoly) {
 				pt = calcMapPt(tv, tw);			
-				pa.vertex(pt.x,pt.y,pt.z);
+				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
 			}
 			for(tw = polyPointTVals[j+1]; tw >= polyPointTVals[j]; tw-=subDivLenPerPoly) {
 				pt = calcMapPt(polyPointTVals[i], tw);			
-				pa.vertex(pt.x,pt.y,pt.z);
+				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
 				
 			}	
-			pa.endShape(PConstants.CLOSE);	
+			((my_procApplet)pa).endShape(PConstants.CLOSE);	
 			
 		} 
 		if(i > j){
 			int newI = (i > j ? i - j : i);
 			int newJ = (i > j ? j : j-i);
-			pa.beginShape();		
-			pa.normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
+			((my_procApplet)pa).beginShape();		
+			((my_procApplet)pa).normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
 			for(tw = polyPointTVals[newJ]; tw <= polyPointTVals[newJ+1]; tw +=subDivLenPerPoly) {
 				pt = calcMapPt(polyPointTVals[newI], tw);
-				pa.vertex(pt.x,pt.y,pt.z);
+				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
 			}
 			for(tv = polyPointTVals[newI]; tv >= polyPointTVals[newI-1]; tv -=subDivLenPerPoly) {
 				pt = calcMapPt(tv, polyPointTVals[newJ+1]);			
-				pa.vertex(pt.x,pt.y,pt.z);
+				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
 			}
 			for(tv = polyPointTVals[newI-1], tw = polyPointTVals[newJ+1]; 
 					tv <= polyPointTVals[newI] && tw >=polyPointTVals[newJ]; 
 					tv +=subDivLenPerPoly, tw-=subDivLenPerPoly) {
 				pt = calcMapPt(tv, tw);			
-				pa.vertex(pt.x,pt.y,pt.z);
+				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
 			}
-			pa.endShape(PConstants.CLOSE);
+			((my_procApplet)pa).endShape(PConstants.CLOSE);
 		}
 	}//_drawPoly
 		

@@ -5,7 +5,6 @@ import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
-import base_UI_Objects.my_procApplet;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -80,14 +79,15 @@ public class Reg_SpiralSimWithTranslation extends baseSpiralTransformer {
 
 	}
 	
+
 	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(my_procApplet pa, float yOff, float sideBarYDisp) {	
+	protected float drawRightSideBarMenuDescr_Indiv(IRenderInterface pa, float yOff, float sideBarYDisp) {	
 		pa.translate(10.0f, 0.0f, 0.0f);
-		pa.pushMatrix();pa.pushStyle();		
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Translation : ");
+		pa.pushMatState();		
+		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Translation : ");
 		myPointf pt = new myPointf((myPointf)translation);
-		pa.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(baseMap.strPointDispFrmt8)+")");
-		pa.popStyle();pa.popMatrix();
+		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(baseMap.strPointDispFrmt8)+")");
+		pa.popMatState();
 		yOff += sideBarYDisp;
 		pa.translate(-10.0f,sideBarYDisp, 0.0f);
 
