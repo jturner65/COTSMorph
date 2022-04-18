@@ -902,7 +902,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	public final void handleSideMenuMseOvrDispSel(int btn, boolean val) {}	
 	@Override
 	protected final void launchMenuBtnHndlr(int funcRow, int btn) {
-		msgObj.dispMessage("COTS_MorphWin", "launchMenuBtnHndlr", "Begin requested action : Click Functions "+(funcRow+1)+" in " + name + " : btn : " + btn, MsgCodes.info4);
+		msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "Begin requested action : Click Functions "+(funcRow+1)+" in " + name + " : btn : " + btn, MsgCodes.info4);
 		switch (funcRow) {
 			case 0: {// row 1 of menu side bar buttons
 				// {"Gen Training Data", "Save Training data","Load Training Data"}, //row 1
@@ -920,7 +920,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 						break;
 					}
 					default: {
-						msgObj.dispMessage("COTS_MorphWin", "launchMenuBtnHndlr", "Unknown Functions 1 btn : " + btn, MsgCodes.warning2);
+						msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "Unknown Functions 1 btn : " + btn, MsgCodes.warning2);
 						break;
 					}
 				}
@@ -949,7 +949,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 						break;
 					}
 					default: {
-						msgObj.dispMessage("COTS_MorphWin", "launchMenuBtnHndlr", "Unknown Functions 2 btn : " + btn, MsgCodes.warning2);
+						msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "Unknown Functions 2 btn : " + btn, MsgCodes.warning2);
 						resetButtonState();
 						break;
 					}
@@ -979,7 +979,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 						break;
 					}
 					default: {
-						msgObj.dispMessage("COTS_MorphWin", "launchMenuBtnHndlr", "Unknown Functions 3 btn : " + btn,
+						msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "Unknown Functions 3 btn : " + btn,
 								MsgCodes.warning2);
 						resetButtonState();
 						break;
@@ -997,7 +997,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 						break;
 					}
 					default: {
-						msgObj.dispMessage("COTS_MorphWin", "launchMenuBtnHndlr", "Unknown Functions 4 btn : " + btn, MsgCodes.warning2);
+						msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "Unknown Functions 4 btn : " + btn, MsgCodes.warning2);
 						resetButtonState();
 						break;
 					}
@@ -1005,41 +1005,44 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				break;
 			} // row 3 of menu side bar buttons
 		}
-		msgObj.dispMessage("COTS_MorphWin", "launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click Functions "+(funcRow+1)+" in " + name + " : btn : " + btn, MsgCodes.info4);
+		msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click Functions "+(funcRow+1)+" in " + name + " : btn : " + btn, MsgCodes.info4);
 	}
-
 	@Override
-	public final void handleSideMenuDebugSel(int btn, int val) {
-		msgObj.dispMessage("COTS_MorphWin", "handleSideMenuDebugSel","Click Debug functionality in " + name + " : btn : " + btn, MsgCodes.info4);
+	public final void handleSideMenuDebugSelEnable(int btn) {
+		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelEnable","Click Debug functionality on in " + name + " : btn : " + btn, MsgCodes.info4);
 		switch (btn) {
-			case 0: {
-				resetButtonState();
-				break;
-			}
-			case 1: {
-				resetButtonState();
-				break;
-			}
-			case 2: {
-				resetButtonState();
-				break;
-			}
-			case 3: {// show current mapdat status
-				resetButtonState();
-				break;
-			}
-			case 4: {
-				resetButtonState();
-				break;
-			}
+			case 0: {				break;			}
+			case 1: {				break;			}
+			case 2: {				break;			}
+			case 3: {				break;			}
+			case 4: {				break;			}
+			case 5: {				break;			}
 			default: {
-				msgObj.dispMessage("COTS_MorphWin", "handleSideMenuDebugSel", "Unknown Debug btn : " + btn,MsgCodes.warning2);
-				resetButtonState();
+				msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelEnable", "Unknown Debug btn : " + btn,MsgCodes.warning2);
 				break;
 			}
 		}
-		msgObj.dispMessage("COTS_MorphWin", "handleSideMenuDebugSel", "End Debug functionality selection.",MsgCodes.info4);
+		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelEnable", "End Debug functionality on selection.",MsgCodes.info4);
 	}
+	
+	@Override
+	public final void handleSideMenuDebugSelDisable(int btn) {
+		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelDisable","Click Debug functionality off in " + name + " : btn : " + btn, MsgCodes.info4);
+		switch (btn) {
+			case 0: {				break;			}
+			case 1: {				break;			}
+			case 2: {				break;			}
+			case 3: {				break;			}
+			case 4: {				break;			}
+			case 5: {				break;			}
+		default: {
+			msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelDisable", "Unknown Debug btn : " + btn,MsgCodes.warning2);
+			break;
+			}
+		}
+		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelDisable", "End Debug functionality off selection.",MsgCodes.info4);
+	}
+
 	
 	@Override
 	protected final void endShiftKeyI() {}
