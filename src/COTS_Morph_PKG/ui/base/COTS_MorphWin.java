@@ -47,10 +47,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		gIDX_DistDimToShow				= 18,			//which distortion dimension should be colored
 		gIDX_MorphDistMult 				= 19;			//distortion multiplier to use to control colors for 
 	protected static final int numBaseCOTSWinUIObjs = 20;
-//	/**
-//	 * structure to facilitate communicating UI changes with functional code
-//	 */
-//	protected base_UpdateFromUIData uiUpdateData;
 	/**
 	 * possible branch sharing strategies
 	 */
@@ -255,16 +251,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 */
 	protected final base_UpdateFromUIData buildUIDataUpdateObject() {return new mapUpdFromUIData(this); };
 	
-//	/**
-//	 * has to be called after UI structs are built and set
-//	 */
-//	protected void buildUIUpdateStruct() {		
-//		TreeMap<Integer, Integer> intValues = new TreeMap<Integer, Integer>();          
-//		TreeMap<Integer, Float> floatValues = new TreeMap<Integer, Float>();
-//		TreeMap<Integer, Boolean> boolValues = new TreeMap<Integer, Boolean>(); 
-//		buildUIUpdateStruct_Indiv(intValues, floatValues, boolValues); 
-//		uiUpdateData.setAllVals(intValues, floatValues, boolValues); 
-//	}
+
 	/**
 	 * set initial values in uiUpdateData structure corresponding to UI values that will be passed to functional/calculation objects
 	 * MUST BE CALLED AFTER PRIV FLAGS ARE BUILT
