@@ -61,6 +61,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	/**
 	 * which indexes are for rows, columns and slices
 	 */
+	@Override
 	protected final int[] getRowColSliceIDXs() {
 		return new int[] {1,2,3};
 	}

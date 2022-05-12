@@ -2,7 +2,7 @@ package COTS_Morph_PKG.canvas;
 
 import COTS_Morph_PKG.map.base.baseMap;
 /**
- * a canvas holds the capability of recording artistic ui interactions.  it is linked to a map which allows for it to be derformed
+ * a canvas holds the capability of recording artistic ui interactions.  it is linked to a map which allows for it to be deformed
  * @author john
  *
  */
