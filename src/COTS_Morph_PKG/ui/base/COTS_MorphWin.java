@@ -184,7 +184,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	public myPointf[][] bndPts;
 
 
-	public String[][] menuBtnNames = new String[][] { // each must have literals for every button defined in side bar
+	public String[][] menuBtnNames = new String[][] { 
+		// each must have literals for every button defined in side bar
 		// menu, or ignored
 		{ "---", "---", "---"}, // row 1
 		{ "Curr Crnrs 0", "Curr Crnrs 1", "Curr Crnrs 2", "---" }, // row 3
