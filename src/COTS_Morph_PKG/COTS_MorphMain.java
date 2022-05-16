@@ -85,7 +85,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	
 	@Override
 	//build windows here
-	protected void initVisOnce_Indiv() {
+	protected void initAllDispWindows() {
 	
 		showInfo = true;
 		//includes 1 for menu window (never < 1) - always have same # of visFlags as myDispWindows
