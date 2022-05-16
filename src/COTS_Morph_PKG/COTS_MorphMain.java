@@ -66,7 +66,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	protected int setAppWindowDimRestrictions() {	return 1;}	
 	
 	//instance-specific setup code
-	protected void setup_indiv() {		
+	protected void setup_Indiv() {		
 		setBkgrnd();
 	}	
 	@Override
@@ -148,6 +148,21 @@ public class COTS_MorphMain extends GUI_AppManager {
 	protected String getPrjNmShrt() {		return prjNmShrt;	}
 
 	/**
+	 * Individual extending Application Manager post-drawMe functions
+	 * @param modAmtMillis
+	 * @param is3DDraw
+	 */
+	@Override
+	protected void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw) {}
+	
+	
+	//////////////////////////////////////////////////////
+	/// user interaction
+	//////////////////////////////////////////////////////	
+	//key is key pressed
+	//keycode is actual physical key pressed == key if shift/alt/cntl not pressed.,so shift-1 gives key 33 ('!') but keycode 49 ('1')
+
+	/**
 	 * present an application-specific array of mouse over btn names 
 	 * for the selection of the desired mouse over text display - if is length 0 or null, will not be displayed
 	 */
@@ -156,12 +171,6 @@ public class COTS_MorphMain extends GUI_AppManager {
 		return new String[0]; 
 	}
 	
-	//////////////////////////////////////////////////////
-	/// user interaction
-	//////////////////////////////////////////////////////	
-	//key is key pressed
-	//keycode is actual physical key pressed == key if shift/alt/cntl not pressed.,so shift-1 gives key 33 ('!') but keycode 49 ('1')
-
 	@Override
 	protected void handleKeyPress(char key, int keyCode) {
 		switch (key){
