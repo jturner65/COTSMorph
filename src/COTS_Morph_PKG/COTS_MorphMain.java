@@ -44,7 +44,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	//needs main to run project - do not modify this code in any way
 	public static void main(String[] passedArgs) {		
 		COTS_MorphMain me = new COTS_MorphMain();
-		my_procApplet._invokedMain(me, passedArgs);
+		COTS_MorphMain.invokeProcessingMain(me, passedArgs);
 	}//main	
 	
 	
