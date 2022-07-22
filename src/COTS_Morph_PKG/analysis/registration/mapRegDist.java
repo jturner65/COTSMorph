@@ -89,7 +89,7 @@ public class mapRegDist {
 		  BP = new myVectorf(B, cntlPtsB[i]);
 		  scl *= AP.magn/BP.magn;
 		  //don't need to normalize since atan2 takes care of this (arctan(y/x))
-		  rBP = BP.rotMeAroundAxis(fromMap.basisVecs[0], MyMathUtils.halfPi_f);
+		  rBP = BP.rotMeAroundAxis(fromMap.basisVecs[0], MyMathUtils.HALF_PI_F);
 		  cos += AP._dot(BP);
 		  sin += AP._dot(rBP);
 		}
@@ -115,7 +115,7 @@ public class mapRegDist {
 		  AP = new myVectorf(A, cntlPtsA[(i+_idxOffset)%cntlPtsA.length]);
 		  BP = new myVectorf(B, cntlPtsB[i]);
 		  scl *= AP.magn/BP.magn;
-		  rBP = BP.rotMeAroundAxis(fromMap.basisVecs[0], MyMathUtils.halfPi_f);
+		  rBP = BP.rotMeAroundAxis(fromMap.basisVecs[0], MyMathUtils.HALF_PI_F);
 		  cos += AP._dot(BP);
 		  sin += AP._dot(rBP);
 		}

@@ -292,7 +292,7 @@ public abstract class baseQuadMap extends baseMap {
 			for(int j=0;j<polyPointTVals.length-1;++j) {
 				float rj = r * j;
 				((my_procApplet)pa).beginShape();
-			    for(float u=0; u<MyMathUtils.twoPi_f; u+=circInterp) {
+			    for(float u=0; u<MyMathUtils.TWO_PI_F; u+=circInterp) {
 			    	pa.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
 			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
 			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
@@ -322,7 +322,7 @@ public abstract class baseQuadMap extends baseMap {
 			for(int j=0;j<polyPointTVals.length-1;++j) {
 				float rj = r * j;
 				((my_procApplet)pa).beginShape();
-			    for(float u=0; u<MyMathUtils.twoPi_f; u+=circInterp) {
+			    for(float u=0; u<MyMathUtils.TWO_PI_F; u+=circInterp) {
 			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
 			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
 					pt = calcMapPt(tx, ty);

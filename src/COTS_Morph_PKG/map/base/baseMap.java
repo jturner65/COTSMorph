@@ -715,7 +715,7 @@ public abstract class baseMap {
 			float[] axisAngle = MyMathUtils.toAxisAngle(basisVecs, 2,1,0);
 			//win.getMsgObj().dispInfoMessage("baseMap::"+mapTitle, "drawMap_LineUp", " axis angle result : " + axisAngle[0]+","+axisAngle[1]+","+axisAngle[2]+","+axisAngle[3]);
 			pa.rotate(-axisAngle[0],axisAngle[1],axisAngle[2],axisAngle[3]);
-			pa.rotate(MyMathUtils.Pi_f, 1,0,0);
+			pa.rotate(MyMathUtils.PI_F, 1,0,0);
 		}
 		float scaleVal = frameDim/(2.0f * mostDistCntlPt._dist(cntlPtCOV));//2 x dist to get diameter instead of radius from COV
 		pa.scale(scaleVal);		

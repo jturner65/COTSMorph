@@ -148,8 +148,8 @@ public class SpiralTransform extends baseTransform {
 	 */
 	protected float calcAngleDelWthBranching(float newAngle, float oldAngle, float angleBranchOffset) {
 		float angleDel = newAngle - oldAngle;
-	    if(Math.abs(angleDel+MyMathUtils.twoPi_f)<Math.abs(angleDel)) {angleDel+=MyMathUtils.twoPi_f; angleBranchOffset +=MyMathUtils.twoPi_f;}
-	    if(Math.abs(angleDel-MyMathUtils.twoPi_f)<Math.abs(angleDel)) {angleDel-=MyMathUtils.twoPi_f; angleBranchOffset -=MyMathUtils.twoPi_f;}
+	    if(Math.abs(angleDel+MyMathUtils.TWO_PI_F)<Math.abs(angleDel)) {angleDel+=MyMathUtils.TWO_PI_F; angleBranchOffset +=MyMathUtils.TWO_PI_F;}
+	    if(Math.abs(angleDel-MyMathUtils.TWO_PI_F)<Math.abs(angleDel)) {angleDel-=MyMathUtils.TWO_PI_F; angleBranchOffset -=MyMathUtils.TWO_PI_F;}
 		return angleBranchOffset;		
 	}//calcAngleDelWthBranching
 		
@@ -187,7 +187,7 @@ public class SpiralTransform extends baseTransform {
 		if(isDegenerate) {return new myPointf();}//if is degenerate then bypassing spiral
 		myVectorf AB=new myVectorf(A,B), CD=new myVectorf(C,D), AC=new myVectorf(A,C);
 		float mu = CD.magn/AB.magn, magSq=CD.magn*AB.magn;		
-		myVectorf rAB = myVectorf._rotAroundAxis(AB, norm, MyMathUtils.halfPi_f);
+		myVectorf rAB = myVectorf._rotAroundAxis(AB, norm, MyMathUtils.HALF_PI_F);
 		float c=AB._dot(CD)/magSq,	s=rAB._dot(CD)/magSq;
 		float AB2 = AB._dot(AB), 
 				a=AB._dot(AC)/AB2, 
@@ -213,7 +213,7 @@ public class SpiralTransform extends baseTransform {
 		myVectorf CARaw=new myVectorf(C,A),
 				CA = projVecToMapPlane(CARaw),
 				U = projVecToMapPlane(scale*cos-1, scale*sin),
-				rU = myVectorf._rotAroundAxis(U, norm, MyMathUtils.halfPi_f);		
+				rU = myVectorf._rotAroundAxis(U, norm, MyMathUtils.HALF_PI_F);		
 		float uSqMag = U.sqMagn;
 		myVectorf V = projVecToMapPlane(U._dot(CA)/uSqMag, rU._dot(CA)/uSqMag);
 		myPointf res = myPointf._add(A, V);
