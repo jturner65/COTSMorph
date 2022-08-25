@@ -240,17 +240,14 @@ public abstract class COTS_MorphWin extends myDispWindow {
 
 	@Override
 	protected int[] getFlagIDXsToInitToTrue() {
-		// TODO Auto-generated method stub
 		return new int[] {drawMapIDX,drawMap_FillOrWfIDX,drawMap_CntlPtsIDX, drawMorph_FillOrWfIDX};
-	}	
-
+	}
 	
 	/**
 	 * build this instancing window class's specific UI->to->calc object
 	 * @return
 	 */
-	protected final base_UpdateFromUIData buildUIDataUpdateObject() {return new mapUpdFromUIData(this); };
-	
+	protected final base_UpdateFromUIData buildUIDataUpdateObject() {return new mapUpdFromUIData(this); };	
 
 	/**
 	 * set initial values in uiUpdateData structure corresponding to UI values that will be passed to functional/calculation objects

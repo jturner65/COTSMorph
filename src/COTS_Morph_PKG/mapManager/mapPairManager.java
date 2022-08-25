@@ -834,7 +834,8 @@ public class mapPairManager {
 	}
 	/**
 	 * set all animators to passed value
-	 * @param _t
+	 * @param _t morph progress/time
+	 * @param _animBehaviorIDX type of animation behavior to engage in (ping-pong, ping-pong w/stop, etc) see base_Math_Objects.interpolants.InterpolantBehavior
 	 */
 	private void setAllAnimatorVals(float _t, int _animBehaviorIDX) {		for(int i=0;i<animators.length;++i) {	animators[i].setValue(_t); animators[i].setAnimBehavior(_animBehaviorIDX);}	 	}
 	/**
