@@ -178,18 +178,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected static final float txtSclVal = 1.25f;	
 		//bounds for the key frame maps in this window
 	public myPointf[][] bndPts;
-
-
-	public String[][] menuBtnNames = new String[][] { 
-		// each must have literals for every button defined in side bar
-		// menu, or ignored
-		{ "---", "---", "---"}, // row 1
-		{ "Curr Crnrs 0", "Curr Crnrs 1", "Curr Crnrs 2", "---" }, // row 3
-		{ "Curr Crnrs 0", "Curr Crnrs 1", "Curr Crnrs 2", "Orig Crnrs" }, // row 2
-		{ "---", "---", "---", "---" }, 
-		{ "---", "---", "---", "---", "---" } 
-	};
-
+	
 	/**
 	 * images to use for each map
 	 */
@@ -228,7 +217,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		//initialize all morphs
 		//_initMorphs();
 		//updateMapsWithCurrMorphs();
-		AppMgr.setAllMenuBtnNames(menuBtnNames);
 
 		initMe_Indiv();
 	}//initMe
@@ -974,10 +962,19 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			} // row 3 of menu side bar buttons
 			case 3: {// row 3 of menu side bar buttons
 				switch (btn) {
-					case 0:
-					case 1:
-					case 2:
-					case 3: {// load all training data, default map config, and build map
+					case 0: {
+						resetButtonState();
+						break;
+					}
+					case 1: {
+						resetButtonState();
+						break;
+					}
+					case 2: {
+						resetButtonState();
+						break;
+					}
+					case 3: {
 						resetButtonState();
 						break;
 					}

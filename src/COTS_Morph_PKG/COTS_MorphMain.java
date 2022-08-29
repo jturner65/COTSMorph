@@ -97,8 +97,22 @@ public class COTS_MorphMain extends GUI_AppManager {
 		//call for menu window
 		buildInitMenuWin(showUIMenu);
 		//menu bar init
+		String[] menuBtnTitles = new String[]{
+				"Load/Save Map Configuration",
+				"Save Curr Keyframes' Default Corners...",
+				"Set All Keyframes' Default Corners...",
+				"Functions 4"};
+		String[][] menuBtnNames = new String[][] { 
+			// each must have literals for every button defined in side bar
+			// menu, or ignored
+			{ "---", "---", "---"}, // row 1
+			{ "Curr Crnrs 0", "Curr Crnrs 1", "Curr Crnrs 2", "---" }, // row 2
+			{ "Curr Crnrs 0", "Curr Crnrs 1", "Curr Crnrs 2", "Orig Crnrs" }, // row 3
+			{ "---", "---", "---", "---" }
+		};		
+		String [] dbgBtns = {"Debug 0", "Debug 1", "Debug 2", "Debug 3","Debug 4"};
 		int wIdx = dispMenuIDX,fIdx=showUIMenu;
-		dispWinFrames[wIdx] = buildSideBarMenu(wIdx, fIdx, new String[]{"Load/Save Map Configuration","Save Curr Keyframes' Default Corners...","Set All Keyframes' Default Corners...","Functions 4"}, new int[] {3,4,4,4}, 5, true, true);//new COTS_MorphSideBarMenu(this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);	
+		dispWinFrames[wIdx] = buildSideBarMenu(wIdx, fIdx, menuBtnTitles , menuBtnNames, dbgBtns, true, true);	
 		//instanced window dimensions when open and closed - only showing 1 open at a time
 		float[] _dimOpen  =  new float[]{menuWidth, 0, pa.getWidth()-menuWidth, pa.getHeight()}, _dimClosed  =  new float[]{menuWidth, 0, hideWinWidth, pa.getHeight()};	
 		//setInitDispWinVals : use this to define the values of a display window
