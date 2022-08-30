@@ -70,7 +70,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	 * @param _currDistMsrMorph
 	 * @param _allPolyMaps
 	 */
-	public final void setAllInitMapVals( baseMorph _currDistMsrMorph, baseMap[] _morphSliceAra, baseMap[][] _kfStartPolyMap, baseMap[][] _kfEndPolyMap) {	
+	public final void setAllInitMapVals(baseMorph _currDistMsrMorph, baseMap[] _morphSliceAra, baseMap[][] _kfStartPolyMap, baseMap[][] _kfEndPolyMap) {	
 		currDistMsrMorph = _currDistMsrMorph;
 		currDistMsrMorph.setMorphSlices(3);
 		morphSliceAra  = _morphSliceAra;
@@ -188,6 +188,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 					float[] distAtLoc = ttlDistPerCell[k][i][j];
 					for(int dim=0;dim<3;++dim) {
 						maxDistPerCell[dim]=( distAtLoc[dim] > maxDistPerCell[dim] ? distAtLoc[dim] : maxDistPerCell[dim]);
+						//find minimum non-zero distortion
 						minDistPerCell[dim]=( ((distAtLoc[dim] > 0) && distAtLoc[dim] < minDistPerCell[dim]) ? distAtLoc[dim] : minDistPerCell[dim]);
 						ttlDistForEntireMrphStck +=distAtLoc[dim];++count;
 					}
