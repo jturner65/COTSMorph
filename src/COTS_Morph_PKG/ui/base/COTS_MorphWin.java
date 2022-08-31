@@ -13,7 +13,7 @@ import base_UI_Objects.windowUI.base.myDispWindow;
 import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
 import base_Math_Objects.interpolants.InterpolantBehavior;
 import base_Math_Objects.interpolants.InterpolantTypes;
-import base_Utils_Objects.io.MsgCodes;
+import base_Utils_Objects.io.messaging.MsgCodes;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.doubles.myVector;

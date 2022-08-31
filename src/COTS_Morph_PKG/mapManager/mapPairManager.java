@@ -27,7 +27,7 @@ import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Math_Objects.interpolants.InterpolantTypes;
 import base_Math_Objects.interpolants.base.baseInterpolant;
-import base_Utils_Objects.io.MessageObject;
+import base_Utils_Objects.io.messaging.MessageObject;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;

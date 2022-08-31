@@ -47,7 +47,10 @@ public class COTS_MorphMain extends GUI_AppManager {
 		COTS_MorphMain.invokeProcessingMain(me, passedArgs);
 	}//main	
 	
-	
+	@Override
+	protected void setRuntimeArgsVals(String[] _passedArgs) {
+	}
+
 	/**
 	 * set smoothing level based on renderer
 	 * @param smthLvl 0 == no smoothing,  	int: either 2, 3, 4, or 8 depending on the renderer
