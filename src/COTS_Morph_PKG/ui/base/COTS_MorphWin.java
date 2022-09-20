@@ -103,8 +103,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * currently selected map type
 	 */
 	protected int currMapTypeIDX = mapPairManager.COTSMapIDX;	
-	
-	
+		
 	//boolean priv flags
 	public static final int 
 		debugAnimIDX 						= 0,				//debug
@@ -520,8 +519,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 				break;		}
 			case resetMapCrnrs_1IDX			: {			
 				if(val) {		resetMapCorners(1);		clearBtnNextFrame(idx);		}
-				break;		}
-			
+				break;		}			
 			case matchMapCrnrs_0IDX			: {
 				if(val) {		matchAllMapCorners(0,1);	clearBtnNextFrame(idx);	}
 				break;}
@@ -647,12 +645,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		for(int i=0;i<mapManagers.length;++i) {	mapManagers[i].resetBndPts();}
 		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].resetAllMapCorners();}
 	}
-	
-	/**
-	 * clear button next frame - to act like momentary switch.  will also clear UI object
-	 * @param idx
-	 */
-	protected void clearBtnNextFrame(int idx) {addPrivBtnToClear(idx);		checkAndSetBoolValue(idx, false);}
 
 	protected final void updateCalcObjUIVals() {
 		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].updateMapMorphVals_FromUI((mapUpdFromUIData) uiUpdateData);	}
