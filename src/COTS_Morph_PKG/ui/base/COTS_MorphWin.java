@@ -185,8 +185,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		
 	public final boolean is3D;
 	
-	public COTS_MorphWin(IRenderInterface _p,  GUI_AppManager _AppMgr, String _n, int _flagIdx, int[] fc, int[] sc, float[] rd, float[] rdClosed,String _winTxt, boolean _is3D) {
-		super(_p, _AppMgr, _n, _flagIdx, fc, sc, rd, rdClosed, _winTxt);
+	public COTS_MorphWin(IRenderInterface _p,  GUI_AppManager _AppMgr, int _winIdx, int _flagIdx, boolean _is3D) {
+		super(_p, _AppMgr, _winIdx, _flagIdx);
 		is3D = _is3D;
 	}
 	

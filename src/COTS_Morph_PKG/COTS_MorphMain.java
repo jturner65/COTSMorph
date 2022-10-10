@@ -131,12 +131,12 @@ public class COTS_MorphMain extends GUI_AppManager {
 
 		wIdx = dispCOTS_2DMorph; fIdx= showCOTS_2DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,false,true,false}, new int[]{210,220,250,255},new int[]{255,255,255,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph2DWin(pa, this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);		
+		dispWinFrames[wIdx] = new COTS_Morph2DWin(pa, this, wIdx, fIdx);		
 
 		//3d window
 		wIdx = dispCOTS_3DMorph; fIdx= showCOTS_3DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,true,true,true}, new int[]{220,244,244,255},new int[]{0,0,0,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph3DWin(pa, this, winTitles[wIdx], fIdx, winFillClrs[wIdx], winStrkClrs[wIdx], winRectDimOpen[wIdx], winRectDimClose[wIdx], winDescr[wIdx]);		
+		dispWinFrames[wIdx] = new COTS_Morph3DWin(pa, this, wIdx, fIdx);		
 	
 	}//	initVisOnce_Priv
 	
