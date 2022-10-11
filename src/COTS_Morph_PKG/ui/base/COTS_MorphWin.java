@@ -197,18 +197,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		crnrs = new myPointf[10][][];
 		// capable of using right side menu
 		setFlags(drawRightSideMenu, true);
-//		uiUpdateData = new mapUpdFromUIData(this); 
-//		// init specific sim flags
-//		initPrivFlags(numPrivFlags);
-		//initially set to show maps
-//		setPrivFlags(drawMapIDX,true);
-//		setPrivFlags(drawMap_FillOrWfIDX,true);
-//		setPrivFlags(drawMap_CntlPtsIDX, true);
-//		setPrivFlags(drawMorph_FillOrWfIDX, true);
-		//numCellsPerSide = (int) guiObjs[gIDX_NumCellsPerSide].getVal();
-		//after flags are set but before they are forced
-//		buildUIUpdateStruct();
-		
 		//initialize the bounds for this map
 		bndPts = getKeyFrameMapBndPts();
 		//initialize all maps
