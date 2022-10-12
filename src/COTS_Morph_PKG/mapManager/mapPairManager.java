@@ -491,23 +491,23 @@ public class mapPairManager {
 	
 	public final void drawMapsAndMorphs(float animTimeMod, int drawMapDetail) {
 		pa.pushMatState();
-		boolean debug = currUIVals.getFlags(COTS_MorphWin.debugAnimIDX), showLbls = currUIVals.getFlags(COTS_MorphWin.drawMap_CntlPtLblsIDX), drawCircles = currUIVals.getFlags(COTS_MorphWin.drawMap_CellCirclesIDX);
-		boolean drawMorphMap = currUIVals.getFlags(COTS_MorphWin.drawMorph_MapIDX), drawMorphSlices = currUIVals.getFlags(COTS_MorphWin.drawMorph_SlicesIDX), drawCntlPts = currUIVals.getFlags(COTS_MorphWin.drawMap_CntlPtsIDX);
-		boolean drawMap = currUIVals.getFlags(COTS_MorphWin.drawMapIDX), drawMorphCntlPtTraj = currUIVals.getFlags(COTS_MorphWin.drawMorph_CntlPtTrajIDX), drawCopy = currUIVals.getFlags(COTS_MorphWin.drawMap_RegCopyIDX);
-		boolean _showDistColors = currUIVals.getFlags(COTS_MorphWin.drawMorph_DistColorsIDX);
+		boolean debug = currUIVals.getFlag(COTS_MorphWin.debugAnimIDX), showLbls = currUIVals.getFlag(COTS_MorphWin.drawMap_CntlPtLblsIDX), drawCircles = currUIVals.getFlag(COTS_MorphWin.drawMap_CellCirclesIDX);
+		boolean drawMorphMap = currUIVals.getFlag(COTS_MorphWin.drawMorph_MapIDX), drawMorphSlices = currUIVals.getFlag(COTS_MorphWin.drawMorph_SlicesIDX), drawCntlPts = currUIVals.getFlag(COTS_MorphWin.drawMap_CntlPtsIDX);
+		boolean drawMap = currUIVals.getFlag(COTS_MorphWin.drawMapIDX), drawMorphCntlPtTraj = currUIVals.getFlag(COTS_MorphWin.drawMorph_CntlPtTrajIDX), drawCopy = currUIVals.getFlag(COTS_MorphWin.drawMap_RegCopyIDX);
+		boolean _showDistColors = currUIVals.getFlag(COTS_MorphWin.drawMorph_DistColorsIDX);
 		if(_showDistColors) {	checkIfMorphAnalysisDone();	}
 		//draw maps with dependenc on wireframe/filled setting
-		drawMaps_Main(debug, currUIVals.getFlags(COTS_MorphWin.drawMapIDX), _showDistColors, currUIVals.getFlags(COTS_MorphWin.drawMap_FillOrWfIDX), drawCircles, drawCopy);
+		drawMaps_Main(debug, currUIVals.getFlag(COTS_MorphWin.drawMapIDX), _showDistColors, currUIVals.getFlag(COTS_MorphWin.drawMap_FillOrWfIDX), drawCircles, drawCopy);
 		//drawMaps_Aux(boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines) {
-		drawMaps_Aux(debug, currUIVals.getFlags(COTS_MorphWin.drawMap_ImageIDX), currUIVals.getFlags(COTS_MorphWin.drawMap_OrthoFrameIDX), currUIVals.getFlags(COTS_MorphWin.drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
+		drawMaps_Aux(debug, currUIVals.getFlag(COTS_MorphWin.drawMap_ImageIDX), currUIVals.getFlag(COTS_MorphWin.drawMap_OrthoFrameIDX), currUIVals.getFlag(COTS_MorphWin.drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
 		
 		if(drawMorphCntlPtTraj) {		drawMorphedMap_CntlPtTraj(drawMapDetail);}		
 		
-		if(drawMorphMap || drawMorphSlices || drawCircles || currUIVals.getFlags(COTS_MorphWin.drawMorph_CntlPtTrajIDX) || currUIVals.getFlags(COTS_MorphWin.drawMorph_Slices_RtSideInfoIDX)) {		
+		if(drawMorphMap || drawMorphSlices || drawCircles || currUIVals.getFlag(COTS_MorphWin.drawMorph_CntlPtTrajIDX) || currUIVals.getFlag(COTS_MorphWin.drawMorph_Slices_RtSideInfoIDX)) {		
 			drawAndAnimMorph(debug, animTimeMod, drawMap,
-					drawMorphMap, _showDistColors, currUIVals.getFlags(COTS_MorphWin.drawMorph_FillOrWfIDX), 
-					drawMorphSlices, currUIVals.getFlags(COTS_MorphWin.drawMorph_Slices_FillOrWfIDX), 
-					drawCircles, drawCntlPts, currUIVals.getFlags(COTS_MorphWin.sweepMapsIDX), showLbls,drawMapDetail);	
+					drawMorphMap, _showDistColors, currUIVals.getFlag(COTS_MorphWin.drawMorph_FillOrWfIDX), 
+					drawMorphSlices, currUIVals.getFlag(COTS_MorphWin.drawMorph_Slices_FillOrWfIDX), 
+					drawCircles, drawCntlPts, currUIVals.getFlag(COTS_MorphWin.sweepMapsIDX), showLbls,drawMapDetail);	
 		}
 		pa.popMatState();	
 	}
@@ -957,7 +957,7 @@ public class mapPairManager {
 		}
 		if(performFinalIndiv) {		//some editing happened, so finalize
 			currMseModMap.mseDragInMap_Post(defVec,mseClickIn3D_f,isScale, isRotation, isTranslation, key, keyCode);	
-			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap", false, ( currUIVals.getFlags(COTS_MorphWin.drawMorph_MapIDX)));
+			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::mseDragInMap", false, ( currUIVals.getFlag(COTS_MorphWin.drawMorph_MapIDX)));
 		}
 		return performFinalIndiv;
 	}//mseDragInMap

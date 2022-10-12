@@ -14,7 +14,6 @@ import base_UI_Objects.windowUI.base.base_UpdateFromUIData;
 public class mapUpdFromUIData extends base_UpdateFromUIData {
 
 	/**
-	 * 
 	 * @param ints : idx 0 : numCellsPerSide; idx 1 : branchSharingStrategy
 	 * @param bools : idx 0 : forceUpdate;
 	 */
@@ -82,8 +81,7 @@ public class mapUpdFromUIData extends base_UpdateFromUIData {
 	
 	/**
 	 * access floats
-	 */
-	
+	 */	
 	public float getMorphProgress() {return floatValues.get(COTS_MorphWin.gIDX_MorphTVal);}
 	public float getMorphSpeed() {return floatValues.get(COTS_MorphWin.gIDX_MorphSpeed);}
 	public float getMorphDistMult() {return floatValues.get(COTS_MorphWin.gIDX_MorphDistMult);}
@@ -91,12 +89,12 @@ public class mapUpdFromUIData extends base_UpdateFromUIData {
 	 * set morph progress and update win ui object from morph object
 	 * @param _prog
 	 */
-	public void setMorphProgress(float _prog) {floatValues.put(COTS_MorphWin.gIDX_MorphTVal,_prog);	win.updateFloatValFromExecCode(COTS_MorphWin.gIDX_MorphTVal,_prog);}
+	public void setMorphProgress(float _prog) {updateFloatValue(COTS_MorphWin.gIDX_MorphTVal,_prog);}
 	/**
 	 * set morph speed and update win ui object from morph object
 	 * @param _prog
 	 */
-	public void setMorphSpeed(float _speed) {floatValues.put(COTS_MorphWin.gIDX_MorphSpeed,_speed);	win.updateFloatValFromExecCode(COTS_MorphWin.gIDX_MorphSpeed,_speed);		}
+	public void setMorphSpeed(float _speed) {updateFloatValue(COTS_MorphWin.gIDX_MorphSpeed,_speed);}
 
 
 }//class mapUpdateFromUIData

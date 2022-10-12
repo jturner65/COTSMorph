@@ -631,10 +631,11 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * set all maps' default corner locations to original values
 	 */
 	protected final void resetAllMapBaseCrnrs() {
-		for(int i=0;i<mapManagers.length;++i) {	mapManagers[i].resetBndPts();}
+		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].resetBndPts();}
 		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].resetAllMapCorners();}
 	}
-
+	
+	@Override
 	protected final void updateCalcObjUIVals() {
 		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].updateMapMorphVals_FromUI((mapUpdFromUIData) uiUpdateData);	}
 		mapManagers[currMapTypeIDX].buildOrientedLineup();
@@ -643,12 +644,12 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	/**
 	 * reset all corners to beginning config
 	 */	
-	protected void resetAllMapCorners() {	mapManagers[currMapTypeIDX].resetAllMapCorners();}
+	protected void resetAllMapCorners() {mapManagers[currMapTypeIDX].resetAllMapCorners();}
 	/**
 	 * reset all instances of either "floor"/A or "ceiling"/B map
 	 * @param mapIDX
 	 */
-	protected void resetMapCorners(int mapIDX) {		mapManagers[currMapTypeIDX].resetMapCorners(mapIDX);}
+	protected void resetMapCorners(int mapIDX) {mapManagers[currMapTypeIDX].resetMapCorners(mapIDX);}
 	/**
 	 * match map destIDX corners to map srcIDX's corners
 	 */
