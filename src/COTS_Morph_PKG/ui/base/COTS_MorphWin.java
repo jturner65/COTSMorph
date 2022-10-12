@@ -225,40 +225,40 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 */
 	protected final base_UpdateFromUIData buildUIDataUpdateObject() {return new mapUpdFromUIData(this); };	
 
-	/**
-	 * set initial values in uiUpdateData structure corresponding to UI values that will be passed to functional/calculation objects
-	 * MUST BE CALLED AFTER PRIV FLAGS ARE BUILT
-	 * @param intValues
-	 */
-	@Override
-	protected final void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues, TreeMap<Integer, Boolean> boolValues) {
-		intValues.put(gIDX_NumCellsPerSide, (int) guiObjs[gIDX_NumCellsPerSide].getVal()); 
-		intValues.put(gIDX_MapType,	(int) guiObjs[gIDX_MapType].getVal()); 		
-		intValues.put(gIDX_MorphType, (int) guiObjs[gIDX_MorphType].getVal()); 			
-		intValues.put(gIDX_MorphTValType, (int) guiObjs[gIDX_MorphTValType].getVal()); 		
-		intValues.put(gIDX_MorphTypeOrient, (int) guiObjs[gIDX_MorphTypeOrient].getVal()); 	
-		intValues.put(gIDX_MorphTypeSize, (int) guiObjs[gIDX_MorphTypeSize].getVal()); 		
-		intValues.put(gIDX_MorphTypeShape, (int) guiObjs[gIDX_MorphTypeShape].getVal()); 		
-		intValues.put(gIDX_MorphTypeCOVPath, (int) guiObjs[gIDX_MorphTypeCOVPath].getVal()); 
-		intValues.put(gIDX_SetBrnchStrat, (int) guiObjs[gIDX_SetBrnchStrat].getVal()); 	
-		intValues.put(gIDX_NumLineupFrames,	(int) guiObjs[gIDX_NumLineupFrames].getVal()); 
-		intValues.put(gIDX_NumMorphSlices, (int) guiObjs[gIDX_NumMorphSlices].getVal()); 
-		intValues.put(gIDX_CntlPtDispDetail, (int) guiObjs[gIDX_CntlPtDispDetail].getVal()); 
-		intValues.put(gIDX_MorphAnalysisMmmntsDetail, (int) guiObjs[gIDX_MorphAnalysisMmmntsDetail].getVal());  
-		intValues.put(gIDX_DistTestTransform, (int) guiObjs[gIDX_DistTestTransform].getVal());  
-		intValues.put(gIDX_DistDimToShow, (int) guiObjs[gIDX_DistDimToShow].getVal()); 
-		intValues.put(gIDX_MorphSliceDispType, (int) guiObjs[gIDX_MorphSliceDispType].getVal()); 
-		intValues.put(gIDX_MorphAnimType, (int) guiObjs[gIDX_MorphAnimType].getVal()); 
-		//intValues.put(gIDX_MorphSliceTypeForDist, (int) guiObjs[gIDX_MorphSliceTypeForDist].getVal()); 	
-
-		
-		floatValues.put(gIDX_MorphTVal, (float)guiObjs[gIDX_MorphTVal].getVal()); 	
-		floatValues.put(gIDX_MorphSpeed, (float)guiObjs[gIDX_MorphSpeed].getVal());
-		floatValues.put(gIDX_MorphDistMult, (float) Math.pow(Math.E,guiObjs[gIDX_MorphDistMult].getVal()));
-
-		
-		for(Integer i=0;i<this._numPrivFlags;++i) {	boolValues.put(i, getPrivFlags(i));}	
-	}
+//	/**
+//	 * set initial values in uiUpdateData structure corresponding to UI values that will be passed to functional/calculation objects
+//	 * MUST BE CALLED AFTER PRIV FLAGS ARE BUILT
+//	 * @param intValues
+//	 */
+//	@Override
+//	protected final void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues, TreeMap<Integer, Boolean> boolValues) {
+//		intValues.put(gIDX_NumCellsPerSide, (int) guiObjs[gIDX_NumCellsPerSide].getVal()); 
+//		intValues.put(gIDX_MapType,	(int) guiObjs[gIDX_MapType].getVal()); 		
+//		intValues.put(gIDX_MorphType, (int) guiObjs[gIDX_MorphType].getVal()); 			
+//		intValues.put(gIDX_MorphTValType, (int) guiObjs[gIDX_MorphTValType].getVal()); 		
+//		intValues.put(gIDX_MorphTypeOrient, (int) guiObjs[gIDX_MorphTypeOrient].getVal()); 	
+//		intValues.put(gIDX_MorphTypeSize, (int) guiObjs[gIDX_MorphTypeSize].getVal()); 		
+//		intValues.put(gIDX_MorphTypeShape, (int) guiObjs[gIDX_MorphTypeShape].getVal()); 		
+//		intValues.put(gIDX_MorphTypeCOVPath, (int) guiObjs[gIDX_MorphTypeCOVPath].getVal()); 
+//		intValues.put(gIDX_SetBrnchStrat, (int) guiObjs[gIDX_SetBrnchStrat].getVal()); 	
+//		intValues.put(gIDX_NumLineupFrames,	(int) guiObjs[gIDX_NumLineupFrames].getVal()); 
+//		intValues.put(gIDX_NumMorphSlices, (int) guiObjs[gIDX_NumMorphSlices].getVal()); 
+//		intValues.put(gIDX_CntlPtDispDetail, (int) guiObjs[gIDX_CntlPtDispDetail].getVal()); 
+//		intValues.put(gIDX_MorphAnalysisMmmntsDetail, (int) guiObjs[gIDX_MorphAnalysisMmmntsDetail].getVal());  
+//		intValues.put(gIDX_DistTestTransform, (int) guiObjs[gIDX_DistTestTransform].getVal());  
+//		intValues.put(gIDX_DistDimToShow, (int) guiObjs[gIDX_DistDimToShow].getVal()); 
+//		intValues.put(gIDX_MorphSliceDispType, (int) guiObjs[gIDX_MorphSliceDispType].getVal()); 
+//		intValues.put(gIDX_MorphAnimType, (int) guiObjs[gIDX_MorphAnimType].getVal()); 
+//		//intValues.put(gIDX_MorphSliceTypeForDist, (int) guiObjs[gIDX_MorphSliceTypeForDist].getVal()); 	
+//
+//		
+//		floatValues.put(gIDX_MorphTVal, (float)guiObjs[gIDX_MorphTVal].getVal()); 	
+//		floatValues.put(gIDX_MorphSpeed, (float)guiObjs[gIDX_MorphSpeed].getVal());
+//		floatValues.put(gIDX_MorphDistMult, (float) Math.pow(Math.E,guiObjs[gIDX_MorphDistMult].getVal()));
+//
+//		
+//		for(Integer i=0;i<this._numPrivFlags;++i) {	boolValues.put(i, getPrivFlags(i));}	
+//	}
 		
 	/**
 	 * initialize all maps - only call once
