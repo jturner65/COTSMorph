@@ -191,7 +191,7 @@ public abstract class baseMorph {
 		morphT=.5f;
 		curMorphMap = getCopyOfMap(mapA,mapA.mapTitle + "_currMorphMap_"+morphTitle +" @ t="+String.format("%2.3f", morphT)); 
 		curMorphMap.setImageToMap(mapA.getImageToMap());		
-		currUIVals = new mapUpdFromUIData(mapMgr.currUIVals);
+		currUIVals = new mapUpdFromUIData(mapMgr.getCurrUIVals());
 		normDispTimeVec = new myVectorf(mapA.getCOV(), mapB.getCOV());
 		normDispTimeVec = myVectorf._mult(mapA.basisVecs[0], normDispTimeVec._dot(mapA.basisVecs[0]));	
 		//areaTrajMaps = new TreeMap<Float, Float>();

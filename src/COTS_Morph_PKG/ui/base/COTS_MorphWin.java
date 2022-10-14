@@ -7,21 +7,20 @@ import java.util.TreeMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
-import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.windowUI.base.base_UpdateFromUIData;
-import base_UI_Objects.windowUI.base.myDispWindow;
-import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
-import base_UI_Objects.windowUI.uiObjs.GUIObj_Type;
 import base_Math_Objects.interpolants.InterpolantBehavior;
 import base_Math_Objects.interpolants.InterpolantTypes;
-import base_Utils_Objects.io.messaging.MsgCodes;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import processing.core.PImage;
-
+import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.my_procApplet;
+import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
+import base_UI_Objects.windowUI.uiData.UIDataUpdater;
+import base_UI_Objects.windowUI.uiObjs.GUIObj_Type;
+import base_Utils_Objects.io.messaging.MsgCodes;
+import processing.core.PImage;
 
 public abstract class COTS_MorphWin extends myDispWindow {
 	
@@ -205,7 +204,6 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		//initialize all morphs
 		//_initMorphs();
 		//updateMapsWithCurrMorphs();
-
 		initMe_Indiv();
 	}//initMe
 	
@@ -223,42 +221,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 * build this instancing window class's specific UI->to->calc object
 	 * @return
 	 */
-	protected final base_UpdateFromUIData buildUIDataUpdateObject() {return new mapUpdFromUIData(this); };	
-
-//	/**
-//	 * set initial values in uiUpdateData structure corresponding to UI values that will be passed to functional/calculation objects
-//	 * MUST BE CALLED AFTER PRIV FLAGS ARE BUILT
-//	 * @param intValues
-//	 */
-//	@Override
-//	protected final void buildUIUpdateStruct_Indiv(TreeMap<Integer, Integer> intValues, TreeMap<Integer, Float> floatValues, TreeMap<Integer, Boolean> boolValues) {
-//		intValues.put(gIDX_NumCellsPerSide, (int) guiObjs[gIDX_NumCellsPerSide].getVal()); 
-//		intValues.put(gIDX_MapType,	(int) guiObjs[gIDX_MapType].getVal()); 		
-//		intValues.put(gIDX_MorphType, (int) guiObjs[gIDX_MorphType].getVal()); 			
-//		intValues.put(gIDX_MorphTValType, (int) guiObjs[gIDX_MorphTValType].getVal()); 		
-//		intValues.put(gIDX_MorphTypeOrient, (int) guiObjs[gIDX_MorphTypeOrient].getVal()); 	
-//		intValues.put(gIDX_MorphTypeSize, (int) guiObjs[gIDX_MorphTypeSize].getVal()); 		
-//		intValues.put(gIDX_MorphTypeShape, (int) guiObjs[gIDX_MorphTypeShape].getVal()); 		
-//		intValues.put(gIDX_MorphTypeCOVPath, (int) guiObjs[gIDX_MorphTypeCOVPath].getVal()); 
-//		intValues.put(gIDX_SetBrnchStrat, (int) guiObjs[gIDX_SetBrnchStrat].getVal()); 	
-//		intValues.put(gIDX_NumLineupFrames,	(int) guiObjs[gIDX_NumLineupFrames].getVal()); 
-//		intValues.put(gIDX_NumMorphSlices, (int) guiObjs[gIDX_NumMorphSlices].getVal()); 
-//		intValues.put(gIDX_CntlPtDispDetail, (int) guiObjs[gIDX_CntlPtDispDetail].getVal()); 
-//		intValues.put(gIDX_MorphAnalysisMmmntsDetail, (int) guiObjs[gIDX_MorphAnalysisMmmntsDetail].getVal());  
-//		intValues.put(gIDX_DistTestTransform, (int) guiObjs[gIDX_DistTestTransform].getVal());  
-//		intValues.put(gIDX_DistDimToShow, (int) guiObjs[gIDX_DistDimToShow].getVal()); 
-//		intValues.put(gIDX_MorphSliceDispType, (int) guiObjs[gIDX_MorphSliceDispType].getVal()); 
-//		intValues.put(gIDX_MorphAnimType, (int) guiObjs[gIDX_MorphAnimType].getVal()); 
-//		//intValues.put(gIDX_MorphSliceTypeForDist, (int) guiObjs[gIDX_MorphSliceTypeForDist].getVal()); 	
-//
-//		
-//		floatValues.put(gIDX_MorphTVal, (float)guiObjs[gIDX_MorphTVal].getVal()); 	
-//		floatValues.put(gIDX_MorphSpeed, (float)guiObjs[gIDX_MorphSpeed].getVal());
-//		floatValues.put(gIDX_MorphDistMult, (float) Math.pow(Math.E,guiObjs[gIDX_MorphDistMult].getVal()));
-//
-//		
-//		for(Integer i=0;i<this._numPrivFlags;++i) {	boolValues.put(i, getPrivFlags(i));}	
-//	}
+	protected final UIDataUpdater buildUIDataUpdateObject() {return new mapUpdFromUIData(this); };	
 		
 	/**
 	 * initialize all maps - only call once
@@ -338,12 +301,16 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected abstract int initAllPrivBtns_Indiv(ArrayList<Object[]> tmpBtnNamesArray);
 
 	/**
-	 * init ui objects from maps, keyed by ui object idx, with value being data
+	 * build ui objects from maps, keyed by ui object idx, with value being data
 	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
-	 *           the 4th element is boolean array of {treat as int, has list values, value is sent to owning window}    
+	 *           the 4th element is object type (GUIObj_Type enum)
+	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 *           	{value is sent to owning window, 
+	 *           	value is sent on any modifications (while being modified, not just on release), 
+	 *           	changes to value must be explicitly sent to consumer (are not automatically sent)}    
 	 * @param tmpListObjVals
 	 */
 	@Override 
@@ -361,18 +328,17 @@ public abstract class COTS_MorphWin extends myDispWindow {
 		tmpListObjVals.put(gIDX_DistTestTransform, mapPairManager.morphTypes);
 		tmpListObjVals.put(gIDX_DistDimToShow, distDimToShow);
 		tmpListObjVals.put(gIDX_MorphSliceDispType, morphSliceType);
-		tmpListObjVals.put(gIDX_MorphAnimType, InterpolantBehavior.getListOfTypes());
-		
+		tmpListObjVals.put(gIDX_MorphAnimType, InterpolantBehavior.getListOfTypes());		
 		
 		//tmpListObjVals.put(gIDX_MorphSliceTypeForDist, morphSliceType);			
 		
 		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", GUIObj_Type.FloatVal, new boolean[]{true, true } }); 	
 		tmpUIObjArray.put(gIDX_MorphSpeed,new Object[] { new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", GUIObj_Type.FloatVal, new boolean[]{true } }); 	
-		tmpUIObjArray.put(gIDX_MorphTValType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTValType).length-1, 1},1.0* InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : ", GUIObj_Type.ListVal, new boolean[]{true}});
+		tmpUIObjArray.put(gIDX_MorphTValType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTValType).length-1, 1},1.0*InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : ", GUIObj_Type.ListVal, new boolean[]{true}});
 		
 		tmpUIObjArray.put(gIDX_NumCellsPerSide,new Object[] { new double[] { 2.0, 50.0, 1.0 }, 4.0, "# of Cells Per Grid Side", GUIObj_Type.IntVal, new boolean[]{true}}); 
 		
-		tmpUIObjArray.put(gIDX_SetBrnchStrat,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_SetBrnchStrat).length-1, 1},0.0, "Branch Sharing Strategy", GUIObj_Type.ListVal, new boolean[]{true}});
+		tmpUIObjArray.put(gIDX_SetBrnchStrat,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_SetBrnchStrat).length-1, 1},0.0, "Branch Sharing Strategy", GUIObj_Type.ListVal, new boolean[]{true, false, true}});
 		
 		tmpUIObjArray.put(gIDX_MapType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},1.0* currMapTypeIDX, "Map Type to Show", GUIObj_Type.ListVal, new boolean[]{true}}); 
 
@@ -403,92 +369,87 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	}//setupGUIObjsAras
 	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
 	
-	//public final void setUIObj_FloatVals(int UIidx, float val) {guiObjs[UIidx].setVal(val);}
-	
-	
+	/**
+	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
+	 * Intended to support custom per-object handling by owning window.
+	 * Only called if data changed!
+	 * @param UIidx Index of gui obj with new data
+	 * @param val float value of new data
+	 * @param oldVal float value of old data in UIUpdater
+	 */
 	@Override
-	protected final void setUIWinVals(int UIidx) {
-		float val = (float) guiObjs[UIidx].getVal();
-		int ival = (int) val;
-		switch (UIidx) {	
-			case gIDX_MorphTVal : {			//morph value				
-				if(checkAndSetFloatVal(UIidx, val)) {updateCalcObjUIVals(); }
-				break;}		
-			case gIDX_MorphSpeed : {		//multiplier for animating morph
-				if(checkAndSetFloatVal(UIidx, val)) {updateCalcObjUIVals(); }
-				break;}
-			case gIDX_MorphTValType : {
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_NumCellsPerSide : {	//# of cells per side for Map grid
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_MapType : {
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals(); currMapTypeIDX = ival;}				
+	protected final void setUI_IntValsCustom(int UIidx, int ival, int oldVal) {
+		switch(UIidx){	
+			case gIDX_MorphTValType 		: {break;}
+			case gIDX_NumCellsPerSide 		: {break;}	//# of cells per side for Map grid
+			case gIDX_MapType 				: { 
+				currMapTypeIDX = ival;	
 				break;}
 			case gIDX_MorphType : {
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();
-					if(mapManagers[currMapTypeIDX].checkCurrMorphUsesReg()) {mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, getPrivFlags(findBestOrRegDistIDX));}
-				}						 	
+				if(mapManagers[currMapTypeIDX].checkCurrMorphUsesReg()) {
+					mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, getPrivFlags(findBestOrRegDistIDX));
+				}									 	
 				break;}
-			case gIDX_MorphTypeOrient		: {		
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_MorphTypeSize			: {		
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_MorphTypeShape		: {		
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_MorphTypeCOVPath		: {		
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}		
-			case gIDX_MorphAnimType			: {		
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}		
-			
+			case gIDX_MorphTypeOrient		: {break;}
+			case gIDX_MorphTypeSize			: {break;}
+			case gIDX_MorphTypeShape		: {break;}
+			case gIDX_MorphTypeCOVPath		: {break;}		
+			case gIDX_MorphAnimType			: {break;}		
 			case gIDX_SetBrnchStrat : {
-				if(currBranchShareStrat != ival) {currBranchShareStrat = ival;uiUpdateData.setIntValue(UIidx, ival);}
+				//TODO currently branch strat will actually change and be sent to maps whenever UI changes
+				//Need to change fundamental mechanism in myDispWindow to handle this better.				
+				
+				currBranchShareStrat = ival;
+				
 				//if(checkAndSetIntVal(gIDX_SetBrnchStrat, ival)) {updateMapVals();}
 				//if(currBranchShareStrategy != ival) {	currBranchShareStrategy = ival; updateMapVals();}		
 				break;}
-			case gIDX_NumLineupFrames : {
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				//if(numLineupFrames != ival) {			numLineupFrames = ival; updateMapVals();	}	
-				break;}
-			case gIDX_NumMorphSlices	:{
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_MorphSliceDispType	:{
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			
-			case gIDX_CntlPtDispDetail : {
-				if(ival != drawMapDetail) {drawMapDetail=ival;}
+			case gIDX_NumLineupFrames 		: {break;}
+			case gIDX_NumMorphSlices		: {break;}
+			case gIDX_MorphSliceDispType	: {break;}			
+			case gIDX_CntlPtDispDetail 		: {
+				drawMapDetail = ival;
 				break;}				
 			case gIDX_MorphAnalysisMmmntsDetail : {
-				if(ival != currMmntDispIDX) {currMmntDispIDX=ival;}
+				currMmntDispIDX = ival;
 				break;}	
-			case gIDX_DistTestTransform : {
-				//if(ival != currDistTransformIDX) {currDistTransformIDX=ival;uiUpdateData.setIntValue(UIidx, currDistTransformIDX);}
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_DistDimToShow :{
-				if(checkAndSetIntVal(UIidx, ival)) {updateCalcObjUIVals();}
-				break;}
-			case gIDX_MorphDistMult : {
-				if(checkAndSetFloatVal(UIidx, (float) Math.pow(10,val))) {updateCalcObjUIVals(); }
-				break;		}
+			case gIDX_DistTestTransform 	: {break;}
+			case gIDX_DistDimToShow 		: {break;}
 			
-//			case gIDX_MorphSliceTypeForDist :{
-//				if(checkAndSetIntVal(UIidx, ival)) {updateMapVals();}
-//				break;}
-			default : {setUIWinVals_Indiv(UIidx, val);}
+			default : {
+				boolean found = setUI_IntValsCustom_Indiv(UIidx, ival);
+				if (!found) {
+					msgObj.dispWarningMessage(className, "setUI_IntValsCustom", "No int-defined gui object mapped to idx :"+UIidx);
+				}
+				break;
+			}				
 		}
+	}//setUI_IntValsCustom
+	protected abstract boolean setUI_IntValsCustom_Indiv(int UIidx, int ival);
 
-	}//setUIWinVals
-	protected abstract void setUIWinVals_Indiv(int UIidx, float val);
-	
+	/**
+	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter.  
+	 * Intended to support custom per-object handling by owning window.
+	 * Only called if data changed!
+	 * @param UIidx Index of gui obj with new data
+	 * @param val float value of new data
+	 * @param oldVal float value of old data in UIUpdater
+	 */
+	@Override
+	protected final void setUI_FloatValsCustom(int UIidx, float val, float oldVal) {
+		switch(UIidx){		
+		case gIDX_MorphTVal 	: {break;}		
+		case gIDX_MorphSpeed 	: {break;}	
+		case gIDX_MorphDistMult : {break;}
+		default : {
+			boolean found = setUI_FloatValsCustom_Indiv(UIidx, val);
+			if (!found) {
+				msgObj.dispWarningMessage(className, "setUI_FloatValsCustom", "No float-defined gui object mapped to idx :"+UIidx);
+			}
+			break;}
+		}				
+	}//setUI_FloatValsCustom	
+	protected abstract boolean setUI_FloatValsCustom_Indiv(int UIidx, float val);
 
 	@Override
 	public final void setPrivFlags(int idx, boolean val) {
@@ -662,7 +623,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	}
 
 	@Override
-	protected final void setCustMenuBtnNames() {	}
+	protected final void setCustMenuBtnLabels() {	}
 	
 	/**
 	 * return an array of 

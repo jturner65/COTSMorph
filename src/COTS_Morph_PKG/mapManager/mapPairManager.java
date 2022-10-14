@@ -60,7 +60,7 @@ public class mapPairManager {
 	/**
 	 * current ui values describing features of the map
 	 */
-	public mapUpdFromUIData currUIVals;
+	protected mapUpdFromUIData currUIVals;
 	/**
 	 * map being currently modified by mouse interaction - only a ref to a map, or null
 	 */
@@ -486,6 +486,8 @@ public class mapPairManager {
 	 */
 	public void checkIfMorphAnalysisDone() {	if(!morphStackAnalysisDone) {calculateMorphDistortion();}}
 	
+	public mapUpdFromUIData getCurrUIVals() {return currUIVals;}
+	
 	//////////////
 	// draw routines
 	
@@ -795,27 +797,22 @@ public class mapPairManager {
 	 * this will reset branching on all maps that use branching
 	 */
 	public final void resetAllBranching() {
-		//boolean[] flags = new boolean[] {true};			//idx 0 is branching
 		for (int i=0;i<maps.length;++i) {	maps[i].setFlags(new boolean[] {true});}
 		for (int i=0;i<morphs.length;++i) {morphs[i].resetAllBranching();}		
-	}
+	}//resetAllBranching
 	
 	public final void resetIndivMapBranching(int idx) {
 		maps[idx].setFlags(new boolean[] {true});
-	}
+	}//resetIndivMapBranching
 	
 	public final void updateMapMorphVals_FromUI(mapUpdFromUIData upd) {
 		boolean shouldRecalcMorphAnalysis=  upd.uiForMorphDistAnalysisChanged(currUIVals);
 		currUIVals.setAllVals(upd);//can't use the same mapUpdFromUIData everywhere because we compare differences
-		//currUIVals = upd;
 		currMorphTypeIDX = currUIVals.getCurrMorphTypeIDX();
 		
 		curAnimatorIDX = currUIVals.getCurrAnimatorIDX();
 		
-		//morphProgress = currUIVals.getMorphProgress(); 
 		setAllAnimatorVals(currUIVals.getMorphProgress(), currUIVals.getCurMorphAnimTypeIDX());
-		
-		//msgObj.dispInfoMessage("mapPairManager::"+this.name, "updateMapValsFromUI", "Morph Progress changed from " + oldMorphProgres + " to  " +morphProgress);
 		
 		morphSpeed = currUIVals.getMorphSpeed(); 
 		if(shouldRecalcMorphAnalysis) {
@@ -831,7 +828,8 @@ public class mapPairManager {
 		for(int i=0;i<this.distMsrMorphs.length;++i) {distMsrMorphs[i].updateMorphVals_FromUI(upd);}
 		for(int j=0;j<maps.length;++j) {	maps[j].updateMapVals_FromUI(currUIVals);}
 		morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::updateMapValsFromUI", true, true);
-	}
+	}//updateMapMorphVals_FromUI
+	
 	/**
 	 * set all animators to passed value
 	 * @param _t morph progress/time

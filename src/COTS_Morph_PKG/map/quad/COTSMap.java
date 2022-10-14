@@ -63,7 +63,7 @@ public class COTSMap extends baseQuadMap {
 		if(!isAbleToExec()) {return;}		//need this check since cots similarity not built before this is first called
 
 		cots.deriveSimilarityFromCntlPts(cntlPts, flags);		
-	}
+	}//_updateQuadMapFromCntlPtVals_Indiv
 	
 	/**
 	 * flags controls updates
@@ -78,16 +78,15 @@ public class COTSMap extends baseQuadMap {
 			cots.setBranching(((COTSMap)otrMap).cots.getBranching());
 			updateMapFromOtrMapVals(flags);
 		}
-	}
+	}//_updateMeWithQuadMapVals
 	
 	@Override
 	protected boolean updateMapVals_FromUI_Indiv(mapUpdFromUIData upd) {		
-		boolean hasBeenUpdated = false;		
+		boolean hasBeenUpdated = false;	
 			//update branch sharing strategy, if necessary
 		hasBeenUpdated = updateBranchShareStrategy(upd.getBranchSharingStrategy()) ;
-
 		return hasBeenUpdated;
-	}
+	}//updateMapVals_FromUI_Indiv
 	
 	@Override
 	public myPointf calcMapPt(float tx, float ty) {

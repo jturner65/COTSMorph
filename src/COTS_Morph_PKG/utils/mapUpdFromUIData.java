@@ -1,24 +1,24 @@
 package COTS_Morph_PKG.utils;
 
-import java.util.TreeMap;
+import java.util.Map;
 
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import base_UI_Objects.windowUI.base.base_UpdateFromUIData;
+import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 
 /**
  * structure holding UI-derived/modified data used to update maps
  * @author john
  *
  */
-public class mapUpdFromUIData extends base_UpdateFromUIData {
+public class mapUpdFromUIData extends UIDataUpdater {
 
 	/**
 	 * @param ints : idx 0 : numCellsPerSide; idx 1 : branchSharingStrategy
 	 * @param bools : idx 0 : forceUpdate;
 	 */
 	public mapUpdFromUIData(COTS_MorphWin _win) {super(_win);}
-	public mapUpdFromUIData(COTS_MorphWin _win, TreeMap<Integer, Integer> _iVals, TreeMap<Integer, Float> _fVals,TreeMap<Integer, Boolean> _bVals) {
+	public mapUpdFromUIData(COTS_MorphWin _win, Map<Integer, Integer> _iVals, Map<Integer, Float> _fVals,Map<Integer, Boolean> _bVals) {
 		super(_win,_iVals,_fVals,_bVals);
 	}
 	
@@ -84,7 +84,7 @@ public class mapUpdFromUIData extends base_UpdateFromUIData {
 	 */	
 	public float getMorphProgress() {return floatValues.get(COTS_MorphWin.gIDX_MorphTVal);}
 	public float getMorphSpeed() {return floatValues.get(COTS_MorphWin.gIDX_MorphSpeed);}
-	public float getMorphDistMult() {return floatValues.get(COTS_MorphWin.gIDX_MorphDistMult);}
+	public float getMorphDistMult() {return (float) Math.pow(10,floatValues.get(COTS_MorphWin.gIDX_MorphDistMult));}
 	/**
 	 * set morph progress and update win ui object from morph object
 	 * @param _prog

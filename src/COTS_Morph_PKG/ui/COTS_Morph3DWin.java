@@ -82,14 +82,23 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	protected void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
 		
 	}
-
+	
+	/**
+	 * Check class-specific int/list ui objs upon population.  returns true if found
+	 */
 	@Override
-	protected void setUIWinVals_Indiv(int UIidx, float val) {
-		switch (UIidx) {	
-		
-		}
-
-	}//setUIWinVals
+	protected boolean setUI_IntValsCustom_Indiv(int UIidx, int ival) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	/**
+	 * Check class-specific float ui objs upon population.  returns true if found
+	 */
+	@Override
+	protected boolean setUI_FloatValsCustom_Indiv(int UIidx, float val) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 
 
