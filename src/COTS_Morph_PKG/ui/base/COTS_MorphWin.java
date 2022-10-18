@@ -301,7 +301,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	protected abstract int initAllPrivBtns_Indiv(ArrayList<Object[]> tmpBtnNamesArray);
 
 	/**
-	 * build ui objects from maps, keyed by ui object idx, with value being data
+	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
 	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
@@ -311,7 +311,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	 *           	{value is sent to owning window, 
 	 *           	value is sent on any modifications (while being modified, not just on release), 
 	 *           	changes to value must be explicitly sent to consumer (are not automatically sent)}    
-	 * @param tmpListObjVals
+	 * @param tmpListObjVals : map of list object possible selection values
 	 */
 	@Override 
 	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) { 
