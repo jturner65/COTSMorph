@@ -5,10 +5,10 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import COTS_Morph_PKG.analysis.registration.mapRegDist;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.map.quad.BiLinMap;
 import COTS_Morph_PKG.map.quad.COTSMap;
+import COTS_Morph_PKG.map.registration.mapRegDist;
 import COTS_Morph_PKG.map.triangular.BiLinTriPolyMap;
 import COTS_Morph_PKG.map.triangular.PointNormTriPolyMap;
 import COTS_Morph_PKG.morph.CompoundMorph;

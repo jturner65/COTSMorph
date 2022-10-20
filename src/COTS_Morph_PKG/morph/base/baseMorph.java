@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 
-import COTS_Morph_PKG.analysis.floatTrajAnalyzer;
-import COTS_Morph_PKG.analysis.myPointfTrajAnalyzer;
-import COTS_Morph_PKG.analysis.registration.mapRegDist;
 import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.registration.mapRegDist;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapCntlFlags;
@@ -19,6 +17,8 @@ import base_UI_Objects.windowUI.base.myDispWindow;
 import base_Math_Objects.interpolants.InterpolantBehavior;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
+import base_StatsTools.analysis.floatTrajAnalyzer;
+import base_StatsTools.analysis.myPointfTrajAnalyzer;
 
 /**
  * class holding common functionality to morph between two image maps

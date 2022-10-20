@@ -2,8 +2,8 @@ package COTS_Morph_PKG.morph;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.analysis.registration.mapRegDist;
 import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.registration.mapRegDist;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.base.baseMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
