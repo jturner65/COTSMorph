@@ -21,7 +21,6 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	}
 	@Override
 	public final String getWinName() {return "COTS_Morph2DWin";}
-
 	
 	@Override
 	protected final void initMe_Indiv() {	
@@ -85,7 +84,6 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 */
 	@Override
 	protected boolean setUI_IntValsCustom_Indiv(int UIidx, int ival) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	/**
@@ -93,7 +91,6 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 */
 	@Override
 	protected boolean setUI_FloatValsCustom_Indiv(int UIidx, float val) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -111,8 +108,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	// draw routines
 	@Override
 	protected final void _drawMe_Indiv(float animTimeMod){
-		
-		
+			
 	}//_drawMe_Indiv
 	
 	
@@ -169,6 +165,5 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 
 	@Override
 	protected final myPoint getMsePtAs3DPt(myPoint mseLoc) {	return new myPoint(mseLoc.x, mseLoc.y, 0);}
-
 
 }//class COTS_Morph2DWin

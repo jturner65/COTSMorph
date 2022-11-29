@@ -87,20 +87,12 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	 * Check class-specific int/list ui objs upon population.  returns true if found
 	 */
 	@Override
-	protected boolean setUI_IntValsCustom_Indiv(int UIidx, int ival) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	protected boolean setUI_IntValsCustom_Indiv(int UIidx, int ival) {return false;}
 	/**
 	 * Check class-specific float ui objs upon population.  returns true if found
 	 */
 	@Override
-	protected boolean setUI_FloatValsCustom_Indiv(int UIidx, float val) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
+	protected boolean setUI_FloatValsCustom_Indiv(int UIidx, float val) {return false;}
 
 	@Override
 	public void setPrivFlags_Indiv(int idx, boolean val) {

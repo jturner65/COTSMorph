@@ -4,8 +4,8 @@ package COTS_Morph_PKG;
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
 import base_UI_Objects.*;
-import base_UI_Objects.windowUI.base.myDispWindow;
-import base_UI_Objects.windowUI.sidebar.mySideBarMenu;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
+import base_UI_Objects.windowUI.sidebar.SidebarMenu;
 /**
  * Experiment with self organizing maps in applications related to graphics and geometry
  * 
@@ -91,7 +91,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	protected void initAllDispWindows() {
 	
 		showInfo = true;
-		//includes 1 for menu window (never < 1) - always have same # of visFlags as myDispWindows
+		//includes 1 for menu window (never < 1) - always have same # of visFlags as Base_DispWindows
 		int numWins = numVisFlags;		
 		//titles and descs, need to be set before sidebar menu is defined
 		String[] _winTitles = new String[]{"","2D COTS Morph","3D COTS Morph"},//,"SOM Map UI"},
@@ -216,7 +216,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	//these tie using the UI buttons to modify the window in with using the boolean tags - PITA but currently necessary
 	public void handleShowWin(int btn, int val, boolean callFlags){//display specific windows - multi-select/ always on if sel
 		if(!callFlags){//called from setflags - only sets button state in UI to avoid infinite loop
-			setMenuBtnState(mySideBarMenu.btnShowWinIdx,btn, val);
+			setMenuBtnState(SidebarMenu.btnShowWinIdx,btn, val);
 		} else {//called from clicking on buttons in UI
 		
 			//val is btn state before transition 
@@ -264,7 +264,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	//address all flag-setting here, so that if any special cases need to be addressed they can be
 	protected void setVisFlag_Indiv(int idx, boolean val ){
 		switch (idx){
-			case showUIMenu 	    : { dispWinFrames[dispMenuIDX].setFlags(myDispWindow.showIDX,val);    break;}											//whether or not to show the main ui window (sidebar)			
+			case showUIMenu 	    : { dispWinFrames[dispMenuIDX].setFlags(Base_DispWindow.showIDX,val);    break;}											//whether or not to show the main ui window (sidebar)			
 			case showCOTS_2DMorph	: {setWinFlagsXOR(dispCOTS_2DMorph, val);break;}
 			case showCOTS_3DMorph	: {setWinFlagsXOR(dispCOTS_3DMorph, val);break;}
 			default : {break;}

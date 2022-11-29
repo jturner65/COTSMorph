@@ -15,14 +15,14 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.my_procApplet;
-import base_UI_Objects.windowUI.base.myDispWindow;
-import base_UI_Objects.windowUI.drawnObjs.myDrawnSmplTraj;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
+import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
-import base_UI_Objects.windowUI.uiObjs.GUIObj_Type;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_Utils_Objects.io.messaging.MsgCodes;
 import processing.core.PImage;
 
-public abstract class COTS_MorphWin extends myDispWindow {
+public abstract class COTS_MorphWin extends Base_DispWindow {
 	
 	//ui vars
 	public static final int
@@ -397,7 +397,7 @@ public abstract class COTS_MorphWin extends myDispWindow {
 			case gIDX_MorphAnimType			: {break;}		
 			case gIDX_SetBrnchStrat : {
 				//TODO currently branch strat will actually change and be sent to maps whenever UI changes
-				//Need to change fundamental mechanism in myDispWindow to handle this better.				
+				//Need to change fundamental mechanism in Base_DispWindow to handle this better.				
 				
 				currBranchShareStrat = ival;
 				
@@ -1004,7 +1004,8 @@ public abstract class COTS_MorphWin extends myDispWindow {
 	@Override
 	protected final void delTrajToScrIndiv(int subScrKey, String newTrajKey) {}
 	@Override
-	public final void processTrajIndiv(myDrawnSmplTraj drawnTraj) {}
+	public void processTrajIndiv(DrawnSimpleTraj drawnTraj) {
+	}
 
 
 }

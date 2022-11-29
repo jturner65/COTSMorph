@@ -10,7 +10,7 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.my_procApplet;
-import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -135,9 +135,9 @@ public abstract class baseMap {
 
 	protected static final int[] whiteClr = new int[] {255,255,255,255};
 	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
-		win=_win; pa=myDispWindow.pa;AppMgr = myDispWindow.AppMgr; mgr = _mapMgr; currUIVals = _currUIVals;
+		win=_win; pa=Base_DispWindow.pa;AppMgr = Base_DispWindow.AppMgr; mgr = _mapMgr; currUIVals = _currUIVals;
 		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		curMorphTVal = 1.0f * mapIdx;
-		mapTitle = _mapTitle;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
+		mapTitle = _mapTitle;		mapTtlXOff = Base_DispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
 		isKeyFrameMap = _isKeyFrame;
 		//init point structures
 		//initCtorMethodVars(_pClrs, _cntlPts,_cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 		
@@ -152,9 +152,9 @@ public abstract class baseMap {
 	 * @param _otr
 	 */
 	public baseMap(String _mapTitle, baseMap _otr) {
-		win=_otr.win; pa=myDispWindow.pa;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
+		win=_otr.win; pa=Base_DispWindow.pa;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
 		mapIdx = _otr.mapIdx;		mapTypeIDX = _otr.mapTypeIDX;
-		mapTitle = _mapTitle ;		mapTtlXOff = myDispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
+		mapTitle = _mapTitle ;		mapTtlXOff = Base_DispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
 		//keyframes are never copies;
 		isKeyFrameMap = false;
 		//points and labels for points, basis vectors, and map flags structures

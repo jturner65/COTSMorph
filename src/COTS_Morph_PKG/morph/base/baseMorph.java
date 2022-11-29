@@ -13,7 +13,7 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Math_Objects.interpolants.InterpolantBehavior;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -137,7 +137,7 @@ public abstract class baseMorph {
 	 * @param _morphTitle
 	 */
 	public baseMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {
-		win=_win; pa=myDispWindow.pa;AppMgr = myDispWindow.AppMgr;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
+		win=_win; pa=Base_DispWindow.pa;AppMgr = Base_DispWindow.AppMgr;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
 		initMorphSliceAras();
 		mapA = _mapA;
 		mapB = _mapB;	
@@ -150,7 +150,7 @@ public abstract class baseMorph {
 	
 
 	public baseMorph(baseMorph _otr) {//copy ctor
-		win=_otr.win; pa=myDispWindow.pa;morphTitle=_otr.morphTitle+"_cpy";mapMgr=_otr.mapMgr;morphTypeIDX=_otr.morphTypeIDX;
+		win=_otr.win; pa=Base_DispWindow.pa;morphTitle=_otr.morphTitle+"_cpy";mapMgr=_otr.mapMgr;morphTypeIDX=_otr.morphTypeIDX;
 		initMorphSliceAras();
 		mapA = getCopyOfMap(_otr.mapA, "cpyOfMapA");
 		mapB = getCopyOfMap(_otr.mapB, "cpyOfMapB");

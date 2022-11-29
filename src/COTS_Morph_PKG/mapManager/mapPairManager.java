@@ -24,7 +24,7 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.windowUI.base.myDispWindow;
+import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Math_Objects.interpolants.InterpolantTypes;
 import base_Math_Objects.interpolants.base.baseInterpolant;
 import base_Utils_Objects.io.messaging.MessageObject;
@@ -202,7 +202,7 @@ public class mapPairManager {
 	protected boolean morphStackAnalysisDone = false;
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
-		win=_win; pa=myDispWindow.pa;  AppMgr= myDispWindow.AppMgr; msgObj=win.getMsgObj();
+		win=_win; pa=Base_DispWindow.pa;  AppMgr= Base_DispWindow.AppMgr; msgObj=win.getMsgObj();
 				
 		//for building registration copy
 		fromMapIDX = 0;
