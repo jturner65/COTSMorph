@@ -6,7 +6,7 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
-import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.interpolants.InterpolantBehavior;
 import base_Math_Objects.interpolants.InterpolantTypes;
 import base_Math_Objects.vectorObjs.doubles.myPoint;

@@ -3,7 +3,7 @@ package COTS_Morph_PKG.transform;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.transform.base.baseTransform;
 import COTS_Morph_PKG.utils.mapCntlFlags;
-import base_JavaProjTools_IRender.base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
