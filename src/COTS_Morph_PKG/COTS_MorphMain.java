@@ -1,6 +1,9 @@
 package COTS_Morph_PKG;
 
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
 import base_UI_Objects.*;
@@ -14,8 +17,11 @@ import base_UI_Objects.windowUI.sidebar.SidebarMenu;
  */
 public class COTS_MorphMain extends GUI_AppManager {
 	//project-specific variables
-	public String prjNmLong = "Morphing between two COTS-mapped Quads", prjNmShrt = "COTS_Morph";
+	public final String prjNmShrt = "COTS_Morph";
+	public final String prjNmLong = "Morphing between two COTS-mapped Quads";
+	public final String projDesc = "Morphing between two COTS-mapped Quads in 2D and 3D.";
 	
+	public String authorString = "John Turner";
 	private final int
 		showUIMenu = 0,
 		showCOTS_2DMorph = 1,
@@ -47,8 +53,16 @@ public class COTS_MorphMain extends GUI_AppManager {
 		COTS_MorphMain.invokeProcessingMain(me, passedArgs);
 	}//main	
 	
+	protected COTS_MorphMain(){super();}
+	
+	/**
+	 * Set various relevant runtime arguments in argsMap
+	 * @param _passedArgs command-line arguments
+	 */
 	@Override
-	protected void setRuntimeArgsVals(String[] _passedArgs) {
+	protected TreeMap<String,Object> setRuntimeArgsVals(Map<String, Object> _passedArgsMap) {
+
+		return (TreeMap<String, Object>) _passedArgsMap;
 	}
 
 	/**
@@ -67,6 +81,13 @@ public class COTS_MorphMain extends GUI_AppManager {
 	 */
 	@Override
 	protected int setAppWindowDimRestrictions() {	return 1;}	
+	
+	@Override
+	public String getPrjNmShrt() {return prjNmShrt;}
+	@Override
+	public String getPrjNmLong() {return prjNmLong;}
+	@Override
+	public String getPrjDescr() {return projDesc;}
 	
 	//instance-specific setup code
 	protected void setup_Indiv() {		
@@ -156,13 +177,6 @@ public class COTS_MorphMain extends GUI_AppManager {
 	protected void initProgram_Indiv(){	}//initProgram	
 	@Override
 	protected void initVisProg_Indiv() {}		
-
-
-	@Override
-	protected String getPrjNmLong() {return prjNmLong;}
-
-	@Override
-	protected String getPrjNmShrt() {		return prjNmShrt;	}
 
 	/**
 	 * Individual extending Application Manager post-drawMe functions
