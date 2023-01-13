@@ -99,12 +99,12 @@ public class COTS_MorphMain extends GUI_AppManager {
 	 * determine which main flags to show at upper left of menu 
 	 */
 	@Override
-	protected void initMainFlags_Indiv() {
-		setMainFlagToShow_debugMode(true);
-		setMainFlagToShow_saveAnim(true); 
-		setMainFlagToShow_runSim(false);
-		setMainFlagToShow_singleStep(false);
-		setMainFlagToShow_showRtSideMenu(true);
+	protected void initBaseFlags_Indiv() {
+		setBaseFlagToShow_debugMode(true);
+		setBaseFlagToShow_saveAnim(true); 
+		setBaseFlagToShow_runSim(false);
+		setBaseFlagToShow_singleStep(false);
+		setBaseFlagToShow_showRtSideMenu(true);
 	}
 	
 	@Override
@@ -119,7 +119,11 @@ public class COTS_MorphMain extends GUI_AppManager {
 				_winDescr = new String[] {"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
 		initWins(numWins,_winTitles, _winDescr);
 		//call for menu window
-		buildInitMenuWin(showUIMenu);
+		//call for menu window
+		buildInitMenuWin();
+		//instanced window dimensions when open and closed - only showing 1 open at a time
+		float[] _dimOpen  = getDefaultWinDimOpen(), 
+				_dimClosed  = getDefaultWinDimClosed();	
 		//menu bar init
 		String[] menuBtnTitles = new String[]{
 				"Load/Save Map Configuration",
@@ -137,8 +141,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 		String [] dbgBtns = {"Debug 0", "Debug 1", "Debug 2", "Debug 3","Debug 4"};
 		int wIdx = dispMenuIDX,fIdx=showUIMenu;
 		dispWinFrames[wIdx] = buildSideBarMenu(wIdx, fIdx, menuBtnTitles , menuBtnNames, dbgBtns, true, true);	
-		//instanced window dimensions when open and closed - only showing 1 open at a time
-		float[] _dimOpen  =  new float[]{menuWidth, 0, pa.getWidth()-menuWidth, pa.getHeight()}, _dimClosed  =  new float[]{menuWidth, 0, hideWinWidth, pa.getHeight()};	
+
 		//setInitDispWinVals : use this to define the values of a display window
 		//int _winIDX, 
 		//float[] _dimOpen, float[] _dimClosed  : dimensions opened or closed
