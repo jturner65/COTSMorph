@@ -1,8 +1,7 @@
 package COTS_Morph_PKG;
 
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
@@ -60,9 +59,8 @@ public class COTS_MorphMain extends GUI_AppManager {
 	 * @param _passedArgs command-line arguments
 	 */
 	@Override
-	protected TreeMap<String,Object> setRuntimeArgsVals(Map<String, Object> _passedArgsMap) {
-
-		return (TreeMap<String, Object>) _passedArgsMap;
+	protected HashMap<String,Object> setRuntimeArgsVals(HashMap<String, Object> _passedArgsMap) {
+		return  _passedArgsMap;
 	}
 
 	/**
@@ -178,8 +176,6 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	//called multiple times, whenever re-initing
 	protected void initProgram_Indiv(){	}//initProgram	
-	@Override
-	protected void initVisProg_Indiv() {}		
 
 	/**
 	 * Individual extending Application Manager post-drawMe functions
