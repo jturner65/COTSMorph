@@ -59,7 +59,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 		perMorphDistCalcIDX = 2;
 
 	public morphStackDistortionCalc_Runner(mapPairManager _mapMgr, ExecutorService _th_exec, boolean _canMT, int _numThds, int _numWorkUnits) {
-		super(_mapMgr.msgObj, _th_exec, _canMT, _numThds, _numWorkUnits);
+		super(_th_exec, _canMT, _numThds, _numWorkUnits);
 		perThdDistMsrMorphs = new baseMorph[numUsableThreads];
 		mapMgr=_mapMgr;
 	}
