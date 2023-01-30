@@ -824,7 +824,6 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	 */
 	@Override
 	protected final void launchMenuBtnHndlr(int funcRow, int btn, String label){
-		msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "Begin requested action : Click '" + label +"' (Row:"+(funcRow+1)+"|Col:"+btn+") in " + name, MsgCodes.info4);
 		switch (funcRow) {
 			case 0: {// row 1 of menu side bar buttons
 				// {"Gen Training Data", "Save Training data","Load Training Data"}, //row 1
@@ -935,12 +934,14 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 				}
 				break;
 			} // row 3 of menu side bar buttons
+			default : {
+				msgObj.dispWarningMessage(className+"(COTS_MorphWin)","launchMenuBtnHndlr","Clicked Unknown Btn row : " + funcRow +" | Btn : " + btn);
+				break;
+			}
 		}
-		msgObj.dispMessage(className+"(COTS_MorphWin)", "launchMenuBtnHndlr", "End requested action (multithreaded actions may still be working) : Click Functions "+(funcRow+1)+" in " + name + " : btn : " + btn, MsgCodes.info4);
 	}
 	@Override
-	public final void handleSideMenuDebugSelEnable(int btn) {
-		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelEnable","Click Debug functionality on in " + name + " : btn : " + btn, MsgCodes.info4);
+	protected final void handleSideMenuDebugSelEnable(int btn) {
 		switch (btn) {
 			case 0: {				break;			}
 			case 1: {				break;			}
@@ -953,12 +954,10 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 				break;
 			}
 		}
-		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelEnable", "End Debug functionality on selection.",MsgCodes.info4);
 	}
 	
 	@Override
-	public final void handleSideMenuDebugSelDisable(int btn) {
-		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelDisable","Click Debug functionality off in " + name + " : btn : " + btn, MsgCodes.info4);
+	protected final void handleSideMenuDebugSelDisable(int btn) {
 		switch (btn) {
 			case 0: {				break;			}
 			case 1: {				break;			}
@@ -971,7 +970,6 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 			break;
 			}
 		}
-		msgObj.dispMessage(className+"(COTS_MorphWin)", "handleSideMenuDebugSelDisable", "End Debug functionality off selection.",MsgCodes.info4);
 	}
 
 	

@@ -8,6 +8,7 @@ import COTS_Morph_PKG.ui.COTS_Morph3DWin;
 import base_UI_Objects.*;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.sidebar.SidebarMenu;
+import base_Utils_Objects.io.messaging.MsgCodes;
 /**
  * Experiment with self organizing maps in applications related to graphics and geometry
  * 
@@ -87,6 +88,19 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	public String getPrjDescr() {return projDesc;}
 	
+	/**
+	 * Set minimum level of message object console messages to display for this application. If null then all messages displayed
+	 * @return
+	 */
+	@Override
+	protected final MsgCodes getMinConsoleMsgCodes() {return null;}
+	/**
+	 * Set minimum level of message object log messages to save to log for this application. If null then all messages saved to log.
+	 * @return
+	 */
+	@Override
+	protected final MsgCodes getMinLogMsgCodes() {return null;}
+
 	//instance-specific setup code
 	protected void setup_Indiv() {		
 		setBkgrnd();
