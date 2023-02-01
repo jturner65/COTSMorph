@@ -196,7 +196,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	protected final void initMe() {
 		crnrs = new myPointf[10][][];
 		// capable of using right side menu
-		setFlags(drawRightSideMenu, true);
+		dispFlags.setDrawRtSideMenu(true);
 		//initialize the bounds for this map
 		bndPts = getKeyFrameMapBndPts();
 		//initialize all maps

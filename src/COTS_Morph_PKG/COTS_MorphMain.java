@@ -6,7 +6,6 @@ import java.util.HashMap;
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
 import base_UI_Objects.*;
-import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.sidebar.SidebarMenu;
 import base_Utils_Objects.io.messaging.MsgCodes;
 /**
@@ -258,10 +257,10 @@ public class COTS_MorphMain extends GUI_AppManager {
 	public float[] getUIRectVals(int idx){
 		//this.pr("In getUIRectVals for idx : " + idx);
 		switch(idx){
-		case dispMenuIDX 				: { return new float[0];}			//idx 0 is parent menu sidebar
-		case dispCOTS_2DMorph				: { return dispWinFrames[dispMenuIDX].uiClkCoords;}
-		case dispCOTS_3DMorph				: { return dispWinFrames[dispMenuIDX].uiClkCoords;}
-		default :  return dispWinFrames[dispMenuIDX].uiClkCoords;
+		case dispMenuIDX 		: { return new float[0];}			//idx 0 is parent menu sidebar
+		case dispCOTS_2DMorph	: { return dispWinFrames[dispMenuIDX].uiClkCoords;}
+		case dispCOTS_3DMorph	: { return dispWinFrames[dispMenuIDX].uiClkCoords;}
+		default 				:  return dispWinFrames[dispMenuIDX].uiClkCoords;
 		}
 	}	
 	
@@ -291,7 +290,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	//address all flag-setting here, so that if any special cases need to be addressed they can be
 	protected void setVisFlag_Indiv(int idx, boolean val ){
 		switch (idx){
-			case showUIMenu 	    : { dispWinFrames[dispMenuIDX].setFlags(Base_DispWindow.showIDX,val);    break;}											//whether or not to show the main ui window (sidebar)			
+			case showUIMenu 	    : { dispWinFrames[dispMenuIDX].dispFlags.setShowWin(val);    break;}											//whether or not to show the main ui window (sidebar)			
 			case showCOTS_2DMorph	: {setWinFlagsXOR(dispCOTS_2DMorph, val);break;}
 			case showCOTS_3DMorph	: {setWinFlagsXOR(dispCOTS_3DMorph, val);break;}
 			default : {break;}

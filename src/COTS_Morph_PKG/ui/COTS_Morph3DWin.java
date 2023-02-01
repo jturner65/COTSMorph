@@ -27,8 +27,8 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	
 	@Override
 	protected final void initMe_Indiv() {
-		setFlags(drawMseEdge,true);
-		setFlags(showRightSideMenu, true);
+		dispFlags.setDrawMseEdge(true);
+		dispFlags.setShowRtSideMenu(true);
 	}//initMe
 
 	/**
