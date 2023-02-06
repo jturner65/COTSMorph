@@ -6,8 +6,8 @@ import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.map.quad.base.baseQuadMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -23,13 +23,13 @@ public class BiLinMap extends baseQuadMap {
 	 * Instance-class specific initialization
 	 */	
 	@Override
-	protected final void _updateQuadMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+	protected final void _updateQuadMapFromCntlPtVals_Indiv(Base_ControlFlags flags) {
 		//boolean reset = flags.getResetBranching();
 	}
 	@Override
 	protected boolean updateMapVals_FromUI_Indiv(mapUpdFromUIData upd) {	boolean hasBeenUpdated = false;		return hasBeenUpdated;}
 	@Override
-	public void _updateMeWithQuadMapVals(baseMap otrMap, mapCntlFlags flags) {
+	public void _updateMeWithQuadMapVals(baseMap otrMap, Base_ControlFlags flags) {
 		
 	}
 	

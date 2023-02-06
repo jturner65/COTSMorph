@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -87,21 +87,21 @@ public abstract class baseQuadMap extends baseMap {
 	 * Instance-class specific initialization
 	 */	
 	@Override
-	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+	protected final void updateMapFromCntlPtVals_Indiv(Base_ControlFlags flags) {
 		if(isBaryQuad) {_updateCntrlPtDFromOtherMap(flags);}
 		_updateQuadMapFromCntlPtVals_Indiv(flags);
 		//rebuildCBandCircleGrid();
 	}
 	
-	protected abstract void _updateQuadMapFromCntlPtVals_Indiv(mapCntlFlags flags);
+	protected abstract void _updateQuadMapFromCntlPtVals_Indiv(Base_ControlFlags flags);
 	
 	
 	@Override
-	public final void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags) {
+	public final void updateMeWithMapVals(baseMap otrMap, Base_ControlFlags flags) {
 		if(isBaryQuad) {_updateCntrlPtDFromOtherMap(flags);}
 		_updateMeWithQuadMapVals(otrMap, flags);		
 	}
-	protected abstract void _updateMeWithQuadMapVals(baseMap otrMap, mapCntlFlags flags);
+	protected abstract void _updateMeWithQuadMapVals(baseMap otrMap, Base_ControlFlags flags);
 	
 	@Override
 	protected final void setOtrMap_Indiv() {
@@ -115,7 +115,7 @@ public abstract class baseQuadMap extends baseMap {
 	 * update this map's control point D from barycentric coords, or update bary coords from contrl point d location
 	 * @param flags
 	 */
-	protected void _updateCntrlPtDFromOtherMap(mapCntlFlags flags) {
+	protected void _updateCntrlPtDFromOtherMap(Base_ControlFlags flags) {
 		if((isKeyFrameMap) && (mapIdx == 1)){		///b map, 
 			if(this.otrMap !=null) {
 				baseQuadMap _otr = ((baseQuadMap)otrMap);

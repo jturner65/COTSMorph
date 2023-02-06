@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.transformer.spiral;
 
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
-import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -28,7 +28,7 @@ public class SpiralTransformer extends baseSpiralTransformer {
 	protected void _reset_Indiv() {}
 
 	@Override
-	public void deriveSimilarityFromCntlPts(myPointf[] cntlPts, mapCntlFlags flags) {
+	public void deriveSimilarityFromCntlPts(myPointf[] cntlPts, Base_ControlFlags flags) {
 	
 		trans[0].buildTransformation(new myPointf[] {cntlPts[0],cntlPts[1]},new myPointf[] {cntlPts[2],cntlPts[3]}, flags);	
 

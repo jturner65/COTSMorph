@@ -8,8 +8,8 @@ import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.map.registration.mapRegDist;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.controlFlags.morphCntlFlags;
 import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
@@ -80,7 +80,7 @@ public abstract class baseMorph {
 	 */
 	protected myVectorf normDispTimeVec;
 
-	protected mapCntlFlags[] mapFlags;
+	protected morphCntlFlags[] mapFlags;
 	protected static final int 
 		mapUpdateNoResetIDX 	= 0;
 	protected static final int numMapFlags = 1;
@@ -195,9 +195,9 @@ public abstract class baseMorph {
 		normDispTimeVec = new myVectorf(mapA.getCOV(), mapB.getCOV());
 		normDispTimeVec = myVectorf._mult(mapA.basisVecs[0], normDispTimeVec._dot(mapA.basisVecs[0]));	
 		//areaTrajMaps = new TreeMap<Float, Float>();
-		mapFlags = new mapCntlFlags[numMapFlags];
+		mapFlags = new morphCntlFlags[numMapFlags];
 		for(int i=0;i<mapFlags.length;++i) {
-			mapFlags[i] = new mapCntlFlags();
+			mapFlags[i] = new morphCntlFlags(this);
 			mapFlags[i].setOptimizeAlpha(true); 
 			mapFlags[i].setCopyBranching(true);
 		}
@@ -315,6 +315,14 @@ public abstract class baseMorph {
 	
 	public TreeMap<Float, baseMap> buildLineupOfFrames(int _numFrames) {
 		return _buildArrayOfMorphMaps_Even(new TreeMap<Float, baseMap>(), _numFrames, "_Lineup_Frames");
+	}
+	
+	/**
+	 * Called by morphCntlFlags upon debug being set/cleared
+	 * @param val
+	 */
+	public void handleMapCntlDebug(boolean val) {
+		//TODO
 	}
 	
 	/**

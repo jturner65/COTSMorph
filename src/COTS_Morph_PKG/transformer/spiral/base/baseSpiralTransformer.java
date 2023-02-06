@@ -3,7 +3,7 @@ package COTS_Morph_PKG.transformer.spiral.base;
 import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transform.base.baseTransform;
 import COTS_Morph_PKG.transformer.base.baseTransformer;
-import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -62,7 +62,7 @@ public abstract class baseSpiralTransformer extends baseTransformer {
 	 * @param cntlPts
 	 * @param flags : specific control flags passed from owning map
 	 */	
-	public abstract void deriveSimilarityFromCntlPts(myPointf[] cntlPts, mapCntlFlags flags);	
+	public abstract void deriveSimilarityFromCntlPts(myPointf[] cntlPts, Base_ControlFlags flags);	
 	
 	/////////////////////////
 	// getters/setters

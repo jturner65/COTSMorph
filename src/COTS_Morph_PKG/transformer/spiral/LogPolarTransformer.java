@@ -2,7 +2,7 @@ package COTS_Morph_PKG.transformer.spiral;
 
 import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
-import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -36,7 +36,7 @@ public class LogPolarTransformer extends baseSpiralTransformer {
 	 * build similarity for 1 control point
 	 */
 	@Override
-	public void deriveSimilarityFromCntlPts(myPointf[] cntlPts, mapCntlFlags flags) {
+	public void deriveSimilarityFromCntlPts(myPointf[] cntlPts, Base_ControlFlags flags) {
 		int baseAPt = 0, baseBPt = numTransforms+1;
 		float angle = 0.0f;
 		float scale = 1.0f;

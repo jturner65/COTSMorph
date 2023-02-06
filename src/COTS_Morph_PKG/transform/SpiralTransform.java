@@ -2,7 +2,7 @@ package COTS_Morph_PKG.transform;
 
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.transform.base.baseTransform;
-import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -96,9 +96,9 @@ public class SpiralTransform extends baseTransform {
 	 * also need to update branching
 	 * @return
 	 */
-	private void calcOptimalAlpha(float alphaNew, mapCntlFlags flags) {	
+	private void calcOptimalAlpha(float alphaNew, Base_ControlFlags flags) {	
 		//if((old_old_alpha != old_alpha) || (a != old_alpha)) {
-		if(flags.getDebug() && (name.contains("currMorphMap"))){//&& (!name.toLowerCase().contains("cpy"))) {// && ((old_old_alpha != old_alpha) || (a != old_alpha))) {
+		if(flags.getIsDebug() && (name.contains("currMorphMap"))){//&& (!name.toLowerCase().contains("cpy"))) {// && ((old_old_alpha != old_alpha) || (a != old_alpha))) {
 			//System.out.println(name+" : Old alpha : " + old_alpha + " alphaNew : " + alphaNew + " | a : " + a + " | a_BranchDisp : " + a_BranchDisp);
 			//if(Math.abs(old_alpha - alphaNew)
 			
@@ -112,7 +112,7 @@ public class SpiralTransform extends baseTransform {
 	 * @param flags any instance-specific flags to use to build transformation 
 	 */	
 	@Override
-	public final void buildTransformation(myPointf[] e0, myPointf[] e1,  mapCntlFlags flags) {
+	public final void buildTransformation(myPointf[] e0, myPointf[] e1,  Base_ControlFlags flags) {
 	    m = spiralScale(e0[0],e0[1],e1[0],e1[1]); 	
 	    float alphaNew = spiralAngle(e0[0],e0[1],e1[0],e1[1]); // new values	
 	    

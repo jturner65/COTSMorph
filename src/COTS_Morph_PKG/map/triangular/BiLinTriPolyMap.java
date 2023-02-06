@@ -6,8 +6,8 @@ import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.map.triangular.base.baseTriangleMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -26,7 +26,7 @@ public class BiLinTriPolyMap extends baseTriangleMap {
 	}
 
 	@Override
-	public void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags) {
+	public void updateMeWithMapVals(baseMap otrMap, Base_ControlFlags flags) {
 	}
 
 	/**
@@ -34,7 +34,7 @@ public class BiLinTriPolyMap extends baseTriangleMap {
 	 */	
 	@SuppressWarnings("unused")
 	@Override
-	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+	protected final void updateMapFromCntlPtVals_Indiv(Base_ControlFlags flags) {
 		boolean reset = flags.getResetBranching();
 	}
 	@Override

@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.transform.base;
 
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import base_Render_Interface.IRenderInterface;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -59,7 +59,7 @@ public abstract class baseTransform {
 	 * @param cntlPts
 	 * @param flags any instance-specific flags to use to build transformation 
 	 */	
-	public abstract void buildTransformation(myPointf[] e0, myPointf[] e1,  mapCntlFlags flags);
+	public abstract void buildTransformation(myPointf[] e0, myPointf[] e1,  Base_ControlFlags flags);
 	
 	/**
 	 * calc 1D transformation point for given point

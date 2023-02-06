@@ -1,7 +1,7 @@
 package COTS_Morph_PKG.transformer.spiral;
 
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
-import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -38,7 +38,7 @@ public class CarrierTransformer extends baseSpiralTransformer {
 	 * @param forceResetBranching whether branching reset should be forced
 	 */
 	@Override
-	public final void deriveSimilarityFromCntlPts(myPointf[] cntlPts,  mapCntlFlags flags) {
+	public final void deriveSimilarityFromCntlPts(myPointf[] cntlPts,  Base_ControlFlags flags) {
 		myPointf[] e0 = new myPointf[] {cntlPts[0],cntlPts[1]},
 				e1 = new myPointf[] {cntlPts[2],cntlPts[3]},
 				e0Ortho = new myPointf[] {e0[0],e1[0]},

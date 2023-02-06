@@ -5,8 +5,9 @@ import java.util.TreeMap;
 
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.controlFlags.mapCntlFlags;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.my_procApplet;
@@ -203,11 +204,21 @@ public abstract class baseMap {
 			cntlPts[i]= new myPointf(_cntlPts[i]);
 			cntlPtLbls[i]="" + ((char)(i+'A'));
 		}
-		regMapUpdateFlags = new mapCntlFlags();		
-		resetMapUpdateFlags = new mapCntlFlags();
+		regMapUpdateFlags = new mapCntlFlags(this);		
+		resetMapUpdateFlags = new mapCntlFlags(this);
 		resetMapUpdateFlags.setResetBranching(true);	
 	}//initCntlPtsBasisVecsMapUpdateFlags
 
+	/**
+	 * Called by mapCntlFlags upon debug being set/cleared
+	 * @param val
+	 */
+	public void handleMapCntlDebug(boolean val) {
+		//TODO
+	}
+	
+	
+	
 //	/**
 //	 * set/reset original control points to be equal to passed points
 //	 * @param _origCntlPts
@@ -249,9 +260,9 @@ public abstract class baseMap {
 	 * @param _cntlPts
 	 * @param flags
 	 */
-	public void setCntlPts(myPointf[] _cntlPts, mapCntlFlags flags) {setCntlPts(_cntlPts, flags, numCellsPerSide);}
+	public void setCntlPts(myPointf[] _cntlPts, Base_ControlFlags flags) {setCntlPts(_cntlPts, flags, numCellsPerSide);}
 	
-	private void setCntlPts(myPointf[] _cntlPts, mapCntlFlags flags, int _numCellsPerSide) {
+	private void setCntlPts(myPointf[] _cntlPts, Base_ControlFlags flags, int _numCellsPerSide) {
 		updateNumCellsPerSide(_numCellsPerSide);
 		for(int i=0;i<cntlPts.length;++i) {		cntlPts[i].set(_cntlPts[i]);}
 		updateMapFromCntlPtVals(flags);
@@ -407,7 +418,7 @@ public abstract class baseMap {
 	 * build all grid verts based on current control corner point positions
 	 * @return
 	 */
-	private final void updateMapFromCntlPtVals(mapCntlFlags flags) {
+	private final void updateMapFromCntlPtVals(Base_ControlFlags flags) {
 		//instance-specifics
 		updateMapFromCntlPtVals_Indiv(flags);	
 		if(null != otrMap) {//share this map's branching with OTR map
@@ -422,19 +433,19 @@ public abstract class baseMap {
 	 * update this map's derived values without recalculating values
 	 * @param reset
 	 */
-	protected final void updateMapFromOtrMapVals(mapCntlFlags flags) {
+	protected final void updateMapFromOtrMapVals(Base_ControlFlags flags) {
 		updateMapFromCntlPtVals_Indiv(flags);		
 		//find center of control points
 		finalizeValsAfterCntlPtsMod();
 	}
 		
-	public abstract void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags);	
+	public abstract void updateMeWithMapVals(baseMap otrMap, Base_ControlFlags flags);	
 	
 	/**
 	 * Instance-class specific initialization
 	 * @param reset whether internal state of inheriting map should be reset, if there is any
 	 */
-	protected abstract void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags);
+	protected abstract void updateMapFromCntlPtVals_Indiv(Base_ControlFlags flags);
 	
 	
 	/**

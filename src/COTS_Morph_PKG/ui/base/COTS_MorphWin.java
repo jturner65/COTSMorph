@@ -107,6 +107,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 		
 	//boolean priv flags
 	public static final int 
+		//debug is idx 0
 		resetMapCrnrsIDX					= 1,
 		
 		resetMapCrnrs_0IDX					= 2,				//reset map corners to start positions
@@ -608,6 +609,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	
 	@Override
 	protected final void updateCalcObjUIVals() {
+		if((null==mapManagers)||(mapManagers.length==0)) {return;}
 		for(int i=0;i<mapManagers.length;++i) {mapManagers[i].updateMapMorphVals_FromUI((mapUpdFromUIData) uiUpdateData);	}
 		mapManagers[currMapTypeIDX].buildOrientedLineup();
 	}

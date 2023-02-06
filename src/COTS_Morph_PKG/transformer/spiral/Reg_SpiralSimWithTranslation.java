@@ -3,7 +3,7 @@ package COTS_Morph_PKG.transformer.spiral;
 import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
-import COTS_Morph_PKG.utils.mapCntlFlags;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -43,7 +43,7 @@ public class Reg_SpiralSimWithTranslation extends baseSpiralTransformer {
 	 * ara idx 1 : new myPointf(angle,Scale,0.0f)},resetBranching);
 	 */
 	@Override
-	public void deriveSimilarityFromCntlPts(myPointf[] regVals,  mapCntlFlags flags) {
+	public void deriveSimilarityFromCntlPts(myPointf[] regVals,  Base_ControlFlags flags) {
 		translation = new myVectorf(regVals[0]);
 		//float scale, float angle, myPointf A, myPointf B
 		((SpiralTransform)trans[0]).buildTransformation(regVals[1].x, regVals[1].y, regVals[2],regVals[3]);		

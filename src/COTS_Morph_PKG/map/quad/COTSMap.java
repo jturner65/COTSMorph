@@ -8,8 +8,8 @@ import COTS_Morph_PKG.map.quad.base.baseQuadMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.transformer.spiral.COTS_Transformer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -56,7 +56,7 @@ public class COTSMap extends baseQuadMap {
 	 * Instance-class specific initialization
 	 */	
 	@Override
-	protected final void _updateQuadMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+	protected final void _updateQuadMapFromCntlPtVals_Indiv(Base_ControlFlags flags) {
 		//boolean reset = flags[0];
 		//boolean optimizeAlpha = false;	//this is done to force the morphed maps to try to have angles close as possible to other map's angles
 		//if(flags.length > 1) {optimizeAlpha= flags[1];}
@@ -72,7 +72,7 @@ public class COTSMap extends baseQuadMap {
 	 */
 
 	@Override
-	public void _updateMeWithQuadMapVals(baseMap otrMap, mapCntlFlags flags) {
+	public void _updateMeWithQuadMapVals(baseMap otrMap, Base_ControlFlags flags) {
 		//copy branching should only be set when this map(being a morph frame) is being copied from mapA in initial morph calculation
 		if ((((COTSMap)otrMap).shouldShareBranching) || (flags.getCopyBranching())){
 			cots.setBranching(((COTSMap)otrMap).cots.getBranching());

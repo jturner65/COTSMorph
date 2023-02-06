@@ -6,8 +6,8 @@ import COTS_Morph_PKG.map.base.baseMap;
 import COTS_Morph_PKG.map.triangular.base.baseTriangleMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
-import COTS_Morph_PKG.utils.mapCntlFlags;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
+import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -86,7 +86,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 	 * Instance-class specific initialization
 	 */	
 	@Override
-	protected final void updateMapFromCntlPtVals_Indiv(mapCntlFlags flags) {
+	protected final void updateMapFromCntlPtVals_Indiv(Base_ControlFlags flags) {
 		boolean reset = flags.getResetBranching();
 		//first move other map's control points
 		if(otrMap == null) {			return;		}
@@ -105,7 +105,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 		}		
 	}
 	
-	private void setOtrMapVals(mapCntlFlags flags) {
+	private void setOtrMapVals(Base_ControlFlags flags) {
 		for(int i=0;i<cntlPts.length;++i) {
 			myPointf pt = otrMap.findPointInMyPlane(cntlPts[i], cntlPtNorms[i]);
 			otrCntlPts[i].set(pt);
@@ -115,7 +115,7 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 
 	
 	@Override
-	public void updateMeWithMapVals(baseMap otrMap, mapCntlFlags flags) {
+	public void updateMeWithMapVals(baseMap otrMap, Base_ControlFlags flags) {
 		if(this.mapIdx==1) {
 			for(int i=0;i<cntlPts.length;++i) {		cntlPts[i].set(((PointNormTriPolyMap)otrMap).otrCntlPts[i]);		}
 		}
