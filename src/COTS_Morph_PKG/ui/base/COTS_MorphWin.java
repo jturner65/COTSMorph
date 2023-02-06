@@ -20,6 +20,7 @@ import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Type;
 import base_Utils_Objects.io.messaging.MsgCodes;
+import base_Utils_Objects.tools.flags.Base_BoolFlags;
 import processing.core.PImage;
 
 public abstract class COTS_MorphWin extends Base_DispWindow {
@@ -106,7 +107,6 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 		
 	//boolean priv flags
 	public static final int 
-		debugAnimIDX 						= 0,				//debug
 		resetMapCrnrsIDX					= 1,
 		
 		resetMapCrnrs_0IDX					= 2,				//reset map corners to start positions
@@ -248,7 +248,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 
 		// add an entry for each button, in the order they are wished to be displayed
 		// true tag, false tag, btn IDX
-		tmpBtnNamesArray.add(new Object[] { "Debugging", "Debug", debugAnimIDX });
+		tmpBtnNamesArray.add(new Object[] { "Debugging", "Debug", Base_BoolFlags.debugIDX });
 		tmpBtnNamesArray.add(new Object[] { "Resetting Maps", "Reset Maps", resetMapCrnrsIDX });
 		tmpBtnNamesArray.add(new Object[] { "Resetting Map 0", "Reset Map 0", resetMapCrnrs_0IDX });
 		tmpBtnNamesArray.add(new Object[] { "Resetting Map 1", "Reset Map 1", resetMapCrnrs_1IDX });
@@ -387,7 +387,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 				break;}
 			case gIDX_MorphType : {
 				if(mapManagers[currMapTypeIDX].checkCurrMorphUsesReg()) {
-					mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, getPrivFlags(findBestOrRegDistIDX));
+					mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, privFlags.getFlag(findBestOrRegDistIDX));
 				}									 	
 				break;}
 			case gIDX_MorphTypeOrient		: {break;}
@@ -451,16 +451,26 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	}//setUI_FloatValsCustom	
 	protected abstract boolean setUI_FloatValsCustom_Indiv(int UIidx, float val);
 
+	/**
+	 * UI code-level Debug mode functionality. Called only from flags structure
+	 * @param val
+	 */
 	@Override
-	public final void setPrivFlags(int idx, boolean val) {
-		int flIDX = idx / 32, mask = 1 << (idx % 32);
-		boolean oldVal = getPrivFlags(idx);
-		privFlags[flIDX] = (val ? privFlags[flIDX] | mask : privFlags[flIDX] & ~mask);
-		//this will update UI-to-maps com object
-		if(null!=uiUpdateData) {if(checkAndSetBoolValue(idx, val)){ if((null!=mapManagers) && (mapManagers.length > 0)) {updateCalcObjUIVals();}}}
+	public void handleDebugMode(boolean val) {}
+	
+	/**
+	 * Application-specific Debug mode functionality (application-specific). Called only from privflags structure
+	 * @param val
+	 */
+	@Override
+	public void handlePrivFlagsDebugMode(boolean val) {	}
+	
+	/**
+	 * Handle application-specific flag setting
+	 */
+	@Override
+	public void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal){
 		switch (idx) {// special actions for each flag
-			case debugAnimIDX				: {		
-				break;		}
 			case resetMapCrnrsIDX			: {			
 				if(val) {		resetAllMapCorners();	clearBtnNextFrame(idx);	}
 				break;		}
@@ -478,14 +488,14 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 				break;}
 			
 			case findDiffFromAtoBIDX			: {
-				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(0, 1); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(getPrivFlags(debugAnimIDX), getPrivFlags(findBestOrRegDistIDX));	clearBtnNextFrame(idx);}
+				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(0, 1); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(privFlags.getIsDebug(), privFlags.getFlag(findBestOrRegDistIDX));	clearBtnNextFrame(idx);}
 				break;}
 			case findDiffFromBToAIDX			: {
-				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(1, 0); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(getPrivFlags(debugAnimIDX), getPrivFlags(findBestOrRegDistIDX));	clearBtnNextFrame(idx);}
+				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(1, 0); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(privFlags.getIsDebug(), privFlags.getFlag(findBestOrRegDistIDX));	clearBtnNextFrame(idx);}
 				break;}					
 			case findBestOrRegDistIDX 			: { 	
 				if(val != oldVal) {
-					mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(getPrivFlags(debugAnimIDX), getPrivFlags(findBestOrRegDistIDX));
+					mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(privFlags.getIsDebug(), privFlags.getFlag(findBestOrRegDistIDX));
 				}
 				break;		}
 			
@@ -518,7 +528,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 			case drawMap_OrthoFrameIDX			: {			break;		}
 			case drawMap_CntlPtLblsIDX			: {			break;		}
 			case drawMap_RegCopyIDX				: {
-				if (val) {			mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(true, getPrivFlags(findBestOrRegDistIDX));}
+				if (val) {			mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(true, privFlags.getFlag(findBestOrRegDistIDX));}
 				break;		}
 			
 			case drawMorph_DistColorsIDX		: {			break;		}
@@ -532,39 +542,39 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 			case sweepMapsIDX					: {			break;		}
 			case showOrientedLineupIDX			: {			
 				if(val) {			
-					setPrivFlags(showTrajAnalysisWinIDX, false);
-					setPrivFlags(showMorphAnalysisGraphsIDX, false);
-					setPrivFlags(showMrphStackDistAnalysisWinIDX, false);
-					setPrivFlags(showMrphStackDistAnalysisGraphsIDX, false);
+					privFlags.setFlag(showTrajAnalysisWinIDX, false);
+					privFlags.setFlag(showMorphAnalysisGraphsIDX, false);
+					privFlags.setFlag(showMrphStackDistAnalysisWinIDX, false);
+					privFlags.setFlag(showMrphStackDistAnalysisGraphsIDX, false); 
 					mapManagers[currMapTypeIDX].buildOrientedLineup();	
 				}
 				break;		}
 			case showTrajAnalysisWinIDX			: {
 				if(val) {
-					setPrivFlags(showOrientedLineupIDX, false);
-					setPrivFlags(showMrphStackDistAnalysisWinIDX, false);
-					setPrivFlags(showMrphStackDistAnalysisGraphsIDX, false);
+					privFlags.setFlag(showOrientedLineupIDX, false);
+					privFlags.setFlag(showMrphStackDistAnalysisWinIDX, false);
+					privFlags.setFlag(showMrphStackDistAnalysisGraphsIDX, false);
 				}
 				break;		}
 			case showMorphAnalysisGraphsIDX 			:{
 				if(val) {
-					setPrivFlags(showOrientedLineupIDX, false);
-					setPrivFlags(showMrphStackDistAnalysisWinIDX, false);
-					setPrivFlags(showMrphStackDistAnalysisGraphsIDX, false);
+					privFlags.setFlag(showOrientedLineupIDX, false);
+					privFlags.setFlag(showMrphStackDistAnalysisWinIDX, false);
+					privFlags.setFlag(showMrphStackDistAnalysisGraphsIDX, false);
 				}
 				break;	}
 			case showMrphStackDistAnalysisWinIDX		:{
 				if(val) {
-					setPrivFlags(showTrajAnalysisWinIDX, false);
-					setPrivFlags(showMorphAnalysisGraphsIDX, false);
-					setPrivFlags(showOrientedLineupIDX, false);
+					privFlags.setFlag(showTrajAnalysisWinIDX, false);
+					privFlags.setFlag(showMorphAnalysisGraphsIDX, false);
+					privFlags.setFlag(showOrientedLineupIDX, false);
 				}			
 				break; }
 			case showMrphStackDistAnalysisGraphsIDX  :{
 				if(val) {
-					setPrivFlags(showTrajAnalysisWinIDX, false);
-					setPrivFlags(showMorphAnalysisGraphsIDX, false);
-					setPrivFlags(showOrientedLineupIDX, false);
+					privFlags.setFlag(showTrajAnalysisWinIDX, false);
+					privFlags.setFlag(showMorphAnalysisGraphsIDX, false);
+					privFlags.setFlag(showOrientedLineupIDX, false);
 				}			
 				break; }
 			default 			: {setPrivFlags_Indiv(idx,val);}
@@ -646,23 +656,23 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 //	@Override
 //	protected final void drawMe(float animTimeMod) {
 //		pa.pushMatState();
-//		boolean debug = getPrivFlags(debugAnimIDX), showLbls = getPrivFlags(drawMap_CntlPtLblsIDX), drawCircles = getPrivFlags(drawMap_CellCirclesIDX);
-//		boolean drawMorphMap = getPrivFlags(drawMorph_MapIDX), drawMorphSlices = getPrivFlags(drawMorph_SlicesIDX), drawCntlPts = getPrivFlags(drawMap_CntlPtsIDX);
-//		boolean drawMap = getPrivFlags(drawMapIDX), drawMorphCntlPtTraj = getPrivFlags(drawMorph_CntlPtTrajIDX), drawCopy = getPrivFlags(drawMap_RegCopyIDX);
-//		boolean _showDistColors = getPrivFlags(drawMorph_DistColorsIDX);
+//		boolean debug = privFlags.getFlag(debugAnimIDX), showLbls = privFlags.getFlag(drawMap_CntlPtLblsIDX), drawCircles = privFlags.getFlag(drawMap_CellCirclesIDX);
+//		boolean drawMorphMap = privFlags.getFlag(drawMorph_MapIDX), drawMorphSlices = privFlags.getFlag(drawMorph_SlicesIDX), drawCntlPts = privFlags.getFlag(drawMap_CntlPtsIDX);
+//		boolean drawMap = privFlags.getFlag(drawMapIDX), drawMorphCntlPtTraj = privFlags.getFlag(drawMorph_CntlPtTrajIDX), drawCopy = privFlags.getFlag(drawMap_RegCopyIDX);
+//		boolean _showDistColors = privFlags.getFlag(drawMorph_DistColorsIDX);
 //		if(_showDistColors) {	mapManagers[currMapTypeIDX].checkIfMorphAnalysisDone();	}
 //		//draw maps with dependenc on wireframe/filled setting
-//		mapManagers[currMapTypeIDX].drawMaps_Main(debug, getPrivFlags(drawMapIDX), _showDistColors, getPrivFlags(drawMap_FillOrWfIDX), drawCircles, drawCopy);
+//		mapManagers[currMapTypeIDX].drawMaps_Main(debug, privFlags.getFlag(drawMapIDX), _showDistColors, privFlags.getFlag(drawMap_FillOrWfIDX), drawCircles, drawCopy);
 //		//drawMaps_Aux(boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines) {
-//		mapManagers[currMapTypeIDX].drawMaps_Aux(debug, getPrivFlags(drawMap_ImageIDX), getPrivFlags(drawMap_OrthoFrameIDX), getPrivFlags(drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
+//		mapManagers[currMapTypeIDX].drawMaps_Aux(debug, privFlags.getFlag(drawMap_ImageIDX), privFlags.getFlag(drawMap_OrthoFrameIDX), privFlags.getFlag(drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
 //		
 //		if(drawMorphCntlPtTraj) {		mapManagers[currMapTypeIDX].drawMorphedMap_CntlPtTraj(drawMapDetail);}		
 //		
-//		if(drawMorphMap || drawMorphSlices || drawCircles || getPrivFlags(drawMorph_CntlPtTrajIDX) || getPrivFlags(drawMorph_Slices_RtSideInfoIDX)) {		
+//		if(drawMorphMap || drawMorphSlices || drawCircles || privFlags.getFlag(drawMorph_CntlPtTrajIDX) || privFlags.getFlag(drawMorph_Slices_RtSideInfoIDX)) {		
 //			mapManagers[currMapTypeIDX].drawAndAnimMorph(debug, animTimeMod, drawMap,
-//					drawMorphMap, _showDistColors, getPrivFlags(drawMorph_FillOrWfIDX), 
-//					drawMorphSlices, getPrivFlags(drawMorph_Slices_FillOrWfIDX), 
-//					drawCircles, drawCntlPts, getPrivFlags(sweepMapsIDX), showLbls,drawMapDetail);	
+//					drawMorphMap, _showDistColors, privFlags.getFlag(drawMorph_FillOrWfIDX), 
+//					drawMorphSlices, privFlags.getFlag(drawMorph_Slices_FillOrWfIDX), 
+//					drawCircles, drawCntlPts, privFlags.getFlag(sweepMapsIDX), showLbls,drawMapDetail);	
 //		}
 //		
 //		_drawMe_Indiv(animTimeMod);
@@ -702,12 +712,12 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	 */
 	@Override
 	protected final void drawOnScreenStuffPriv(float modAmtMillis) {
-		if(getPrivFlags(showOrientedLineupIDX)) {
-			mapManagers[currMapTypeIDX].drawMaps_LineupFrames(getPrivFlags(drawMap_FillOrWfIDX), getPrivFlags(drawMap_CellCirclesIDX), getPrivFlags(drawMap_ImageIDX));
-		} else if(getPrivFlags(showTrajAnalysisWinIDX) || getPrivFlags(showMorphAnalysisGraphsIDX)) { 
-			mapManagers[currMapTypeIDX].drawMaps_MorphAnalysisWins(getPrivFlags(showTrajAnalysisWinIDX),getPrivFlags(showMorphAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],drawMapDetail,sideBarYDisp) ;
-		} else if(getPrivFlags(showMrphStackDistAnalysisWinIDX) || getPrivFlags(showMrphStackDistAnalysisGraphsIDX)) { 
-			mapManagers[currMapTypeIDX].drawMaps_MrphStackDistAnalysisWins(getPrivFlags(showMrphStackDistAnalysisWinIDX),getPrivFlags(showMrphStackDistAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],sideBarYDisp) ;
+		if(privFlags.getFlag(showOrientedLineupIDX)) {
+			mapManagers[currMapTypeIDX].drawMaps_LineupFrames(privFlags.getFlag(drawMap_FillOrWfIDX), privFlags.getFlag(drawMap_CellCirclesIDX), privFlags.getFlag(drawMap_ImageIDX));
+		} else if(privFlags.getFlag(showTrajAnalysisWinIDX) || privFlags.getFlag(showMorphAnalysisGraphsIDX)) { 
+			mapManagers[currMapTypeIDX].drawMaps_MorphAnalysisWins(privFlags.getFlag(showTrajAnalysisWinIDX),privFlags.getFlag(showMorphAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],drawMapDetail,sideBarYDisp) ;
+		} else if(privFlags.getFlag(showMrphStackDistAnalysisWinIDX) || privFlags.getFlag(showMrphStackDistAnalysisGraphsIDX)) { 
+			mapManagers[currMapTypeIDX].drawMaps_MrphStackDistAnalysisWins(privFlags.getFlag(showMrphStackDistAnalysisWinIDX),privFlags.getFlag(showMrphStackDistAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],sideBarYDisp) ;
 		}		
 	}		
 	
@@ -718,7 +728,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	 */
 	
 	protected final float drawRightSideMaps(float _yOff) {
-		_yOff = mapManagers[currMapTypeIDX].drawRightSideMaps(_yOff, sideBarYDisp,getPrivFlags(drawMorph_DistColorsIDX), getPrivFlags(drawMap_RegCopyIDX), getPrivFlags(drawMorph_MapIDX), getPrivFlags(drawMorph_Slices_RtSideInfoIDX));		
+		_yOff = mapManagers[currMapTypeIDX].drawRightSideMaps(_yOff, sideBarYDisp,privFlags.getFlag(drawMorph_DistColorsIDX), privFlags.getFlag(drawMap_RegCopyIDX), privFlags.getFlag(drawMorph_MapIDX), privFlags.getFlag(drawMorph_Slices_RtSideInfoIDX));		
 		return _yOff;
 	}
 	
@@ -776,11 +786,11 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	
 			handleMapMseDrag(mouseX, mouseY, pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
 			++updateCount;
-			//if((baseMapManager.CarrierSimRegTransIDX==currMorphTypeIDX) || (getPrivFlags(drawMap_RegCopyIDX))) {mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false);}
+			//if((baseMapManager.CarrierSimRegTransIDX==currMorphTypeIDX) || (privFlags.getFlag(drawMap_RegCopyIDX))) {mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false);}
 			if(updateCount == maxUpdateForRefresh) {				
-				if((mapManagers[currMapTypeIDX].checkCurrMorphUsesReg()) || (getPrivFlags(drawMap_RegCopyIDX))) {					
+				if((mapManagers[currMapTypeIDX].checkCurrMorphUsesReg()) || (privFlags.getFlag(drawMap_RegCopyIDX))) {					
 					//msgObj.dispInfoMessage("COTS_MorphWin::"+this.name, "hndlMouseDragIndiv", "Start find map diff : " +updateCount);
-					mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, getPrivFlags(findBestOrRegDistIDX));
+					mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, privFlags.getFlag(findBestOrRegDistIDX));
 					//msgObj.dispInfoMessage("COTS_MorphWin::"+this.name, "hndlMouseDragIndiv", "Done find map diff");
 					
 				}
@@ -806,8 +816,8 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	@Override
 	protected final void hndlMouseRelIndiv() {		
 		mapManagers[currMapTypeIDX].hndlMouseRelIndiv();
-		if(getPrivFlags(drawMap_RegCopyIDX)) {mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, getPrivFlags(findBestOrRegDistIDX));}
-		if(getPrivFlags(showOrientedLineupIDX)) {mapManagers[currMapTypeIDX].buildOrientedLineup();	}
+		if(privFlags.getFlag(drawMap_RegCopyIDX)) {mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, privFlags.getFlag(findBestOrRegDistIDX));}
+		if(privFlags.getFlag(showOrientedLineupIDX)) {mapManagers[currMapTypeIDX].buildOrientedLineup();	}
 		mouseRelease_IndivMorphWin();
 	}
 	

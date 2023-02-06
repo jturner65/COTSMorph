@@ -493,7 +493,7 @@ public class mapPairManager {
 	
 	public final void drawMapsAndMorphs(float animTimeMod, int drawMapDetail) {
 		pa.pushMatState();
-		boolean debug = currUIVals.getFlag(COTS_MorphWin.debugAnimIDX), showLbls = currUIVals.getFlag(COTS_MorphWin.drawMap_CntlPtLblsIDX), drawCircles = currUIVals.getFlag(COTS_MorphWin.drawMap_CellCirclesIDX);
+		boolean debug = currUIVals.getIsDebug(), showLbls = currUIVals.getFlag(COTS_MorphWin.drawMap_CntlPtLblsIDX), drawCircles = currUIVals.getFlag(COTS_MorphWin.drawMap_CellCirclesIDX);
 		boolean drawMorphMap = currUIVals.getFlag(COTS_MorphWin.drawMorph_MapIDX), drawMorphSlices = currUIVals.getFlag(COTS_MorphWin.drawMorph_SlicesIDX), drawCntlPts = currUIVals.getFlag(COTS_MorphWin.drawMap_CntlPtsIDX);
 		boolean drawMap = currUIVals.getFlag(COTS_MorphWin.drawMapIDX), drawMorphCntlPtTraj = currUIVals.getFlag(COTS_MorphWin.drawMorph_CntlPtTrajIDX), drawCopy = currUIVals.getFlag(COTS_MorphWin.drawMap_RegCopyIDX);
 		boolean _showDistColors = currUIVals.getFlag(COTS_MorphWin.drawMorph_DistColorsIDX);
