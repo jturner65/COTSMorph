@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.utils.controlFlags;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 
 /**
@@ -10,9 +10,9 @@ import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
  */
 public class mapCntlFlags extends Base_ControlFlags{
 	
-	protected final baseMap owner;
+	protected final Base_PolyMap owner;
 	
-	public mapCntlFlags(baseMap _owner) {
+	public mapCntlFlags(Base_PolyMap _owner) {
 		super();
 		owner = _owner;
 	}
@@ -23,9 +23,7 @@ public class mapCntlFlags extends Base_ControlFlags{
 	}
 	
 	////////////////////
-	// indiv values
-
-			
+	// indiv values			
 
 	@Override
 	protected void handleSettingDebug(boolean val) {

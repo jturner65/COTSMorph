@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.morph.singleTransform.base;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.base.baseMorph;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
@@ -23,7 +23,7 @@ public abstract class baseSingleTransformMorph extends baseMorph {
 	 */	
 	protected myPointf[] crnrPtAra;
 
-	public baseSingleTransformMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}	
+	public baseSingleTransformMorph(COTS_MorphWin _win, mapPairManager _mapMgr, Base_PolyMap _mapA, Base_PolyMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}	
 	public baseSingleTransformMorph(baseSingleTransformMorph _otr) {		super(_otr);}
 	
 	/**
@@ -50,7 +50,7 @@ public abstract class baseSingleTransformMorph extends baseMorph {
 	 * use currently set t value to calculate morph and apply to passed morph map
 	 */
 	@Override
-	protected final void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB) {
+	protected final void calcMorphAndApplyToMap(Base_PolyMap _curMorphMap, float tA, float tB) {
 		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(); 
 		myPointf[] newPts = new myPointf[aCntlPts.length];
 		

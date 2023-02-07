@@ -2,7 +2,7 @@ package COTS_Morph_PKG.map.quad.base;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -14,7 +14,7 @@ import base_UI_Objects.my_procApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 
-public abstract class baseQuadMap extends baseMap {
+public abstract class baseQuadMap extends Base_PolyMap {
 
 //	private PShape[] checkerBoard;
 //	private PShape[] circleGrid;
@@ -97,11 +97,11 @@ public abstract class baseQuadMap extends baseMap {
 	
 	
 	@Override
-	public final void updateMeWithMapVals(baseMap otrMap, Base_ControlFlags flags) {
+	public final void updateMeWithMapVals(Base_PolyMap otrMap, Base_ControlFlags flags) {
 		if(isBaryQuad) {_updateCntrlPtDFromOtherMap(flags);}
 		_updateMeWithQuadMapVals(otrMap, flags);		
 	}
-	protected abstract void _updateMeWithQuadMapVals(baseMap otrMap, Base_ControlFlags flags);
+	protected abstract void _updateMeWithQuadMapVals(Base_PolyMap otrMap, Base_ControlFlags flags);
 	
 	@Override
 	protected final void setOtrMap_Indiv() {
@@ -341,7 +341,7 @@ public abstract class baseQuadMap extends baseMap {
 			pa.pushMatState();	
 			pa.translate(10.0f,0.0f, 0.0f);
 			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Cntl Pt D Bary : ");
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "["+String.format(baseMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(baseMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(baseMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
+			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "["+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
 			pa.popMatState();
 				
 			yOff += sideBarYDisp;pa.translate(0.0f,sideBarYDisp, 0.0f);

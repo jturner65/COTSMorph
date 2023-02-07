@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.transform;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.transform.base.baseTransform;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
@@ -260,7 +260,7 @@ public class SpiralTransform extends baseTransform {
 	@Override
 	public final float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp, String coordName) {
 		pa.translate(-10.0f, 0.0f, 0.0f);
-		String[] dispVals = new String[]{String.format(baseMap.strPointDispFrmt8,m),String.format(baseMap.strPointDispFrmt8,a),String.format(baseMap.strPointDispFrmt8,a_BranchDisp)};	
+		String[] dispVals = new String[]{String.format(Base_PolyMap.strPointDispFrmt8,m),String.format(Base_PolyMap.strPointDispFrmt8,a),String.format(Base_PolyMap.strPointDispFrmt8,a_BranchDisp)};	
 		pa.pushMatState();
 		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, coordName + " :");
 		for(int j=0;j<rtMenuDispType.length;++j) {			
@@ -277,7 +277,7 @@ public class SpiralTransform extends baseTransform {
 		} else {
 			
 			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
-			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
+			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
 		}
 		pa.popMatState();
 			
@@ -294,7 +294,7 @@ public class SpiralTransform extends baseTransform {
 		} else {
 			pa.pushMatState();		
 				showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
-				showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(baseMap.strPointDispFrmt8)+")");
+				showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
 			pa.popMatState();
 		}
 		yOff += sideBarYDisp;
@@ -323,8 +323,8 @@ public class SpiralTransform extends baseTransform {
 	@Override
 	public String getDebugStr_Indiv() {
 		String dbgStr = " | a/s AB and DC : ";//old a : " +String.format(baseMap.strPointDispFrmt,old_a) +" |";
-		dbgStr += " Angle : " +String.format(baseMap.strPointDispFrmt8,a) +" | Brnch :  "+String.format(baseMap.strPointDispFrmt8,a_BranchDisp);
-		dbgStr += " | Scl : " + String.format(baseMap.strPointDispFrmt8,m) + " || F : " + F.toStrBrf();
+		dbgStr += " Angle : " +String.format(Base_PolyMap.strPointDispFrmt8,a) +" | Brnch :  "+String.format(Base_PolyMap.strPointDispFrmt8,a_BranchDisp);
+		dbgStr += " | Scl : " + String.format(Base_PolyMap.strPointDispFrmt8,m) + " || F : " + F.toStrBrf();
 		return dbgStr;
 	}
 

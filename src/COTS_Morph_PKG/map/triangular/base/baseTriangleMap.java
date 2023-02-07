@@ -3,7 +3,7 @@ package COTS_Morph_PKG.map.triangular.base;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -16,7 +16,7 @@ import processing.core.PConstants;
  * @author john
  *
  */
-public abstract class baseTriangleMap extends baseMap {
+public abstract class baseTriangleMap extends Base_PolyMap {
 
 	public baseTriangleMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {
 		super(_win, _mapMgr,_cntlPts, _mapIdx, _mapTypeIDX, _pClrs, _currUIVals, _isKeyFrame, _mapTitle);		

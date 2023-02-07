@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.morph.singleTransform;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.singleTransform.base.baseSingleTransformMorph;
 import COTS_Morph_PKG.transformer.spiral.CarrierTransformer;
@@ -16,7 +16,7 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 public class CarrierSimDiagMorph extends baseSingleTransformMorph {
 
 	
-	public CarrierSimDiagMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}
+	public CarrierSimDiagMorph(COTS_MorphWin _win, mapPairManager _mapMgr, Base_PolyMap _mapA, Base_PolyMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}
 	public CarrierSimDiagMorph(CarrierSimDiagMorph _otr) {super(_otr);}
 	@Override
 	protected final baseSpiralTransformer buildSimilarity() {

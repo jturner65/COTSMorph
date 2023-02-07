@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.base.baseMorph;
 import COTS_Morph_PKG.utils.threading.callables.morphStackDistortionCalc;
@@ -19,13 +19,13 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	/**
 	 * these are all the map slices in the morph stack
 	 */
-	protected baseMap[] morphSliceAra;
+	protected Base_PolyMap[] morphSliceAra;
 	/**
 	 * output : these are all the control points for the current morphstack
 	 */
-	protected baseMap[][][] allPolyMaps;
+	protected Base_PolyMap[][][] allPolyMaps;
 	//special frames  for start and end poly maps to be used for key frame animation distortion calculation in time direction based on animation motion
-	protected baseMap[][] kfStartPolyMap, kfEndPolyMap;
+	protected Base_PolyMap[][] kfStartPolyMap, kfEndPolyMap;
 	/**
 	 * output : scalar value of distortion at each cell k,i,j, with final index being direction of distortion measure
 	 */
@@ -70,7 +70,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	 * @param _currDistMsrMorph
 	 * @param _allPolyMaps
 	 */
-	public final void setAllInitMapVals(baseMorph _currDistMsrMorph, baseMap[] _morphSliceAra, baseMap[][] _kfStartPolyMap, baseMap[][] _kfEndPolyMap) {	
+	public final void setAllInitMapVals(baseMorph _currDistMsrMorph, Base_PolyMap[] _morphSliceAra, Base_PolyMap[][] _kfStartPolyMap, Base_PolyMap[][] _kfEndPolyMap) {	
 		currDistMsrMorph = _currDistMsrMorph;
 		currDistMsrMorph.setMorphSlices(3);
 		morphSliceAra  = _morphSliceAra;
@@ -83,7 +83,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 		int numMapSlices = morphSliceAra.length;
 		int numCellsPerSide = morphSliceAra[0].getNumCellsPerSide();
 		setNumWorkUnits(numMapSlices);
-		allPolyMaps = new baseMap[numMapSlices][][];
+		allPolyMaps = new Base_PolyMap[numMapSlices][][];
 		ttlDistPerCell = new float[numMapSlices][numCellsPerSide][numCellsPerSide][3];
 		avgDistPerCell = new float[numMapSlices][numCellsPerSide][numCellsPerSide]; 
 		
@@ -104,7 +104,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 	public final float[] getMaxDistPerCell() {return maxDistPerCell;}
 	public final float[] getMinDistPerCell() {return minDistPerCell;}
 	
-	public final baseMap[][][] getAllPolyMaps(){return allPolyMaps;}
+	public final Base_PolyMap[][][] getAllPolyMaps(){return allPolyMaps;}
 	
 	
 	/**
@@ -133,7 +133,7 @@ public class morphStackDistortionCalc_Runner extends myThreadRunner implements R
 
 	}
 	
-	public float[][][] calcMorphMapDist(baseMap stMap, baseMap endMap, baseMap curMap) {
+	public float[][][] calcMorphMapDist(Base_PolyMap stMap, Base_PolyMap endMap, Base_PolyMap curMap) {
 		return morphMapRnr.calcAllDistOnPassedMap(stMap, endMap, curMap);
 	}
 	

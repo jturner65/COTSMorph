@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.transformer.spiral;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
@@ -86,7 +86,7 @@ public class Reg_SpiralSimWithTranslation extends baseSpiralTransformer {
 		pa.pushMatState();		
 		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Translation : ");
 		myPointf pt = new myPointf((myPointf)translation);
-		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(baseMap.strPointDispFrmt8)+")");
+		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
 		pa.popMatState();
 		yOff += sideBarYDisp;
 		pa.translate(-10.0f,sideBarYDisp, 0.0f);

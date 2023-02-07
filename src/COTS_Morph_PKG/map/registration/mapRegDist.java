@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.map.registration;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -16,11 +16,11 @@ public class mapRegDist {
 	/**
 	 * from and to maps for current registration
 	 */
-	public baseMap fromMap, toMap;
+	public Base_PolyMap fromMap, toMap;
 	/**
 	 * copy map
 	 */
-	private baseMap copyMap;
+	private Base_PolyMap copyMap;
 	/**
 	 * displacement vector, angle and scale difference between the two maps
 	 */
@@ -28,7 +28,7 @@ public class mapRegDist {
 	private float[] angleAndScale;
 
 	
-	public mapRegDist(mapPairManager _mapMgr, baseMap _fromMap, baseMap _toMap) {
+	public mapRegDist(mapPairManager _mapMgr, Base_PolyMap _fromMap, Base_PolyMap _toMap) {
 		mapMgr = _mapMgr;		
 		fromMap =_fromMap;
 		toMap = _toMap;
@@ -45,13 +45,13 @@ public class mapRegDist {
 	 * @param findClosestDist : possibly rotate map to re-align cntl points
 	 * @param updateCopyMap
 	 */
-	public void setMapsAndCalc(baseMap _fromMap, baseMap _toMap) {
+	public void setMapsAndCalc(Base_PolyMap _fromMap, Base_PolyMap _toMap) {
 		fromMap =_fromMap;
 		toMap = _toMap;		
 		performCalc(false, false);
 		
 	}
-	public void setMapsAndCalc(baseMap _fromMap, baseMap _toMap, boolean dispMod, boolean findClosestDist) {
+	public void setMapsAndCalc(Base_PolyMap _fromMap, Base_PolyMap _toMap, boolean dispMod, boolean findClosestDist) {
 		fromMap =_fromMap;
 		toMap = _toMap;		
 		performCalc(dispMod, findClosestDist);
@@ -132,8 +132,8 @@ public class mapRegDist {
 	 * @param toMap
 	 * @return
 	 */
-	public final baseMap calcDifferenceBetweenMaps(baseMap fromMap, baseMap toMap) {return calcDifferenceBetweenMaps(fromMap, toMap, false);}	
-	private baseMap calcDifferenceBetweenMaps(baseMap fromMap, baseMap toMap, boolean dispMod) {
+	public final Base_PolyMap calcDifferenceBetweenMaps(Base_PolyMap fromMap, Base_PolyMap toMap) {return calcDifferenceBetweenMaps(fromMap, toMap, false);}	
+	private Base_PolyMap calcDifferenceBetweenMaps(Base_PolyMap fromMap, Base_PolyMap toMap, boolean dispMod) {
 		dispBetweenMaps = new myVectorf();
 		angleAndScale = new float[2];
 		//toMap.findDifferenceToMe(fromMap, dispBetweenMaps, angleAndScale);
@@ -141,7 +141,7 @@ public class mapRegDist {
 		if(dispMod) {
 			mapMgr.win.getMsgObj().dispInfoMessage("mapRegDist", "calcDifferenceBetweenMaps", "Distance " + fromMap.mapTitle + " -> " + toMap.mapTitle + " | Displacement of COV : " +  dispBetweenMaps.toStrBrf() + " | Angle between Maps : " + angleAndScale[0] + " | Geometric Means Scale :" + angleAndScale[1]);
 		}
-		baseMap tmpMap = mapMgr.buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
+		Base_PolyMap tmpMap = mapMgr.buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
 		tmpMap.registerMeToVals(dispBetweenMaps, angleAndScale);
 		return tmpMap;	
 	}	
@@ -153,14 +153,14 @@ public class mapRegDist {
 	 * @param bMap
 	 * @return
 	 */
-	public final float findDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
+	public final float findDistBetween2MapVerts(Base_PolyMap aMap, Base_PolyMap bMap) {
 		float res = 0.0f;
 		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
 		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
 		return (float) Math.sqrt(res);
 	}
 	
-	public float findSqDistBetween2MapVerts(baseMap aMap, baseMap bMap) {
+	public float findSqDistBetween2MapVerts(Base_PolyMap aMap, Base_PolyMap bMap) {
 		float res = 0.0f;
 		myPointf[] aCntlPts = aMap.getCntlPts(), bCntlPts = bMap.getCntlPts();
 		for(int i=0;i<aCntlPts.length;++i) {res += myPointf._SqrDist(aCntlPts[i], bCntlPts[i]);}
@@ -173,8 +173,8 @@ public class mapRegDist {
 	 * @param dispMod
 	 * @return
 	 */
-	public baseMap findBestDifferenceBetweenMaps(baseMap fromMap, baseMap toMap, boolean dispMod) {
-		baseMap bestMap = null;
+	public Base_PolyMap findBestDifferenceBetweenMaps(Base_PolyMap fromMap, Base_PolyMap toMap, boolean dispMod) {
+		Base_PolyMap bestMap = null;
 		float tmpDistBetweenMaps, minDistBetweenMaps = 9999999999.9f;
 		dispBetweenMaps = new myVectorf();
 		angleAndScale = new float[2];
@@ -184,7 +184,7 @@ public class mapRegDist {
 			float[] tmpAngleAndScale = new float[2];
 			//toMap.findDifferenceToMe(fromMap, i, tmpDispBetweenMaps, tmpAngleAndScale);
 			findDifferenceBetweenMaps(i, tmpDispBetweenMaps, tmpAngleAndScale);
-			baseMap tmpMap = mapMgr.buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
+			Base_PolyMap tmpMap = mapMgr.buildCopyMapOfPassedMapType(fromMap, fromMap.mapTitle+"_DiffMap");
 			tmpMap.shiftCntlPtIDXs(i);
 			tmpMap.registerMeToVals(tmpDispBetweenMaps, tmpAngleAndScale);
 			tmpDistBetweenMaps = findSqDistBetween2MapVerts(tmpMap, toMap);
@@ -222,5 +222,5 @@ public class mapRegDist {
 	public float getAngle() {return angleAndScale[0];}
 	public float getScale() {return angleAndScale[1];}
 	public float[] getAngleAndScale() {return angleAndScale;}
-	public baseMap getCopyMap() {return copyMap;}
+	public Base_PolyMap getCopyMap() {return copyMap;}
 }//class mapRegDist

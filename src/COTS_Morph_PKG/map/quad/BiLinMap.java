@@ -2,7 +2,7 @@ package COTS_Morph_PKG.map.quad;
 
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.map.quad.base.baseQuadMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
@@ -29,7 +29,7 @@ public class BiLinMap extends baseQuadMap {
 	@Override
 	protected boolean updateMapVals_FromUI_Indiv(mapUpdFromUIData upd) {	boolean hasBeenUpdated = false;		return hasBeenUpdated;}
 	@Override
-	public void _updateMeWithQuadMapVals(baseMap otrMap, Base_ControlFlags flags) {
+	public void _updateMeWithQuadMapVals(Base_PolyMap otrMap, Base_ControlFlags flags) {
 		
 	}
 	

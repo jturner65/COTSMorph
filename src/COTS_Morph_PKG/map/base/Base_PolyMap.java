@@ -23,7 +23,7 @@ import processing.core.PImage;
  * @author john
  *
  */
-public abstract class baseMap {
+public abstract class Base_PolyMap {
 	public static IRenderInterface pa;
 	public COTS_MorphWin win;
 	public static GUI_AppManager AppMgr;
@@ -66,7 +66,7 @@ public abstract class baseMap {
 	/**
 	 * reference to other map, if this is a keyframe map, null otherwise
 	 */
-	protected baseMap otrMap;
+	protected Base_PolyMap otrMap;
 	/**
 	 * map index for this map , either 0, 1 or 2(if morph map); idx of type of map, from win defs for type of instancing class
 	 */
@@ -135,7 +135,7 @@ public abstract class baseMap {
 	protected boolean dispTitleOn2Lines = false;
 
 	protected static final int[] whiteClr = new int[] {255,255,255,255};
-	public baseMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
+	public Base_PolyMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
 		win=_win; pa=Base_DispWindow.pa;AppMgr = Base_DispWindow.AppMgr; mgr = _mapMgr; currUIVals = _currUIVals;
 		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		curMorphTVal = 1.0f * mapIdx;
 		mapTitle = _mapTitle;		mapTtlXOff = Base_DispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
@@ -152,7 +152,7 @@ public abstract class baseMap {
 	 * make a deep copy of passed map
 	 * @param _otr
 	 */
-	public baseMap(String _mapTitle, baseMap _otr) {
+	public Base_PolyMap(String _mapTitle, Base_PolyMap _otr) {
 		win=_otr.win; pa=Base_DispWindow.pa;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
 		mapIdx = _otr.mapIdx;		mapTypeIDX = _otr.mapTypeIDX;
 		mapTitle = _mapTitle ;		mapTtlXOff = Base_DispWindow.yOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
@@ -439,7 +439,7 @@ public abstract class baseMap {
 		finalizeValsAfterCntlPtsMod();
 	}
 		
-	public abstract void updateMeWithMapVals(baseMap otrMap, Base_ControlFlags flags);	
+	public abstract void updateMeWithMapVals(Base_PolyMap otrMap, Base_ControlFlags flags);	
 	
 	/**
 	 * Instance-class specific initialization
@@ -451,9 +451,9 @@ public abstract class baseMap {
 	/**
 	 * build maps of all polys
 	 */
-	public final baseMap[][] buildPolyMaps(){
+	public final Base_PolyMap[][] buildPolyMaps(){
 		myPointf[][][] allPolyCntlPts = buildPolyCorners();
-		baseMap[][] resMaps = new baseMap[numCellsPerSide][numCellsPerSide];
+		Base_PolyMap[][] resMaps = new Base_PolyMap[numCellsPerSide][numCellsPerSide];
 		myPointf[] tmpCntlPts;
 			
 		for(int i=0;i<resMaps.length;++i) {
@@ -863,8 +863,8 @@ public abstract class baseMap {
 	/////////////////////////
 	// setters/getters
 	
-	public final baseMap getOtrMap() {return otrMap;}
-	public final void setOtrMap(baseMap _otr) {		otrMap = _otr;  setOtrMap_Indiv();}
+	public final Base_PolyMap getOtrMap() {return otrMap;}
+	public final void setOtrMap(Base_PolyMap _otr) {		otrMap = _otr;  setOtrMap_Indiv();}
 	protected abstract void setOtrMap_Indiv();
 
 	public final int getNumCellsPerSide() {			return numCellsPerSide;}

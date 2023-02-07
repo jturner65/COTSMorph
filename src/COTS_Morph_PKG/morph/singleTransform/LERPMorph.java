@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.morph.singleTransform;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.singleTransform.base.baseSingleTransformMorph;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
@@ -8,7 +8,7 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 
 public class LERPMorph extends baseSingleTransformMorph {
-	public LERPMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);transform =null;}//null transform forces lerp interpolation	
+	public LERPMorph(COTS_MorphWin _win, mapPairManager _mapMgr, Base_PolyMap _mapA, Base_PolyMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);transform =null;}//null transform forces lerp interpolation	
 	
 	public LERPMorph(LERPMorph _otr) {super(_otr);transform =null;}
 	

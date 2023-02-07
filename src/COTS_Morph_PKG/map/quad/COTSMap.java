@@ -3,7 +3,7 @@ package COTS_Morph_PKG.map.quad;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.map.quad.base.baseQuadMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.transformer.spiral.COTS_Transformer;
@@ -72,7 +72,7 @@ public class COTSMap extends baseQuadMap {
 	 */
 
 	@Override
-	public void _updateMeWithQuadMapVals(baseMap otrMap, Base_ControlFlags flags) {
+	public void _updateMeWithQuadMapVals(Base_PolyMap otrMap, Base_ControlFlags flags) {
 		//copy branching should only be set when this map(being a morph frame) is being copied from mapA in initial morph calculation
 		if ((((COTSMap)otrMap).shouldShareBranching) || (flags.getCopyBranching())){
 			cots.setBranching(((COTSMap)otrMap).cots.getBranching());

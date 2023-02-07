@@ -1,6 +1,6 @@
 package COTS_Morph_PKG.morph.multiTransform;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.multiTransform.base.baseMultiTransformMorphs;
 import COTS_Morph_PKG.transformer.spiral.SpiralTransformer;
@@ -11,7 +11,7 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 
-	public QuadKeyEdgeSpiralMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);}
+	public QuadKeyEdgeSpiralMorph(COTS_MorphWin _win, mapPairManager _mapMgr, Base_PolyMap _mapA, Base_PolyMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);}
 	public QuadKeyEdgeSpiralMorph(QuadKeyEdgeSpiralMorph _otr) {super(_otr);}
 	//////////////////
 	// map construction	
@@ -109,7 +109,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 			for(int i=0;i<transforms.length;++i) {			
 				myPointf F = new myPointf(transforms[i].getF()); 				
 				F.set(myPointf._add(F, myVectorf._mult(normDispTimeVec, morphT)));
-				win._drawLabelAtPt(F,"Spiral Center for edges ["+i+","+((i+1)%transforms.length)+"] : (" + F.toStrCSV(baseMap.strPointDispFrmt8)+")", 2.5f,-2.5f);
+				win._drawLabelAtPt(F,"Spiral Center for edges ["+i+","+((i+1)%transforms.length)+"] : (" + F.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")", 2.5f,-2.5f);
 			}		
 		}
 		if(debug) {
@@ -138,7 +138,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 			for(int i=0;i<transforms.length;++i) {			
 				myPointf F = new myPointf(transforms[i].getF()); 				
 				F.set(myPointf._add(F, myVectorf._mult(normDispTimeVec, morphT)));
-				mapMgr._drawPt(F, baseMap.sphereRad*1.5f);	
+				mapMgr._drawPt(F, Base_PolyMap.sphereRad*1.5f);	
 			}
 			pa.popMatState();	
 		}

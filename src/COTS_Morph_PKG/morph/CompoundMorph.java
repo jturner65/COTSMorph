@@ -2,7 +2,7 @@ package COTS_Morph_PKG.morph;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.map.registration.mapRegDist;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.base.baseMorph;
@@ -56,7 +56,7 @@ public class CompoundMorph extends baseMorph {
 	/**
 	 * array of morph maps to use for each of numMorphs type of morph results
 	 */
-	protected baseMap[] _currPerMorphMaps;
+	protected Base_PolyMap[] _currPerMorphMaps;
 	
 	/**
 	 * 
@@ -65,14 +65,14 @@ public class CompoundMorph extends baseMorph {
 	 * @param _mapMgr
 	 * @param _morphTitle
 	 */	
-	public CompoundMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}
+	public CompoundMorph(COTS_MorphWin _win, mapPairManager _mapMgr, Base_PolyMap _mapA, Base_PolyMap _mapB,int _morphTypeIDX,  String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX,_morphTitle);}
 	public CompoundMorph(CompoundMorph _otr) {super(_otr);}
 
 	@Override
 	protected final void _endCtorInit() {
 		mapRegDistCalcs = new mapRegDist[numMorphFeatures];
 		currMorphToUseIDX = new int[numMorphFeatures];
-		_currPerMorphMaps = new baseMap[numMorphFeatures];
+		_currPerMorphMaps = new Base_PolyMap[numMorphFeatures];
 		morphsAvailable = new baseMorph[numMorphFeatures][mapPairManager.morphTypes.length-1];//don't allow for compound of compound morphs
 		for(int i=0;i<numMorphFeatures;++i) {
 			currMorphToUseIDX[i]=0;
@@ -106,7 +106,7 @@ public class CompoundMorph extends baseMorph {
 	public double calcMorph_Double(float tA, double AVal, float tB, double BVal) {return morphsAvailable[scalarValMorphIDX][currMorphToUseIDX[scalarValMorphIDX]].calcMorph_Double(tA,AVal,tB,BVal);}
 
 	@Override
-	protected void calcMorphAndApplyToMap(baseMap _curMorphMap, float tA, float tB) {
+	protected void calcMorphAndApplyToMap(Base_PolyMap _curMorphMap, float tA, float tB) {
 		myPointf[] aCntlPts = mapA.getCntlPts(), bCntlPts = mapB.getCntlPts(); 
 		//this is shape with points deregistered (aligned) against mapA on translation, rotation and scale
 		myPointf[] resPts = getDeRegShapeMapCntlPts(aCntlPts, bCntlPts,tA, tB);
@@ -122,7 +122,7 @@ public class CompoundMorph extends baseMorph {
 	public void calcMorphBetweenTwoSetsOfCntlPoints(myPointf[] aCntlPts, myPointf[] bCntlPts, myPointf[] destPts, float tA,	float tB) {
 		//this is shape with points deregistered (aligned) against mapA on translation, rotation and scale
 		myPointf[] resPts = getDeRegShapeMapCntlPts(aCntlPts, bCntlPts, tA, tB);
-		baseMap tmpMap = getCopyOfMap(mapA, "Tmp Copy of Map A");
+		Base_PolyMap tmpMap = getCopyOfMap(mapA, "Tmp Copy of Map A");
 		
 		tmpMap.setCntlPts(resPts, mapFlags[mapUpdateNoResetIDX]);
 		

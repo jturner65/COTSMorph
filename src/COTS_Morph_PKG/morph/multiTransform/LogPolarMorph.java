@@ -2,7 +2,7 @@ package COTS_Morph_PKG.morph.multiTransform;
 
 import java.util.ArrayList;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.multiTransform.base.baseMultiTransformMorphs;
 import COTS_Morph_PKG.transformer.spiral.LogPolarTransformer;
@@ -24,7 +24,7 @@ public class LogPolarMorph extends baseMultiTransformMorphs {
 	 * offset index for where map b points start in morph - should == # of cntl points in map
 	 */
 	private int bPointOffsetIDX;
-	public LogPolarMorph(COTS_MorphWin _win, mapPairManager _mapMgr, baseMap _mapA, baseMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);}
+	public LogPolarMorph(COTS_MorphWin _win, mapPairManager _mapMgr, Base_PolyMap _mapA, Base_PolyMap _mapB,int _morphTypeIDX, String _morphTitle) {super(_win, _mapMgr,_mapA, _mapB, _morphTypeIDX, _morphTitle);}
 	public LogPolarMorph(LogPolarMorph _otr) {super(_otr);}
 	//////////////////
 	// map construction	

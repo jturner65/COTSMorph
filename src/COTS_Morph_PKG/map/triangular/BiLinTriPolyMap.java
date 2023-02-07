@@ -2,7 +2,7 @@ package COTS_Morph_PKG.map.triangular;
 
 import java.util.TreeMap;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.map.triangular.base.baseTriangleMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
@@ -26,7 +26,7 @@ public class BiLinTriPolyMap extends baseTriangleMap {
 	}
 
 	@Override
-	public void updateMeWithMapVals(baseMap otrMap, Base_ControlFlags flags) {
+	public void updateMeWithMapVals(Base_PolyMap otrMap, Base_ControlFlags flags) {
 	}
 
 	/**

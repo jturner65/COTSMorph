@@ -5,7 +5,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import COTS_Morph_PKG.map.base.baseMap;
+import COTS_Morph_PKG.map.base.Base_PolyMap;
 import COTS_Morph_PKG.map.quad.BiLinMap;
 import COTS_Morph_PKG.map.quad.COTSMap;
 import COTS_Morph_PKG.map.registration.mapRegDist;
@@ -52,7 +52,7 @@ public class mapPairManager {
 	/**
 	 * the maps this mapManager will manage
 	 */
-	private final baseMap[] maps;
+	private final Base_PolyMap[] maps;
 	/**
 	 * the types of maps this manager owns
 	 */
@@ -64,7 +64,7 @@ public class mapPairManager {
 	/**
 	 * map being currently modified by mouse interaction - only a ref to a map, or null
 	 */
-	public baseMap currMseModMap;
+	public Base_PolyMap currMseModMap;
 	/**
 	 * idx's of maps to use for similarity mapping/registration between maps,
 	 * current morph being executed
@@ -155,7 +155,7 @@ public class mapPairManager {
 	 */
 	protected float[] lineupRectDims;
 	protected float perLineupImageWidth;
-	protected TreeMap<Float, baseMap> lineUpMorphMaps;
+	protected TreeMap<Float, Base_PolyMap> lineUpMorphMaps;
 	
 	/**
 	 * array holding upper left corner x,y, width, height of rectangle to use for displaying graphs of trajectory analysis
@@ -207,7 +207,7 @@ public class mapPairManager {
 		//for building registration copy
 		fromMapIDX = 0;
 		toMapIDX = 1;
-		lineUpMorphMaps = new TreeMap<Float, baseMap>();
+		lineUpMorphMaps = new TreeMap<Float, Base_PolyMap>();
 		mapType=_mapType;
 		name = win.getWinName()+"::Mgr of " + mapTypes[mapType] + " maps";
 		// necessary info to build map
@@ -228,7 +228,7 @@ public class mapPairManager {
 		th_exec = Executors.newCachedThreadPool();// this is performing much better even though it is using all available threads
 		
 		//build maps
-		maps = new baseMap[2];
+		maps = new Base_PolyMap[2];
 		for(int j=0;j<maps.length;++j) {	maps[j] = buildKeyFrameMapOfPassedType(mapType,j,  bndPts[j],"");}		
 		mapRegDistCalc = new mapRegDist(this, maps[0],maps[1]);
 		
@@ -267,7 +267,7 @@ public class mapPairManager {
 	public void resetBndPts() {setBndPts(origBndPts);}
 	
 	
-	public baseMorph buildMorph(int typeIDX, baseMap _mapA, baseMap _mapB) {
+	public baseMorph buildMorph(int typeIDX, Base_PolyMap _mapA, Base_PolyMap _mapB) {
 		switch (typeIDX) {
 			case LERPMorphIDX 		: {		return new LERPMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]); 		}
 			case RigidMorphIDX  	: {		return new RigidMorph(win,this,_mapA, _mapB, typeIDX, morphTypes[typeIDX]); 		}
@@ -313,7 +313,7 @@ public class mapPairManager {
 	 * @param _mapNameSuffix : descriptive string to add to end of map namme
 	 * @return
 	 */	
-	public synchronized final baseMap buildKeyFrameMapOfPassedType(int _mapType, int _mapValIdx, myPointf[] _cntlPts, String _mapNameSuffix) {
+	public synchronized final Base_PolyMap buildKeyFrameMapOfPassedType(int _mapType, int _mapValIdx, myPointf[] _cntlPts, String _mapNameSuffix) {
 		String mapName = mapTypes[_mapType] + ( _mapNameSuffix.length() == 0 ? "":  " " + _mapNameSuffix) + " Map"+ _mapValIdx;
 		switch (_mapType) {
 			case triangleMapIDX			:{
@@ -335,8 +335,8 @@ public class mapPairManager {
 		}
 	}
 	
-	public final baseMap buildCopyMapOfPassedMapType(baseMap oldMap, String _mapName) {	
-		baseMap map;
+	public final Base_PolyMap buildCopyMapOfPassedMapType(Base_PolyMap oldMap, String _mapName) {	
+		Base_PolyMap map;
 		switch (oldMap.mapTypeIDX) {
 			case triangleMapIDX			: {	map = new BiLinTriPolyMap(_mapName,(BiLinTriPolyMap)oldMap);		break;}
 			case ptNormTriMapIDX		: {	map = new PointNormTriPolyMap(_mapName,(PointNormTriPolyMap)oldMap);		break;}
@@ -466,11 +466,11 @@ public class mapPairManager {
 	 * build oriented lineup of specific # of frames (default 5) where each frame is registered to keyframe A, and then displayed side-by-side
 	 */
 	public final void buildOrientedLineup() {
-		TreeMap<Float, baseMap> rawMorphMaps = morphs[currMorphTypeIDX].buildLineupOfFrames(currUIVals.getNumLineupFrames()); 
+		TreeMap<Float, Base_PolyMap> rawMorphMaps = morphs[currMorphTypeIDX].buildLineupOfFrames(currUIVals.getNumLineupFrames()); 
 		//msgObj.dispInfoMessage("mapManager::"+name, "buildOrientedLineup", "# of morph maps: " + rawMorphMaps.size() + " lineup num requested :" +currUIVals.numLineupFrames + " maps types : " + maps[0].mapTitle+" | " + maps[1].mapTitle);
 		lineUpMorphMaps.clear();
 		for(Float t : rawMorphMaps.keySet()) {
-			baseMap tmpMorphMap = rawMorphMaps.get(t);
+			Base_PolyMap tmpMorphMap = rawMorphMaps.get(t);
 			lineUpMorphMaps.put(t, mapRegDistCalc.calcDifferenceBetweenMaps(tmpMorphMap, maps[0]));
 		}	
 		
@@ -686,9 +686,9 @@ public class mapPairManager {
 		for(Float t : lineUpMorphMaps.keySet()) {
 			pa.pushMatState();
 				pa.translate(10.0f, 10.0f, 0.0f);
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, "t = " + String.format(baseMap.strPointDispFrmt6,t));
+				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, "t = " + String.format(Base_PolyMap.strPointDispFrmt6,t));
 			pa.popMatState();
-			baseMap tmpMorphMap = lineUpMorphMaps.get(t);
+			Base_PolyMap tmpMorphMap = lineUpMorphMaps.get(t);
 
 			pa.pushMatState();
 				pa.translate(.5f*perLineupImageWidth, .5f*perLineupImageWidth, 0.0f);
@@ -915,7 +915,7 @@ public class mapPairManager {
 	 */
 	public final boolean hndlMouseClickInMaps(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn, char keyPressed) {
 		//check every map for closest control corner to click location
-		TreeMap<Float,baseMap>  mapDists = new TreeMap<Float,baseMap>();
+		TreeMap<Float,Base_PolyMap>  mapDists = new TreeMap<Float,Base_PolyMap>();
 		//msgObj.dispInfoMessage("COTS_Morph3DWin", "hndlMouseClickIndiv", "Mouse button pressed : " + mseBtn + " Key Pressed : " + keyPressed + " Key Coded : " + keyCodePressed);
 		//get a point on ray through mouse location in world
 		myPointf _rayOrigin = AppMgr.getMseLoc_f();
