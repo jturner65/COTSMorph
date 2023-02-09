@@ -25,9 +25,9 @@ import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
-import base_Math_Objects.interpolants.InterpolantTypes;
-import base_Math_Objects.interpolants.base.baseInterpolant;
 import base_Utils_Objects.io.messaging.MessageObject;
+import base_Math_Objects.interpolants.base.Base_Interpolant;
+import base_Math_Objects.interpolants.base.InterpolantTypes;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
@@ -182,7 +182,7 @@ public class mapPairManager {
 	/**
 	 * interplants to be used for animation
 	 */
-	private baseInterpolant[] animators;
+	private Base_Interpolant[] animators;
 	/**
 	 * index of current animator being used
 	 */
@@ -218,9 +218,9 @@ public class mapPairManager {
 		//setBndPts(origBndPts);
 		
 		currUIVals = new mapUpdFromUIData(_currUIVals);		
-		animators = new baseInterpolant[InterpolantTypes.getNumVals()];
+		animators = new Base_Interpolant[InterpolantTypes.getNumVals()];
 		for(int i=0;i<animators.length;++i) {
-			animators[i] = baseInterpolant.buildInterpolant(InterpolantTypes.getVal(i), 0.5f, 0.5f);
+			animators[i] = Base_Interpolant.buildInterpolant(InterpolantTypes.getVal(i), 0.5f, 0.5f);
 		}
 		
 		//want # of usable background threads.  Leave 2 for primary process (and potential draw loop)

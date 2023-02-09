@@ -25,6 +25,10 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	@Override
 	protected final void initMe_Indiv() {	
 	}//initMe
+	
+
+	@Override
+	protected void initDispFlags_Indiv() {}
 	/**
 	 * return the initial bounds for the maps in the world space
 	 * @return 2-d array of 4 points - first idx is map idx, 2nd idx is 4 points
@@ -53,8 +57,6 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 
 	@Override
 	protected final int initAllPrivBtns_Indiv(ArrayList<Object[]> tmpBtnNamesArray) {
-		
-		
 		return _numPrivButtons;
 	}//initAllPrivBtns
 	/**

@@ -27,9 +27,13 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	
 	@Override
 	protected final void initMe_Indiv() {
-		dispFlags.setDrawMseEdge(true);
-		dispFlags.setShowRtSideMenu(true);
 	}//initMe
+
+	@Override
+	protected void initDispFlags_Indiv() {
+		dispFlags.setDrawMseEdge(true);
+		dispFlags.setShowRtSideMenu(true);		
+	}
 
 	/**
 	 * return the initial bounds for the maps in the world space

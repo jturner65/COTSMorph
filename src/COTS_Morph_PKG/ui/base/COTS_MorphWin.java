@@ -7,8 +7,8 @@ import java.util.TreeMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Render_Interface.IRenderInterface;
-import base_Math_Objects.interpolants.InterpolantBehavior;
-import base_Math_Objects.interpolants.InterpolantTypes;
+import base_Math_Objects.interpolants.base.InterpolantBehavior;
+import base_Math_Objects.interpolants.base.InterpolantTypes;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -193,11 +193,24 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	
 	public abstract String getWinName();
 	
+	/**
+	 * Initialize any UI control flags appropriate for all boids window application
+	 */
+	protected final void initDispFlags() {
+		// capable of using right side menu
+		dispFlags.setDrawRtSideMenu(true);	
+		initDispFlags_Indiv();
+	}
+	
+	/**
+	 * Initialize any UI control flags appropriate for specific instanced boids window
+	 */
+	protected abstract void initDispFlags_Indiv();
+	
+	
 	@Override
 	protected final void initMe() {
 		crnrs = new myPointf[10][][];
-		// capable of using right side menu
-		dispFlags.setDrawRtSideMenu(true);
 		//initialize the bounds for this map
 		bndPts = getKeyFrameMapBndPts();
 		//initialize all maps
@@ -630,6 +643,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	
 	@Override
 	protected final void setVisScreenDimsPriv() {	
+		if (mapManagers == null) {return;}
 		//for side-by-side lineup of registered frames
 		for(int i=0;i<mapManagers.length;++i) {	mapManagers[i].setPopUpWins_RectDims();}
 	}
@@ -655,31 +669,6 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 		pa.translate(camVals[0], camVals[1], (float) dz);
 		setCamOrient();
 	}
-//	@Override
-//	protected final void drawMe(float animTimeMod) {
-//		pa.pushMatState();
-//		boolean debug = privFlags.getFlag(debugAnimIDX), showLbls = privFlags.getFlag(drawMap_CntlPtLblsIDX), drawCircles = privFlags.getFlag(drawMap_CellCirclesIDX);
-//		boolean drawMorphMap = privFlags.getFlag(drawMorph_MapIDX), drawMorphSlices = privFlags.getFlag(drawMorph_SlicesIDX), drawCntlPts = privFlags.getFlag(drawMap_CntlPtsIDX);
-//		boolean drawMap = privFlags.getFlag(drawMapIDX), drawMorphCntlPtTraj = privFlags.getFlag(drawMorph_CntlPtTrajIDX), drawCopy = privFlags.getFlag(drawMap_RegCopyIDX);
-//		boolean _showDistColors = privFlags.getFlag(drawMorph_DistColorsIDX);
-//		if(_showDistColors) {	mapManagers[currMapTypeIDX].checkIfMorphAnalysisDone();	}
-//		//draw maps with dependenc on wireframe/filled setting
-//		mapManagers[currMapTypeIDX].drawMaps_Main(debug, privFlags.getFlag(drawMapIDX), _showDistColors, privFlags.getFlag(drawMap_FillOrWfIDX), drawCircles, drawCopy);
-//		//drawMaps_Aux(boolean drawTexture, boolean drawOrtho, boolean drawEdgeLines) {
-//		mapManagers[currMapTypeIDX].drawMaps_Aux(debug, privFlags.getFlag(drawMap_ImageIDX), privFlags.getFlag(drawMap_OrthoFrameIDX), privFlags.getFlag(drawMap_EdgeLinesIDX), drawCntlPts, drawCopy, showLbls,drawMapDetail);	
-//		
-//		if(drawMorphCntlPtTraj) {		mapManagers[currMapTypeIDX].drawMorphedMap_CntlPtTraj(drawMapDetail);}		
-//		
-//		if(drawMorphMap || drawMorphSlices || drawCircles || privFlags.getFlag(drawMorph_CntlPtTrajIDX) || privFlags.getFlag(drawMorph_Slices_RtSideInfoIDX)) {		
-//			mapManagers[currMapTypeIDX].drawAndAnimMorph(debug, animTimeMod, drawMap,
-//					drawMorphMap, _showDistColors, privFlags.getFlag(drawMorph_FillOrWfIDX), 
-//					drawMorphSlices, privFlags.getFlag(drawMorph_Slices_FillOrWfIDX), 
-//					drawCircles, drawCntlPts, privFlags.getFlag(sweepMapsIDX), showLbls,drawMapDetail);	
-//		}
-//		
-//		_drawMe_Indiv(animTimeMod);
-//		pa.popMatState();	
-//	}
 	
 	@Override
 	protected final void drawMe(float animTimeMod) {
@@ -695,7 +684,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	protected abstract void _drawMe_Indiv(float animTimeMod);
 	
 	@Override
-	public final void drawCustMenuObjs() {}
+	public final void drawCustMenuObjs(float animTimeMod) {}
 	
 	protected float sideBarYDisp = 11.0f;
 	@Override
