@@ -35,7 +35,10 @@ public class COTS_MorphMain extends GUI_AppManager {
 		;
 																		//set array of vector values (sceneFcsVals) based on application
 	private final int[] bground = new int[]{220,244,244,255};		//bground color	
+
+	private boolean useSphereBKGnd = false;
 	
+	private String bkSkyBox = "bkgrndTex.jpg";
 	/**
 	 * fraction of height popup som win should use
 	 */
@@ -62,13 +65,36 @@ public class COTS_MorphMain extends GUI_AppManager {
 	protected HashMap<String,Object> setRuntimeArgsVals(HashMap<String, Object> _passedArgsMap) {
 		return  _passedArgsMap;
 	}
+	
+	
+	/**
+	 * Called in pre-draw initial setup, before first init
+	 * potentially override setup variables on per-project basis.
+	 * Do not use for setting background color or Skybox anymore.
+	 *  	(Current settings in my_procApplet) 	
+	 *  	strokeCap(PROJECT);
+	 *  	textSize(txtSz);
+	 *  	textureMode(NORMAL);			
+	 *  	rectMode(CORNER);	
+	 *  	sphereDetail(4);	 * 
+	 */
+	@Override
+	protected void setupAppDims_Indiv() {}
+	@Override
+	protected boolean getUseSkyboxBKGnd(int winIdx) {	return useSphereBKGnd;}
+	@Override
+	protected String getSkyboxFilename(int winIdx) {	return bkSkyBox;}
+	@Override
+	protected int[] getBackgroundColor(int winIdx) {return bground;}
+	@Override
+	protected int getNumDispWindows() {	return numVisFlags;	}
 
 	/**
 	 * set smoothing level based on renderer
 	 * @param smthLvl 0 == no smoothing,  	int: either 2, 3, 4, or 8 depending on the renderer
 	 */
 	@Override
-	protected void setSmoothing() {	pa.setSmoothing(8);}
+	protected void setSmoothing() {	ri.setSmoothing(8);}
 	
 	/**
 	 * whether or not we want to restrict window size on widescreen monitors
@@ -100,12 +126,6 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	protected final MsgCodes getMinLogMsgCodes() {return null;}
 
-	//instance-specific setup code
-	protected void setup_Indiv() {		
-		setBkgrnd();
-	}	
-	@Override
-	public void setBkgrnd(){((my_procApplet)pa).background(bground[0],bground[1],bground[2],bground[3]);}//setBkgrnd	
 	/**
 	 * determine which main flags to show at upper left of menu 
 	 */
@@ -121,14 +141,11 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	//build windows here
 	protected void initAllDispWindows() {
-	
 		showInfo = true;
-		//includes 1 for menu window (never < 1) - always have same # of visFlags as Base_DispWindows
-		int numWins = numVisFlags;		
 		//titles and descs, need to be set before sidebar menu is defined
 		String[] _winTitles = new String[]{"","2D COTS Morph","3D COTS Morph"},//,"SOM Map UI"},
 				_winDescr = new String[] {"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
-		initWins(numWins,_winTitles, _winDescr);
+		setWinTitlesAndDescs(_winTitles, _winDescr);
 		//call for menu window
 		//call for menu window
 		buildInitMenuWin();
@@ -166,12 +183,12 @@ public class COTS_MorphMain extends GUI_AppManager {
 
 		wIdx = dispCOTS_2DMorph; fIdx= showCOTS_2DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,false,true,false}, new int[]{210,220,250,255},new int[]{255,255,255,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph2DWin(pa, this, wIdx, fIdx);		
+		dispWinFrames[wIdx] = new COTS_Morph2DWin(ri, this, wIdx, fIdx);		
 
 		//3d window
 		wIdx = dispCOTS_3DMorph; fIdx= showCOTS_3DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,true,true,true}, new int[]{220,244,244,255},new int[]{0,0,0,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph3DWin(pa, this, wIdx, fIdx);		
+		dispWinFrames[wIdx] = new COTS_Morph3DWin(ri, this, wIdx, fIdx);		
 	
 	}//	initVisOnce_Priv
 	
