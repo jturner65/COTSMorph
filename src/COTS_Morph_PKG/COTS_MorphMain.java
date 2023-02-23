@@ -21,11 +21,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	public final String projDesc = "Morphing between two COTS-mapped Quads in 2D and 3D.";
 	
 	public String authorString = "John Turner";
-	private final int
-		showUIMenu = 0,
-		showCOTS_2DMorph = 1,
-		showCOTS_3DMorph = 2						
-		;
+
 	public final int numVisFlags = 3;
 	
 	//idx's in dispWinFrames for each window - 0 is always left side menu window
@@ -33,7 +29,11 @@ public class COTS_MorphMain extends GUI_AppManager {
 		dispCOTS_2DMorph = 1,
 		dispCOTS_3DMorph = 2
 		;
-																		//set array of vector values (sceneFcsVals) based on application
+	/**
+	 * # of visible windows including side menu (always at least 1 for side menu)
+	 */
+	private static final int numVisWins = 3;
+
 	private final int[] bground = new int[]{220,244,244,255};		//bground color	
 
 	private boolean useSphereBKGnd = false;
@@ -87,7 +87,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	protected int[] getBackgroundColor(int winIdx) {return bground;}
 	@Override
-	protected int getNumDispWindows() {	return numVisFlags;	}
+	protected int getNumDispWindows() {	return numVisWins;	}
 
 	/**
 	 * set smoothing level based on renderer
@@ -146,9 +146,6 @@ public class COTS_MorphMain extends GUI_AppManager {
 		String[] _winTitles = new String[]{"","2D COTS Morph","3D COTS Morph"},//,"SOM Map UI"},
 				_winDescr = new String[] {"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
 		setWinTitlesAndDescs(_winTitles, _winDescr);
-		//call for menu window
-		//call for menu window
-		buildInitMenuWin();
 		//instanced window dimensions when open and closed - only showing 1 open at a time
 		float[] _dimOpen  = getDefaultWinDimOpen(), 
 				_dimClosed  = getDefaultWinDimClosed();	
@@ -167,8 +164,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 			{ "---", "---", "---", "---" }
 		};		
 		String [] dbgBtns = {"Debug 0", "Debug 1", "Debug 2", "Debug 3","Debug 4"};
-		int wIdx = dispMenuIDX,fIdx=showUIMenu;
-		dispWinFrames[wIdx] = buildSideBarMenu(wIdx, fIdx, menuBtnTitles , menuBtnNames, dbgBtns, true, true);	
+		buildSideBarMenu(menuBtnTitles , menuBtnNames, dbgBtns, true, true);	
 
 		//setInitDispWinVals : use this to define the values of a display window
 		//int _winIDX, 
@@ -179,16 +175,16 @@ public class COTS_MorphMain extends GUI_AppManager {
 		//int[] _fill, int[] _strk, 			: window fill and stroke colors
 		//int _trajFill, int _trajStrk)			: trajectory fill and stroke colors, if these objects can be drawn in window (used as alt color otherwise)
 		//specify windows that cannot be shown simultaneously here
-		initXORWins(new int[]{showCOTS_2DMorph,showCOTS_3DMorph},new int[]{dispCOTS_2DMorph,dispCOTS_3DMorph});
+		initXORWins(new int[]{dispCOTS_2DMorph,dispCOTS_3DMorph},new int[]{dispCOTS_2DMorph,dispCOTS_3DMorph});
 
-		wIdx = dispCOTS_2DMorph; fIdx= showCOTS_2DMorph;
+		int wIdx = dispCOTS_2DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,false,true,false}, new int[]{210,220,250,255},new int[]{255,255,255,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph2DWin(ri, this, wIdx, fIdx);		
+		dispWinFrames[wIdx] = new COTS_Morph2DWin(ri, this, wIdx);		
 
 		//3d window
-		wIdx = dispCOTS_3DMorph; fIdx= showCOTS_3DMorph;
+		wIdx = dispCOTS_3DMorph;
 		setInitDispWinVals(wIdx, _dimOpen, _dimClosed,new boolean[]{false,true,true,true}, new int[]{220,244,244,255},new int[]{0,0,0,255},new int[]{180,180,180,255},new int[]{100,100,100,255}); 
-		dispWinFrames[wIdx] = new COTS_Morph3DWin(ri, this, wIdx, fIdx);		
+		dispWinFrames[wIdx] = new COTS_Morph3DWin(ri, this, wIdx);		
 	
 	}//	initVisOnce_Priv
 	
@@ -196,10 +192,8 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	//called from base class, once at start of program after vis init is called - set initial windows to show - always show UI Menu
 	protected void initOnce_Indiv(){
-		//which objects to initially show
-		setVisFlag(showUIMenu, true);					//show input UI menu	
 		//setVisFlag(showSpereAnimRes, true);
-		setVisFlag(showCOTS_3DMorph, true);
+		setVisFlag(dispCOTS_3DMorph, true);
 		
 	}//	initOnce
 	
@@ -271,13 +265,12 @@ public class COTS_MorphMain extends GUI_AppManager {
 	
 	@Override
 	//get the ui rect values of the "master" ui region (another window) -> this is so ui objects of one window can be made, clicked, and shown displaced from those of the parent windwo
-	public float[] getUIRectVals(int idx){
+	public float[] getUIRectVals_Indiv(int idx, float[] menuClickDim){
 		//this.pr("In getUIRectVals for idx : " + idx);
 		switch(idx){
-		case dispMenuIDX 		: { return new float[0];}			//idx 0 is parent menu sidebar
-		case dispCOTS_2DMorph	: { return dispWinFrames[dispMenuIDX].uiClkCoords;}
-		case dispCOTS_3DMorph	: { return dispWinFrames[dispMenuIDX].uiClkCoords;}
-		default 				:  return dispWinFrames[dispMenuIDX].uiClkCoords;
+		case dispCOTS_2DMorph	: { return menuClickDim;}
+		case dispCOTS_3DMorph	: { return menuClickDim;}
+		default 				:  return menuClickDim;
 		}
 	}	
 	
@@ -307,9 +300,8 @@ public class COTS_MorphMain extends GUI_AppManager {
 	//address all flag-setting here, so that if any special cases need to be addressed they can be
 	protected void setVisFlag_Indiv(int idx, boolean val ){
 		switch (idx){
-			case showUIMenu 	    : { dispWinFrames[dispMenuIDX].dispFlags.setShowWin(val);    break;}											//whether or not to show the main ui window (sidebar)			
-			case showCOTS_2DMorph	: {setWinFlagsXOR(dispCOTS_2DMorph, val);break;}
-			case showCOTS_3DMorph	: {setWinFlagsXOR(dispCOTS_3DMorph, val);break;}
+			case dispCOTS_2DMorph	: {setWinFlagsXOR(dispCOTS_2DMorph, val);break;}
+			case dispCOTS_3DMorph	: {setWinFlagsXOR(dispCOTS_3DMorph, val);break;}
 			default : {break;}
 		}
 	}//setFlags  

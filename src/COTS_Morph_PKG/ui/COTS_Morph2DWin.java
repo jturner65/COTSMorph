@@ -15,8 +15,8 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	
 	private int _numPrivButtons = numBaseCOTSWinPrivFlags + 0;
 
-	public COTS_Morph2DWin(IRenderInterface _p,  GUI_AppManager _AppMgr, int _winIdx, int _flagIdx) {
-		super(_p, _AppMgr, _winIdx, _flagIdx, false);		
+	public COTS_Morph2DWin(IRenderInterface _p,  GUI_AppManager _AppMgr, int _winIdx) {
+		super(_p, _AppMgr, _winIdx, false);		
 		super.initThisWin(false);
 	}
 	@Override

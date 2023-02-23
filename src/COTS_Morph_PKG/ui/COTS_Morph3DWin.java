@@ -18,8 +18,8 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		//drag scale in 3D
 	private static final float mseDrag3DScl = 1.5f;
 	
-	public COTS_Morph3DWin(IRenderInterface _p,  GUI_AppManager _AppMgr,  int _winIdx, int _flagIdx) {
-		super(_p, _AppMgr, _winIdx, _flagIdx, true);		
+	public COTS_Morph3DWin(IRenderInterface _p,  GUI_AppManager _AppMgr,  int _winIdx) {
+		super(_p, _AppMgr, _winIdx, true);		
 		super.initThisWin(false);
 	}
 	@Override

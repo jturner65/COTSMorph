@@ -968,6 +968,11 @@ public class mapPairManager {
 			morphs[currMorphTypeIDX].mapCalcsAfterCntlPointsSet(name + "::hndlMouseRelIndiv", true, true);
 			currMseModMap = null;
 		}
+	}
+
+	public void hndlMouseRel_Indiv() {
+		// TODO Auto-generated method stub
+		
 	}	
 	
 
