@@ -135,7 +135,8 @@ public class COTS_MorphMain extends GUI_AppManager {
 		setBaseFlagToShow_saveAnim(true); 
 		setBaseFlagToShow_runSim(false);
 		setBaseFlagToShow_singleStep(false);
-		setBaseFlagToShow_showRtSideMenu(true);
+		setBaseFlagToShow_showRtSideMenu(true);	
+		setBaseFlagToShow_showDrawableCanvas(false);
 	}
 	
 	@Override

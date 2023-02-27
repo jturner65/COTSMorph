@@ -202,7 +202,7 @@ public class mapPairManager {
 	protected boolean morphStackAnalysisDone = false;
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
-		win=_win; pa=Base_DispWindow.pa;  AppMgr= Base_DispWindow.AppMgr; msgObj=win.getMsgObj();
+		win=_win; pa=Base_DispWindow.ri;  AppMgr= Base_DispWindow.AppMgr; msgObj=win.getMsgObj();
 				
 		//for building registration copy
 		fromMapIDX = 0;

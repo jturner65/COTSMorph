@@ -241,7 +241,9 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	 * initialize all maps - only call once
 	 */
 	private void _initMapManagers() {
-		textureImgs = new PImage[2];textureImgs[0]=((my_procApplet) pa).loadImage("faceImage_0.jpg");	textureImgs[1]=((my_procApplet) pa).loadImage("faceImage_1.jpg");		
+		textureImgs = new PImage[2];
+		textureImgs[0]=((my_procApplet) ri).loadImage("faceImage_0.jpg");	
+		textureImgs[1]=((my_procApplet) ri).loadImage("faceImage_1.jpg");		
 		mapManagers = new mapPairManager[mapPairManager.mapTypes.length];
 		
 		for(int i=0;i<mapManagers.length;++i) {		
@@ -384,7 +386,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals);
 	
 	/**
-	 * Called if int-handling guiObjs[UIidx] (int or list) has new data which updated UI adapter. 
+	 * Called if int-handling guiObjs_Numeric[UIidx] (int or list) has new data which updated UI adapter. 
 	 * Intended to support custom per-object handling by owning window.
 	 * Only called if data changed!
 	 * @param UIidx Index of gui obj with new data
@@ -442,7 +444,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	protected abstract boolean setUI_IntValsCustom_Indiv(int UIidx, int ival);
 
 	/**
-	 * Called if float-handling guiObjs[UIidx] has new data which updated UI adapter.  
+	 * Called if float-handling guiObjs_Numeric[UIidx] has new data which updated UI adapter.  
 	 * Intended to support custom per-object handling by owning window.
 	 * Only called if data changed!
 	 * @param UIidx Index of gui obj with new data
@@ -664,20 +666,20 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	@Override
 	protected final void setCamera_Indiv(float[] camVals) {
 		// , float rx, float ry, float dz are now member variables of every window
-		pa.setCameraWinVals(camVals);//(camVals[0], camVals[1], camVals[2], camVals[3], camVals[4], camVals[5], camVals[6], camVals[7], camVals[8]);
+		ri.setCameraWinVals(camVals);//(camVals[0], camVals[1], camVals[2], camVals[3], camVals[4], camVals[5], camVals[6], camVals[7], camVals[8]);
 		// puts origin of all drawn objects at screen center and moves forward/away by dz
-		pa.translate(camVals[0], camVals[1], (float) dz);
+		ri.translate(camVals[0], camVals[1], (float) dz);
 		setCamOrient();
 	}
 	
 	@Override
 	protected final void drawMe(float animTimeMod) {
-		pa.pushMatState();
+		ri.pushMatState();
 		//draw maps with dependenc on wireframe/filled setting
 		mapManagers[currMapTypeIDX].drawMapsAndMorphs(animTimeMod, drawMapDetail);
 		
 		_drawMe_Indiv(animTimeMod);
-		pa.popMatState();	
+		ri.popMatState();	
 	}
 	protected abstract int[] getRowColSliceIDXs();
 
@@ -689,14 +691,14 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	protected float sideBarYDisp = 11.0f;
 	@Override
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {
-		float _yOff = yOff - 4;
+		float _yOff = txtHeightOff - 4;
 		//start with yOff
-		pa.pushMatState();
-		pa.scale(1.05f);
+		ri.pushMatState();
+		ri.scale(1.05f);
 		//draw map values
 		_yOff = drawRightSideMaps(_yOff);
 		
-		pa.popMatState();	
+		ri.popMatState();	
 	}
 	/**
 	 * translated already to left top corner of visible screen, already in 2D

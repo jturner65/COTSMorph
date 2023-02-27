@@ -137,7 +137,7 @@ public abstract class baseMorph {
 	 * @param _morphTitle
 	 */
 	public baseMorph(COTS_MorphWin _win, mapPairManager _mapMgr, Base_PolyMap _mapA, Base_PolyMap _mapB,int _morphTypeIDX, String _morphTitle) {
-		win=_win; pa=Base_DispWindow.pa;AppMgr = Base_DispWindow.AppMgr;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
+		win=_win; pa=Base_DispWindow.ri;AppMgr = Base_DispWindow.AppMgr;morphTitle=_morphTitle;mapMgr=_mapMgr;morphTypeIDX=_morphTypeIDX;
 		initMorphSliceAras();
 		mapA = _mapA;
 		mapB = _mapB;	
@@ -150,7 +150,7 @@ public abstract class baseMorph {
 	
 
 	public baseMorph(baseMorph _otr) {//copy ctor
-		win=_otr.win; pa=Base_DispWindow.pa;morphTitle=_otr.morphTitle+"_cpy";mapMgr=_otr.mapMgr;morphTypeIDX=_otr.morphTypeIDX;
+		win=_otr.win; pa=Base_DispWindow.ri;morphTitle=_otr.morphTitle+"_cpy";mapMgr=_otr.mapMgr;morphTypeIDX=_otr.morphTypeIDX;
 		initMorphSliceAras();
 		mapA = getCopyOfMap(_otr.mapA, "cpyOfMapA");
 		mapB = getCopyOfMap(_otr.mapB, "cpyOfMapB");

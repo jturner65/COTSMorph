@@ -122,11 +122,11 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	 * @param yOff
 	 */
 	public final void _drawLabelAtPt(myPointf p, String lbl, float xOff, float yOff) {
-		pa.pushMatState();	
-		pa.translate(p);
-		pa.scale(txtSclVal);
-		pa.showText(lbl, xOff,yOff,0); 
-		pa.popMatState();
+		ri.pushMatState();	
+		ri.translate(p);
+		ri.scale(txtSclVal);
+		ri.showText(lbl, xOff,yOff,0); 
+		ri.popMatState();
 	}
 
 		
