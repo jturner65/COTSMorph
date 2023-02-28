@@ -36,10 +36,10 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	protected final myPointf[][] getKeyFrameMapBndPts(){
 		myPointf[][] bndPts = new myPointf[2][4];
 		//width of area per map
-		float widthPerMap = .5f*rectDim[2], 	halfWidth = .5f*widthPerMap;
-		float size = rectDim[3] * .35f,			halfSize = .5f * size;
+		float widthPerMap = .5f*winInitVals.rectDim[2], 	halfWidth = .5f*widthPerMap;
+		float size = winInitVals.rectDim[3] * .35f,			halfSize = .5f * size;
 		
-		float minX =rectDim[0]+ halfWidth - halfSize, minY = (rectDim[1]+.5f*rectDim[3]) - .5f*size - 150.0f;		
+		float minX =winInitVals.rectDim[0]+ halfWidth - halfSize, minY = (winInitVals.rectDim[1]+.5f*winInitVals.rectDim[3]) - .5f*size - 150.0f;		
 		float maxX = minX + size, maxY = minY + size;
 		
 		bndPts[0] = new myPointf[]{ new myPointf(minX+.1f, minY-.1f,0),

@@ -620,7 +620,7 @@ public class mapPairManager {
 		pa.setStroke(0,0,0, 255);
 		pa.setStrokeWt(2.0f);
 		int numWinBarsToDraw = 1;
-		pa.translate(0.0f,win.rectDim[3],0.0f);//perTrajAnalysisImageWidth up from bottom
+		pa.translate(0.0f,win.getRectDim(3),0.0f);//perTrajAnalysisImageWidth up from bottom
 		if(drawAnalysisGraphs) {
 			pa.pushMatState();	
 			pa.setFill(255, 235,255,alpha);
@@ -648,7 +648,7 @@ public class mapPairManager {
 		pa.setStroke(0,0,0, 255);
 		pa.setStrokeWt(2.0f);
 		int numWinBarsToDraw = 1;
-		pa.translate(0.0f,win.rectDim[3],0.0f);
+		pa.translate(0.0f,win.getRectDim(3),0.0f);
 		if(drawAnalysisGraphs) {
 			pa.pushMatState();	
 			pa.setFill(255, 235,255,alpha);
@@ -679,7 +679,7 @@ public class mapPairManager {
 		pa.setStroke(0,0,0, 255);
 		pa.setStrokeWt(2.0f);
 		pa.setFill(245, 255,232,255);
-		pa.translate(0.0f,win.rectDim[3]-perLineupImageWidth,0.0f);
+		pa.translate(0.0f,win.getRectDim(3)-perLineupImageWidth,0.0f);
 		pa.drawRect(new float[]{lineupRectDims[0],lineupRectDims[1],lineupRectDims[2],lineupRectDims[3]});		
 		
 		//pa.setFill(new int[] {0, 222,232},255);
