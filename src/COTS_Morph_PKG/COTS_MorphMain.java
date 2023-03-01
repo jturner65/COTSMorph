@@ -147,7 +147,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 		String[] _winTitles = new String[]{"","2D COTS Morph","3D COTS Morph"},//,"SOM Map UI"},
 				_winDescr = new String[] {"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
 
-		//instanced window dimensions when open and closed - only showing 1 open at a time
+		//instanced window dims when open and closed - only showing 1 open at a time - and init cam vals
 		float[][] _floatDims  = new float[][] {getDefaultWinDimOpen(), getDefaultWinDimClosed(), getInitCameraValues()};	
 
 		//menu bar init
@@ -194,7 +194,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 		initXORWins(new int[]{dispCOTS_2DMorph,dispCOTS_3DMorph},new int[]{dispCOTS_2DMorph,dispCOTS_3DMorph});
 
 		int wIdx = dispCOTS_2DMorph;
-		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], new boolean[]{false,false,false,true}, _floatDims,
+		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], getDfltBoolAra(false), _floatDims,
 				new int[][] {new int[]{210,220,250,255}, new int[]{255,255,255,255},
 					new int[]{180,180,180,255}, new int[]{100,100,100,255},
 					new int[]{0,0,0,200},new int[]{255,255,255,255}});
@@ -203,7 +203,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 
 		//3d window
 		wIdx = dispCOTS_3DMorph;
-		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], new boolean[]{true,false,true,true}, _floatDims,		
+		setInitDispWinVals(wIdx, _winTitles[wIdx], _winDescr[wIdx], getDfltBoolAra(true), _floatDims,		
 				new int[][] {new int[]{220,244,244,255},new int[]{0,0,0,255},
 					new int[]{180,180,180,255},new int[]{100,100,100,255},
 					new int[]{0,0,0,200},new int[]{255,255,255,255}});		
