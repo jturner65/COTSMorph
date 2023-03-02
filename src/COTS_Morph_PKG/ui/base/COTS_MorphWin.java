@@ -18,7 +18,6 @@ import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
-import base_UI_Objects.windowUI.uiObjs.base.base.GUIObj_Type;
 import base_Utils_Objects.io.messaging.MsgCodes;
 import base_Utils_Objects.tools.flags.Base_BoolFlags;
 import processing.core.PImage;
@@ -348,38 +347,38 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 		
 		//tmpListObjVals.put(gIDX_MorphSliceTypeForDist, morphSliceType);			
 		
-		tmpUIObjArray.put(gIDX_MorphTVal,new Object[] { new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", GUIObj_Type.FloatVal, new boolean[]{true, true } }); 	
-		tmpUIObjArray.put(gIDX_MorphSpeed,new Object[] { new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", GUIObj_Type.FloatVal, new boolean[]{true } }); 	
-		tmpUIObjArray.put(gIDX_MorphTValType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTValType).length-1, 1},1.0*InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : ", GUIObj_Type.ListVal, new boolean[]{true}});
+		tmpUIObjArray.put(gIDX_MorphTVal, uiObjInitAra_Float(new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[]{true, true})); 	
+		tmpUIObjArray.put(gIDX_MorphSpeed, uiObjInitAra_Float(new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation", new boolean[]{true})); 	
+		tmpUIObjArray.put(gIDX_MorphTValType, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphTValType).length-1, 1},1.0*InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : ", new boolean[]{true}));
 		
-		tmpUIObjArray.put(gIDX_NumCellsPerSide,new Object[] { new double[] { 2.0, 50.0, 1.0 }, 4.0, "# of Cells Per Grid Side", GUIObj_Type.IntVal, new boolean[]{true}}); 
+		tmpUIObjArray.put(gIDX_NumCellsPerSide, uiObjInitAra_Int(new double[] { 2.0, 50.0, 1.0 }, 4.0, "# of Cells Per Grid Side", new boolean[]{true})); 
 		
-		tmpUIObjArray.put(gIDX_SetBrnchStrat,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_SetBrnchStrat).length-1, 1},0.0, "Branch Sharing Strategy", GUIObj_Type.ListVal, new boolean[]{true, false, true}});
+		tmpUIObjArray.put(gIDX_SetBrnchStrat, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_SetBrnchStrat).length-1, 1},0.0, "Branch Sharing Strategy", new boolean[]{true, false, true}));
 		
-		tmpUIObjArray.put(gIDX_MapType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},1.0* currMapTypeIDX, "Map Type to Show", GUIObj_Type.ListVal, new boolean[]{true}}); 
+		tmpUIObjArray.put(gIDX_MapType, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MapType).length-1, 1},1.0* currMapTypeIDX, "Map Type to Show", new boolean[]{true})); 
 
-		tmpUIObjArray.put(gIDX_MorphType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphType).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Morph Type to Process", GUIObj_Type.ListVal, new boolean[]{true}});
+		tmpUIObjArray.put(gIDX_MorphType, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphType).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Morph Type to Process", new boolean[]{true}));
 
-		tmpUIObjArray.put(gIDX_MorphTypeOrient, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeOrient).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Orientation Morph Type to Use", GUIObj_Type.ListVal, new boolean[]{true}});
-		tmpUIObjArray.put(gIDX_MorphTypeSize, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeSize).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Size Morph Type to Use", GUIObj_Type.ListVal, new boolean[]{true}});
-		tmpUIObjArray.put(gIDX_MorphTypeShape, new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeShape).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Shape Morph Type to Use", GUIObj_Type.ListVal, new boolean[]{true}});
-		tmpUIObjArray.put(gIDX_MorphTypeCOVPath,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeCOVPath).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "COV Path Morph Type to Use", GUIObj_Type.ListVal, new boolean[]{true}});
+		tmpUIObjArray.put(gIDX_MorphTypeOrient, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeOrient).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Orientation Morph Type to Use", new boolean[]{true}));
+		tmpUIObjArray.put(gIDX_MorphTypeSize, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeSize).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Size Morph Type to Use", new boolean[]{true}));
+		tmpUIObjArray.put(gIDX_MorphTypeShape, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeShape).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Shape Morph Type to Use", new boolean[]{true}));
+		tmpUIObjArray.put(gIDX_MorphTypeCOVPath, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphTypeCOVPath).length-1, 1},1.0* mapPairManager.LERPMorphIDX, "COV Path Morph Type to Use", new boolean[]{true}));
 		
-		tmpUIObjArray.put(gIDX_MorphAnimType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphAnimType).length-1, 1},1.0* InterpolantBehavior.pingPong.getVal(), "Morph Animation Type : ", GUIObj_Type.ListVal, new boolean[]{true}});
+		tmpUIObjArray.put(gIDX_MorphAnimType, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphAnimType).length-1, 1},1.0* InterpolantBehavior.pingPong.getVal(), "Morph Animation Type : ", new boolean[]{true}));
 		
-		tmpUIObjArray.put(gIDX_NumLineupFrames,new Object[] { new double[]{5.0, 20.0, 1.0},11.0, "# of Frames in Lineup", GUIObj_Type.IntVal, new boolean[]{true}}); 
-		tmpUIObjArray.put(gIDX_NumMorphSlices,new Object[] { new double[]{5.0, 20.0, 1.0},11.0, "# of Slices in Morph", GUIObj_Type.IntVal, new boolean[]{true}}); 
+		tmpUIObjArray.put(gIDX_NumLineupFrames, uiObjInitAra_Int(new double[]{5.0, 20.0, 1.0},11.0, "# of Frames in Lineup", new boolean[]{true})); 
+		tmpUIObjArray.put(gIDX_NumMorphSlices, uiObjInitAra_Int(new double[]{5.0, 20.0, 1.0},11.0, "# of Slices in Morph", new boolean[]{true})); 
 		
-		tmpUIObjArray.put(gIDX_MorphSliceDispType,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphSliceDispType).length-1, 1},0.0, "Morph Slice Spacing to Show", GUIObj_Type.ListVal, new boolean[]{true}});		
+		tmpUIObjArray.put(gIDX_MorphSliceDispType, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphSliceDispType).length-1, 1},0.0, "Morph Slice Spacing to Show", new boolean[]{true}));		
 		
-		tmpUIObjArray.put(gIDX_CntlPtDispDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_CntlPtDispDetail).length-1, 1},1.0*drawMapDetail, "Cntl Pt Disp Detail", GUIObj_Type.ListVal, new boolean[]{true}});
-		tmpUIObjArray.put(gIDX_MorphAnalysisMmmntsDetail,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphAnalysisMmmntsDetail).length-1, 1},1.0*currMmntDispIDX, "Traj Analysis Detail", GUIObj_Type.ListVal, new boolean[]{true}});
-		tmpUIObjArray.put(gIDX_DistTestTransform,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_DistTestTransform).length-1, 1},0.0, "Distortion Analysis Transform", GUIObj_Type.ListVal, new boolean[]{true}});
-		tmpUIObjArray.put(gIDX_DistDimToShow,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_DistDimToShow).length-1, 1},2.0, "Distortion Dimension to Show In Colors", GUIObj_Type.ListVal, new boolean[]{true}});
+		tmpUIObjArray.put(gIDX_CntlPtDispDetail, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_CntlPtDispDetail).length-1, 1},1.0*drawMapDetail, "Cntl Pt Disp Detail", new boolean[]{true}));
+		tmpUIObjArray.put(gIDX_MorphAnalysisMmmntsDetail, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphAnalysisMmmntsDetail).length-1, 1},1.0*currMmntDispIDX, "Traj Analysis Detail", new boolean[]{true}));
+		tmpUIObjArray.put(gIDX_DistTestTransform, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_DistTestTransform).length-1, 1},0.0, "Distortion Analysis Transform", new boolean[]{true}));
+		tmpUIObjArray.put(gIDX_DistDimToShow, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_DistDimToShow).length-1, 1},2.0, "Distortion Dimension to Show In Colors", new boolean[]{true}));
 		
-		tmpUIObjArray.put(gIDX_MorphDistMult,new Object[] { new double[] { -10.0, 20.0, 0.1 }, 0.0,"Distortion Mult Exponent (for Visualization)", GUIObj_Type.FloatVal, new boolean[]{true } }); 	
+		tmpUIObjArray.put(gIDX_MorphDistMult, uiObjInitAra_Float(new double[] {-10.0, 20.0, 0.1 }, 0.0,"Distortion Mult Exponent (for Visualization)", new boolean[]{true})); 	
 		
-		//tmpUIObjArray.put(gIDX_MorphSliceTypeForDist,new Object[] { new double[]{0.0, tmpListObjVals.get(gIDX_MorphSliceTypeForDist).length-1, 1},0.0, "Morph Slice Spacing For Dist Calc", GUIObj_Type.ListVal, new boolean[]{true}});		
+		//tmpUIObjArray.put(gIDX_MorphSliceTypeForDist, uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphSliceTypeForDist).length-1, 1},0.0, "Morph Slice Spacing For Dist Calc", new boolean[]{true}));		
 	
 		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals);
 	}//setupGUIObjsAras
