@@ -171,16 +171,16 @@ public class mapPairManager {
 	/**
 	 * threading constructions - allow map manager to own its own threading executor
 	 */
-	protected ExecutorService th_exec;	//to access multithreading - instance from calling program
-	protected final int numUsableThreads;		//# of threads usable by the application
+	protected ExecutorService th_exec;	//to access multi-threading - instance from calling program
+	//# of threads usable by the application
+	protected final int numUsableThreads;		
 
 	/**
 	 * morph animation variables
 	 */
-	private float //morphProgress = 0.5f, 
-			morphSpeed = 1.0f;
+	private float morphSpeed = 1.0f;
 	/**
-	 * interplants to be used for animation
+	 * interpolants to be used for animation
 	 */
 	private Base_Interpolant[] animators;
 	/**
@@ -586,10 +586,7 @@ public class mapPairManager {
 	 * manage morph display and evolution
 	 * @param animTimeMod
 	 */
-	//protected float morphSign = 1.0f;
-
 	public final void drawAndAnimMorph(boolean debug, float animTimeMod, boolean drawMap, boolean drawMorphMap, boolean _showDistColors, boolean morphMapFillOrWf,  boolean drawSlices, boolean morphSlicesFillOrWf,boolean drawCircles, boolean drawCntlPts, boolean sweepMaps, boolean showLbls, int _detail) {
-		//morphs[currMorphTypeIDX].setMorphT(morphProgress);//sets t value and calcs morph
 		morphs[currMorphTypeIDX].setMorphT(animators[curAnimatorIDX].getValue());//sets t value and calcs morph
 		pa.pushMatState();	
 			pa.setFill(0,0,0,255);
@@ -609,8 +606,6 @@ public class mapPairManager {
 		}
 		if(sweepMaps) {
 			evolveAllAnimators(animTimeMod);
-//			morphProgress += (morphSign * (animTimeMod * morphSpeed));			
-//			if(morphProgress > 1.0f) {morphProgress = 1.0f;morphSign = -1.0f;} else if (morphProgress < 0.0f) {	morphProgress = 0.0f;	morphSign = 1.0f;}	
 			currUIVals.setMorphProgress(animators[curAnimatorIDX].getValue());
 		}
 		

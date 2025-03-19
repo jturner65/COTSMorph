@@ -150,7 +150,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 				_winDescr = new String[] {"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
 
 		//instanced window dims when open and closed - only showing 1 open at a time - and init cam vals
-		float[][] _floatDims  = new float[][] {getDefaultWinDimOpen(), getDefaultWinDimClosed(), getInitCameraValues()};	
+		float[][] _floatDims  = getDefaultWinAndCameraDims();	
 
 		//menu bar init
 		String[] menuBtnTitles = new String[]{
@@ -218,8 +218,8 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	//called from base class, once at start of program after vis init is called - set initial windows to show - always show UI Menu
 	protected void initOnce_Indiv(){
-		//setVisFlag(showSpereAnimRes, true);
-		setVisFlag(dispCOTS_3DMorph, true);
+		//setWinVisFlag(showSpereAnimRes, true);
+		setWinVisFlag(dispCOTS_3DMorph, true);
 		
 	}//	initOnce
 	
@@ -285,7 +285,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 			//val is btn state before transition 
 			boolean bVal = (val == 1?  false : true);
 			//each entry in this array should correspond to a clickable window, not counting menu
-			setVisFlag(btn+1, bVal);
+			setWinVisFlag(btn+1, bVal);
 		}
 	}//handleShowWin
 	

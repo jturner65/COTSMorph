@@ -15,7 +15,6 @@ import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import processing.core.PConstants;
 import processing.core.PImage;
 
 /**
@@ -138,7 +137,7 @@ public abstract class Base_PolyMap {
 	public Base_PolyMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
 		win=_win; pa=Base_DispWindow.ri;AppMgr = Base_DispWindow.AppMgr; mgr = _mapMgr; currUIVals = _currUIVals;
 		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		curMorphTVal = 1.0f * mapIdx;
-		mapTitle = _mapTitle;		mapTtlXOff = Base_DispWindow.txtHeightOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
+		mapTitle = _mapTitle;		mapTtlXOff = win.getTextHeightOffset()*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
 		isKeyFrameMap = _isKeyFrame;
 		//init point structures
 		//initCtorMethodVars(_pClrs, _cntlPts,_cntlPts, myVectorf._cross(new myVectorf(_cntlPts[0], _cntlPts[1]), new myVectorf(_cntlPts[0], _cntlPts[_cntlPts.length-1]))._normalize()); 		
@@ -155,7 +154,7 @@ public abstract class Base_PolyMap {
 	public Base_PolyMap(String _mapTitle, Base_PolyMap _otr) {
 		win=_otr.win; pa=Base_DispWindow.ri;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
 		mapIdx = _otr.mapIdx;		mapTypeIDX = _otr.mapTypeIDX;
-		mapTitle = _mapTitle ;		mapTtlXOff = Base_DispWindow.txtHeightOff*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
+		mapTitle = _mapTitle ;		mapTtlXOff = win.getTextHeightOffset()*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
 		//keyframes are never copies;
 		isKeyFrameMap = false;
 		//points and labels for points, basis vectors, and map flags structures
@@ -631,9 +630,9 @@ public abstract class Base_PolyMap {
 	 * draw polygon around control points
 	 */
 	protected final void _drawCntlPtPoly() {
-		((my_procApplet)pa).beginShape();
+		pa.gl_beginShape();
 		for(int i=0;i<cntlPts.length;++i) {		((my_procApplet)pa).vertex(cntlPts[i].x,cntlPts[i].y,cntlPts[i].z);	}
-		((my_procApplet)pa).endShape(PConstants.CLOSE);	
+		pa.gl_endShape(true);	
 	}
 	
 	/**

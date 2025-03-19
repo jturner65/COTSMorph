@@ -23,9 +23,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	public final String getWinName() {return "COTS_Morph2DWin";}
 	
 	@Override
-	protected final void initMe_Indiv() {	
-	}//initMe
-	
+	protected final void initMe_Indiv() {}//initMe
 
 	@Override
 	protected void initDispFlags_Indiv() {}
@@ -95,9 +93,6 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	protected boolean setUI_FloatValsCustom_Indiv(int UIidx, float val) {
 		return false;
 	}
-
-
-
 	@Override
 	public void setPrivFlags_Indiv(int idx, boolean val) {
 		switch (idx) {// special actions for each flag
@@ -105,14 +100,10 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 		}
 	}
 
-
 	/////////////////////////////
 	// draw routines
 	@Override
-	protected final void _drawMe_Indiv(float animTimeMod){
-			
-	}//_drawMe_Indiv
-	
+	protected final void _drawMe_Indiv(float animTimeMod){}//_drawMe_Indiv	
 	
 	/**
 	 * called by maps
@@ -128,7 +119,6 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 		ri.showText(lbl, xOff,yOff,0); 
 		ri.popMatState();
 	}
-
 		
 	////////////////////////
 	// keyboard and mouse

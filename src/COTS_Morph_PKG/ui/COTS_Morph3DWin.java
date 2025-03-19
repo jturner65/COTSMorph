@@ -26,8 +26,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	public final String getWinName() {return "COTS_Morph3DWin";}
 	
 	@Override
-	protected final void initMe_Indiv() {
-	}//initMe
+	protected final void initMe_Indiv() {}//initMe
 
 	@Override
 	protected void initDispFlags_Indiv() {
@@ -60,8 +59,6 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 
 	@Override
 	protected final int initAllPrivBtns_Indiv(ArrayList<Object[]> tmpBtnNamesArray) {
-		
-		
 		return _numPrivButtons;
 	}//initAllPrivBtns
 	
@@ -83,9 +80,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	 * @param tmpListObjVals
 	 */
 	@Override
-	protected void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {
-		
-	}
+	protected void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {}
 	
 	/**
 	 * Check class-specific int/list ui objs upon population.  returns true if found
@@ -105,13 +100,10 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 		}
 	}
 
-
 	/////////////////////////////
 	// draw routines
 	@Override
-	protected final void _drawMe_Indiv(float animTimeMod){		
-		
-	}
+	protected final void _drawMe_Indiv(float animTimeMod){}
 	
 	/**
 	 * called by maps
@@ -165,11 +157,8 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	}
 	
 	@Override
-	protected final void mouseRelease_IndivMorphWin(){
-	}
+	protected final void mouseRelease_IndivMorphWin(){}
 	@Override
-	protected final myPoint getMsePtAs3DPt(myPoint mseLoc) {		return new myPoint(mseLoc);	}
-
-	
+	protected final myPoint getMsePtAs3DPt(myPoint mseLoc) {		return new myPoint(mseLoc);	}	
 
 }//class COTS_Morph3DWin

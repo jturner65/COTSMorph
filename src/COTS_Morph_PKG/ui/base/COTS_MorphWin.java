@@ -663,13 +663,10 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	/////////////////////////////
 	// draw routines
 	@Override
-	protected final void setCamera_Indiv(float[] camVals) {
-		// , float rx, float ry, float dz are now member variables of every window
-		ri.setCameraWinVals(camVals);//(camVals[0], camVals[1], camVals[2], camVals[3], camVals[4], camVals[5], camVals[6], camVals[7], camVals[8]);
-		// puts origin of all drawn objects at screen center and moves forward/away by dz
-		ri.translate(camVals[0], camVals[1], (float) dz);
-		setCamOrient();
-	}
+	protected void setCamera_Indiv(float[] camVals) {
+		// No custom camera handling
+		setCameraBase(camVals);
+	}//setCameraIndiv
 	
 	@Override
 	protected final void drawMe(float animTimeMod) {
@@ -690,7 +687,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	protected float sideBarYDisp = 11.0f;
 	@Override
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {
-		float _yOff = txtHeightOff - 4;
+		float _yOff = getTextHeightOffset() - 4;
 		//start with yOff
 		ri.pushMatState();
 		ri.scale(1.05f);
@@ -976,11 +973,11 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 
 	
 	@Override
-	protected final void endShiftKeyI() {}
+	protected final void endShiftKey_Indiv() {}
 	@Override
-	protected final void endAltKeyI() {}
+	protected final void endAltKey_Indiv() {}
 	@Override
-	protected final void endCntlKeyI() {}
+	protected final void endCntlKey_Indiv() {}
 	
 	///////////////////////
 	// deprecated file io stuff
