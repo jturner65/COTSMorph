@@ -259,7 +259,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	protected abstract myPointf[][] getKeyFrameMapBndPts();
 
 	@Override
-	public final int initAllPrivBtns(ArrayList<Object[]> tmpBtnNamesArray) {
+	public final int initAllUIButtons(ArrayList<Object[]> tmpBtnNamesArray) {
 
 		// add an entry for each button, in the order they are wished to be displayed
 		// true tag, false tag, btn IDX
