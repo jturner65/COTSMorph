@@ -437,7 +437,7 @@ public abstract class baseMorph {
 	 */
 	protected Base_PolyMap[][][] getKFPolyMapsForCurMorphAnimType(Base_PolyMap[] morphSliceAra, int animType){
 		Base_PolyMap[][][] res = new Base_PolyMap[2][][];
-		InterpolantBehavior animBehavior = InterpolantBehavior.getVal(animType);
+		InterpolantBehavior animBehavior = InterpolantBehavior.getEnumFromValue(animType);
 		//morphSliceAra[k].buildPolyMaps();
 		int stIdx, endIdx;
 		switch (animBehavior) {
