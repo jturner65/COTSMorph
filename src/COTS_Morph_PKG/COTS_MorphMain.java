@@ -300,18 +300,6 @@ public class COTS_MorphMain extends GUI_AppManager {
 		}
 	}	
 	
-	@SuppressWarnings("unused")
-	private float[] getMaxUIClkCoords() {
-		float[] res = new float[] {0.0f,0.0f,0.0f,0.0f}, tmpCoords;
-		for (int winIDX : winDispIdxXOR) {
-			tmpCoords = dispWinFrames[winIDX].uiClkCoords;
-			for(int i=0;i<tmpCoords.length;++i) {
-				if(res[i]<tmpCoords[i]) {res[i]=tmpCoords[i];}
-			}
-		}
-		return res;
-	}
-	
 	//////////////////////////////////////////
 	/// graphics and base functionality utilities and variables
 	//////////////////////////////////////////

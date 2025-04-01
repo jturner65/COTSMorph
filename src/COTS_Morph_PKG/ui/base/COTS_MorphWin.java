@@ -263,52 +263,52 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 
 		// add an entry for each button, in the order they are wished to be displayed
 		// true tag, false tag, btn IDX
-		tmpBtnNamesArray.add(new Object[] { "Debugging", "Debug", Base_BoolFlags.debugIDX });
-		tmpBtnNamesArray.add(new Object[] { "Resetting Maps", "Reset Maps", resetMapCrnrsIDX });
-		tmpBtnNamesArray.add(new Object[] { "Resetting Map 0", "Reset Map 0", resetMapCrnrs_0IDX });
-		tmpBtnNamesArray.add(new Object[] { "Resetting Map 1", "Reset Map 1", resetMapCrnrs_1IDX });
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Debugging", "Debug"}, Base_BoolFlags.debugIDX ));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Resetting Maps", "Reset Maps"}, resetMapCrnrsIDX ));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Resetting Map 0", "Reset Map 0"}, resetMapCrnrs_0IDX ));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Resetting Map 1", "Reset Map 1"}, resetMapCrnrs_1IDX ));
 			
-		tmpBtnNamesArray.add(new Object[] { "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrs_0IDX });
-		tmpBtnNamesArray.add(new Object[] { "Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs", matchMapCrnrs_1IDX });
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs"}, matchMapCrnrs_0IDX ));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs"}, matchMapCrnrs_1IDX ));
 				
-		tmpBtnNamesArray.add(new Object[] { "Setting COTS Branch Strat", "Set COTS Branch Strat", setCurrCOTSBranchShareStratIDX });
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Setting COTS Branch Strat", "Set COTS Branch Strat"}, setCurrCOTSBranchShareStratIDX ));
 		
-		tmpBtnNamesArray.add(new Object[] { "Resetting All Branching", "Reset All Branching", resetAllBranchingIDX});	
-		tmpBtnNamesArray.add(new Object[] { "Resetting Map 0 Branching", "Reset Map 0 Branching", resetMapBranch_0IDX});	
-		tmpBtnNamesArray.add(new Object[] { "Resetting Map 1 Branching", "Reset Map 1 Branching", resetMapBranch_1IDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Resetting All Branching", "Reset All Branching"}, resetAllBranchingIDX));	
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Resetting Map 0 Branching", "Reset Map 0 Branching"}, resetMapBranch_0IDX));	
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Resetting Map 1 Branching", "Reset Map 1 Branching"}, resetMapBranch_1IDX));
 
-		tmpBtnNamesArray.add(new Object[] { "Finding Dist From A to B","Find Dist From A to B", findDiffFromAtoBIDX});	
-		tmpBtnNamesArray.add(new Object[] { "Finding Dist From B to A","Find Dist From B to A", findDiffFromBToAIDX});	
-		tmpBtnNamesArray.add(new Object[] { "Find Best Registration (may remap verts in copy)","Find Matching Vertex Registration", findBestOrRegDistIDX});
-		tmpBtnNamesArray.add(new Object[] { "Calculating Current Morph Distortion","Calculate Current Morph Distortion",calcMorphDistIDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Finding Dist From A to B","Find Dist From A to B"}, findDiffFromAtoBIDX));	
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Finding Dist From B to A","Find Dist From B to A"}, findDiffFromBToAIDX));	
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Find Best Registration (may remap verts in copy)","Find Matching Vertex Registration"}, findBestOrRegDistIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Calculating Current Morph Distortion","Calculate Current Morph Distortion"},calcMorphDistIDX));
 
-		tmpBtnNamesArray.add(new Object[] { "Showing Maps", "Show Maps",drawMapIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Registration Map", "Show Registration Maps",drawMap_RegCopyIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Cntl Pts", "Show Cntl Pts",drawMap_CntlPtsIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls",drawMap_CntlPtLblsIDX});
-		tmpBtnNamesArray.add(new Object[] { "Show Checkerboard Maps", "Show Wireframe Maps",drawMap_FillOrWfIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Cell Circles", "Show Cell Circles",drawMap_CellCirclesIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Edge Lines", "Show Edge Lines",drawMap_EdgeLinesIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Ortho Frame", "Show Ortho Frame",drawMap_OrthoFrameIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Map Image", "Show Map Image",drawMap_ImageIDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Maps", "Show Maps"},drawMapIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Registration Map", "Show Registration Maps"},drawMap_RegCopyIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Cntl Pts", "Show Cntl Pts"},drawMap_CntlPtsIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls"},drawMap_CntlPtLblsIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Show Checkerboard Maps", "Show Wireframe Maps"},drawMap_FillOrWfIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Cell Circles", "Show Cell Circles"},drawMap_CellCirclesIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Edge Lines", "Show Edge Lines"},drawMap_EdgeLinesIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Ortho Frame", "Show Ortho Frame"},drawMap_OrthoFrameIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Map Image", "Show Map Image"},drawMap_ImageIDX));
 		
-		tmpBtnNamesArray.add(new Object[] { "Running Morph Sweep", "Run Morph Sweep", sweepMapsIDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Running Morph Sweep", "Run Morph Sweep"}, sweepMapsIDX));
 		
-		tmpBtnNamesArray.add(new Object[] { "Showing Morph Map", "Show Morph Map",drawMorph_MapIDX});
-		tmpBtnNamesArray.add(new Object[] { "Show Morph Checkerboard", "Show Morph Wireframe",drawMorph_FillOrWfIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Morph Slices", "Show Morph Slices",drawMorph_SlicesIDX});
-		tmpBtnNamesArray.add(new Object[] { "Show Morph Slices CB", "Show Morph Slices WF",drawMorph_Slices_FillOrWfIDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Morph Map", "Show Morph Map"},drawMorph_MapIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Show Morph Checkerboard", "Show Morph Wireframe"},drawMorph_FillOrWfIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Morph Slices", "Show Morph Slices"},drawMorph_SlicesIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Show Morph Slices CB", "Show Morph Slices WF"},drawMorph_Slices_FillOrWfIDX));
 		
-		tmpBtnNamesArray.add(new Object[] { "Showing Distortion Colors", "Show Distortion Colors",drawMorph_DistColorsIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Morph Slice Info", "Show Morph Slice Info",drawMorph_Slices_RtSideInfoIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj",drawMorph_CntlPtTrajIDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Distortion Colors", "Show Distortion Colors"},drawMorph_DistColorsIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Morph Slice Info", "Show Morph Slice Info"},drawMorph_Slices_RtSideInfoIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj"},drawMorph_CntlPtTrajIDX));
 		
-		tmpBtnNamesArray.add(new Object[] { "Showing Reg Map Lineup", "Show Reg Map Lineup", showOrientedLineupIDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Reg Map Lineup", "Show Reg Map Lineup"}, showOrientedLineupIDX));
 		
-		tmpBtnNamesArray.add(new Object[] { "Showing Traj Analysis", "Show Traj Analysis", showTrajAnalysisWinIDX});		
-		//tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis", "Show Distortion Analysis", showMrphStackDistAnalysisWinIDX});
-		tmpBtnNamesArray.add(new Object[] { "Showing Traj Analysis Graphs", "Show Traj Analysis Graphs", showMorphAnalysisGraphsIDX});
-		//tmpBtnNamesArray.add(new Object[] { "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs", showMrphStackDistAnalysisGraphsIDX});
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Traj Analysis", "Show Traj Analysis"}, showTrajAnalysisWinIDX));		
+		//tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Distortion Analysis", "Show Distortion Analysis"}, showMrphStackDistAnalysisWinIDX));
+		tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Traj Analysis Graphs", "Show Traj Analysis Graphs"}, showMorphAnalysisGraphsIDX));
+		//tmpBtnNamesArray.add(uiObjInitAra_Btn(new String[] { "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs"}, showMrphStackDistAnalysisGraphsIDX));
 		//instance-specific buttons 
 		return initAllPrivBtns_Indiv(tmpBtnNamesArray);
 		
