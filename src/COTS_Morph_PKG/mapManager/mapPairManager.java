@@ -224,7 +224,7 @@ public class mapPairManager {
 		}
 		
 		//want # of usable background threads.  Leave 2 for primary process (and potential draw loop)
-		numUsableThreads = Runtime.getRuntime().availableProcessors() - 2;
+		numUsableThreads = win.getNumThreadsAvailable() - 2;
 		th_exec = Executors.newCachedThreadPool();// this is performing much better even though it is using all available threads
 		
 		//build maps
