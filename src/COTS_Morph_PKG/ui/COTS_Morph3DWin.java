@@ -31,7 +31,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	@Override
 	protected void initDispFlags_Indiv() {
 		dispFlags.setDrawMseEdge(true);
-		dispFlags.setShowRtSideMenu(true);		
+		dispFlags.setShowRtSideMenu(true);
 	}
 
 	/**
@@ -40,9 +40,9 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
 	 */
 	protected final myPointf[][] getKeyFrameMapBndPts(){		
 		myPointf[][] bndPts = new myPointf[2][4];
-					
-		float minX = AppMgr.cubeBnds[0][0], minY = AppMgr.cubeBnds[0][1], minZ = AppMgr.cubeBnds[0][2];
-		float maxX = AppMgr.cubeBnds[0][0] + AppMgr.cubeBnds[1][0], maxY = AppMgr.cubeBnds[0][1] + AppMgr.cubeBnds[1][1], maxZ = AppMgr.cubeBnds[0][2] + AppMgr.cubeBnds[1][2];
+		float[][] cubeBnds = AppMgr.get3dCubeBnds();
+		float minX = cubeBnds[0][0], minY = cubeBnds[0][1], minZ = cubeBnds[0][2];
+		float maxX = cubeBnds[0][0] + cubeBnds[1][0], maxY = cubeBnds[0][1] + cubeBnds[1][1], maxZ = cubeBnds[0][2] + cubeBnds[1][2];
 		
 		
 		bndPts[0] = new myPointf[]{ new myPointf(minX, maxY+1.0f, maxZ-1.0f),

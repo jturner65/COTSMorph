@@ -236,15 +236,9 @@ public class morphStackDistortionCalc implements Callable<Boolean>{
 		//calc "lateral" distortion
 		for(int k=stIdx;k<endIdx;++k) {	//for(int k=1;k<numMapSlices-1;++k) {	
 			if(k==0) {
-//				if(null==keyFrameStartPolyMap) {
-//					System.out.println("Null map dupeStartPolyMap stIdx == : " + stIdx);
-//				}
 				stPolyAra = kfStartPolyMap;
 				endPolyAra = allPolyMaps[1]; 
 			} else if(k==(allPolyMaps.length-1)) {
-//				if(null==keyFrameEndPolyMap) {
-//					System.out.println("Null map dupeEndPolyMap endIdx == : " + endIdx);
-//				}
 				stPolyAra =  allPolyMaps[k-1];
 				endPolyAra = kfEndPolyMap;
 			} else {
@@ -252,9 +246,7 @@ public class morphStackDistortionCalc implements Callable<Boolean>{
 				endPolyAra = allPolyMaps[k+1];
 			}	
 			
-			incr = _calcPerSliceDist(k, stPolyAra, endPolyAra, incr);
-			
-			
+			incr = _calcPerSliceDist(k, stPolyAra, endPolyAra, incr);			
 //			//if((k==0) || (k==allPolyMaps.length-1)) {continue;}
 //			for(int i=0;i<allPolyMaps[k].length;++i) {
 //				for(int j=0;j<allPolyMaps[k][i].length;++j) {

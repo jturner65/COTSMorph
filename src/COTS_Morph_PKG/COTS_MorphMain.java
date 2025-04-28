@@ -137,7 +137,8 @@ public class COTS_MorphMain extends GUI_AppManager {
 		setBaseFlagToShow_saveAnim(true); 
 		setBaseFlagToShow_runSim(false);
 		setBaseFlagToShow_singleStep(false);
-		setBaseFlagToShow_showRtSideMenu(true);	
+		setBaseFlagToShow_showRtSideMenu(true);		
+		setBaseFlagToShow_showStatusBar(true);
 		setBaseFlagToShow_showDrawableCanvas(false);
 	}
 	
@@ -218,8 +219,8 @@ public class COTS_MorphMain extends GUI_AppManager {
 	@Override
 	//called from base class, once at start of program after vis init is called - set initial windows to show - always show UI Menu
 	protected void initOnce_Indiv(){
-		//setWinVisFlag(showSpereAnimRes, true);
 		setWinVisFlag(dispCOTS_3DMorph, true);
+		setShowStatusBar(true);
 		
 	}//	initOnce
 	
