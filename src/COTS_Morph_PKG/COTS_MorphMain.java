@@ -202,7 +202,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 					new int[]{180,180,180,255}, new int[]{100,100,100,255},
 					new int[]{0,0,0,200},new int[]{255,255,255,255}});
 				
-		dispWinFrames[wIdx] = new COTS_Morph2DWin(ri, this, wIdx);		
+		setDispWindow(wIdx, new COTS_Morph2DWin(ri, this, wIdx));		
 
 		//3d window
 		wIdx = dispCOTS_3DMorph;
@@ -211,7 +211,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 					new int[]{180,180,180,255},new int[]{100,100,100,255},
 					new int[]{0,0,0,200},new int[]{255,255,255,255}});		
 		
-		dispWinFrames[wIdx] = new COTS_Morph3DWin(ri, this, wIdx);		
+		setDispWindow(wIdx, new COTS_Morph3DWin(ri, this, wIdx));		
 	
 	}//	initVisOnce_Priv
 	
@@ -256,7 +256,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	protected void handleKeyPress(char key, int keyCode) {
 		switch (key){
 			case ' ' : {toggleSimIsRunning(); break;}							//run sim
-			case 'f' : {dispWinFrames[curFocusWin].setInitCamView();break;}					//reset camera
+			case 'f' : {getCurFocusDispWindow().setInitCamView();break;}					//reset camera
 			case 'a' :
 			case 'A' : {toggleSaveAnim();break;}						//start/stop saving every frame for making into animation
 			case 's' :
