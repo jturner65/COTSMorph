@@ -42,7 +42,7 @@ import processing.core.PImage;
  */
 public class mapPairManager {
 
-	public static IRenderInterface pa;
+	public static IRenderInterface ri;
 	public COTS_MorphWin win;	
 	public static GUI_AppManager AppMgr;
 	/**
@@ -202,7 +202,7 @@ public class mapPairManager {
 	protected boolean morphStackAnalysisDone = false;
 
 	public mapPairManager(COTS_MorphWin _win, myPointf[][] _bndPts, PImage[] _txtrImages, mapUpdFromUIData _currUIVals, int _mapType) {
-		win=_win; pa=Base_DispWindow.ri;  AppMgr= Base_DispWindow.AppMgr; msgObj=win.getMsgObj();
+		win=_win; ri=Base_DispWindow.ri;  AppMgr= Base_DispWindow.AppMgr; msgObj=win.getMsgObj();
 				
 		//for building registration copy
 		fromMapIDX = 0;
@@ -492,7 +492,7 @@ public class mapPairManager {
 	// draw routines
 	
 	public final void drawMapsAndMorphs(float animTimeMod, int drawMapDetail) {
-		pa.pushMatState();
+		ri.pushMatState();
 		boolean debug = currUIVals.getIsDebug(), 
 				showLbls = currUIVals.getBoolValue(COTS_MorphWin.drawMap_CntlPtLblsIDX), 
 				drawCircles = currUIVals.getBoolValue(COTS_MorphWin.drawMap_CellCirclesIDX);
@@ -517,7 +517,7 @@ public class mapPairManager {
 					drawMorphSlices, currUIVals.getBoolValue(COTS_MorphWin.drawMorph_Slices_FillOrWfIDX), 
 					drawCircles, drawCntlPts, currUIVals.getBoolValue(COTS_MorphWin.sweepMapsIDX), showLbls,drawMapDetail);	
 		}
-		pa.popMatState();	
+		ri.popMatState();	
 	}
 	
 	/**
@@ -526,19 +526,19 @@ public class mapPairManager {
 	 * @param rad radius of point
 	 */
 	public void _drawPt(myPointf _p, float _rad) {
-		pa.pushMatState();	
-		pa.translate(_p);
-		pa.drawSphere(_rad);
-		pa.popMatState();	
+		ri.pushMatState();	
+		ri.translate(_p);
+		ri.drawSphere(_rad);
+		ri.popMatState();	
 	}
 	
 	public void _drawVec(myPointf _p, myPointf _pEnd, int[] _strkClr, float _rad) {
-		pa.pushMatState();	
-		pa.setStroke(_strkClr[0],_strkClr[1],_strkClr[2],255);
-		pa.drawLine(_p.x, _p.y,_p.z,_pEnd.x, _pEnd.y,_pEnd.z);
-		pa.translate(_pEnd);
-		pa.drawSphere(_rad);
-		pa.popMatState();	
+		ri.pushMatState();	
+		ri.setStroke(_strkClr[0],_strkClr[1],_strkClr[2],255);
+		ri.drawLine(_p.x, _p.y,_p.z,_pEnd.x, _pEnd.y,_pEnd.z);
+		ri.translate(_pEnd);
+		ri.drawSphere(_rad);
+		ri.popMatState();	
 	}
 	
 	
@@ -588,13 +588,13 @@ public class mapPairManager {
 	 */
 	public final void drawAndAnimMorph(boolean debug, float animTimeMod, boolean drawMap, boolean drawMorphMap, boolean _showDistColors, boolean morphMapFillOrWf,  boolean drawSlices, boolean morphSlicesFillOrWf,boolean drawCircles, boolean drawCntlPts, boolean sweepMaps, boolean showLbls, int _detail) {
 		morphs[currMorphTypeIDX].setMorphT(animators[curAnimatorIDX].getValue());//sets t value and calcs morph
-		pa.pushMatState();	
-			pa.setFill(0,0,0,255);
-			pa.setStroke(0,0,0,255);
-			pa.setStrokeWt(1.0f);
+		ri.pushMatState();	
+			ri.setFill(0,0,0,255);
+			ri.setStroke(0,0,0,255);
+			ri.setStrokeWt(1.0f);
 			//any instancing-morph-specific data
 			morphs[currMorphTypeIDX].drawMorphSpecificValues(debug,drawCntlPts, showLbls);
-		pa.popMatState();	
+		ri.popMatState();	
 		
 		if(drawSlices) {
 			morphs[currMorphTypeIDX].drawMorphSlices((!drawMorphMap && _showDistColors), morphSlicesFillOrWf, drawMap, drawCircles, drawCntlPts, showLbls, _detail);			
@@ -617,57 +617,57 @@ public class mapPairManager {
 		if(dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) { mod+=2;}
 		else if(dispDetail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX){ mod+=1;}
 		recalcTrajAnalysisDims(mod);
-		pa.pushMatState();	
-		pa.setStroke(0,0,0, 255);
-		pa.setStrokeWt(2.0f);
+		ri.pushMatState();	
+		ri.setStroke(0,0,0, 255);
+		ri.setStrokeWt(2.0f);
 		int numWinBarsToDraw = 1;
-		pa.translate(0.0f,win.getRectDim(3),0.0f);//perTrajAnalysisImageWidth up from bottom
+		ri.translate(0.0f,win.getRectDim(3),0.0f);//perTrajAnalysisImageWidth up from bottom
 		if(drawAnalysisGraphs) {
-			pa.pushMatState();	
-			pa.setFill(255, 235,255,alpha);
-			pa.translate(0.0f,-perTrajAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
-			pa.drawRect(new float[]{trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]});	
+			ri.pushMatState();	
+			ri.setFill(255, 235,255,alpha);
+			ri.translate(0.0f,-perTrajAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
+			ri.drawRect(new float[]{trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]});	
 			morphs[currMorphTypeIDX].drawTrajAnalyzerGraphs(mmntDispLabels,  dispDetail, new float[] {perTrajAnalysisImageWidth,perTrajAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});
 			++numWinBarsToDraw;
-			pa.popMatState();
+			ri.popMatState();
 		}
 		if(drawTrajAnalysis) {
-			pa.pushMatState();	
-			pa.setFill(235, 252,255,alpha);
-			pa.translate(0.0f,-perTrajAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
-			pa.drawRect(new float[]{trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]});	
+			ri.pushMatState();	
+			ri.setFill(235, 252,255,alpha);
+			ri.translate(0.0f,-perTrajAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
+			ri.drawRect(new float[]{trajAnalysisRectDims[0],trajAnalysisRectDims[1],trajAnalysisRectDims[2],trajAnalysisRectDims[3]});	
 			morphs[currMorphTypeIDX].drawTrajAnalyzerData(mmntDispLabels,  dispDetail, new float[] {perTrajAnalysisImageWidth,perTrajAnalysisImageWidth,trajAnalysisRectDims[1], sideBarYDisp});			
-			pa.popMatState();			
+			ri.popMatState();			
 		}
-		pa.popMatState();
+		ri.popMatState();
 	}
 
 	public final void drawMaps_MrphStackDistAnalysisWins(boolean drawTrajAnalysis, boolean drawAnalysisGraphs, String[] mmntDispLabels, float sideBarYDisp) {
 		int alpha = 120;
 		recalcMrphStckAnalysisDims(0);
-		pa.pushMatState();	
-		pa.setStroke(0,0,0, 255);
-		pa.setStrokeWt(2.0f);
+		ri.pushMatState();	
+		ri.setStroke(0,0,0, 255);
+		ri.setStrokeWt(2.0f);
 		int numWinBarsToDraw = 1;
-		pa.translate(0.0f,win.getRectDim(3),0.0f);
+		ri.translate(0.0f,win.getRectDim(3),0.0f);
 		if(drawAnalysisGraphs) {
-			pa.pushMatState();	
-			pa.setFill(255, 235,255,alpha);
-			pa.translate(0.0f,-perMStckDistAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
-			pa.drawRect(new float[]{mStckDistAnalysisRectDims[0],mStckDistAnalysisRectDims[1],mStckDistAnalysisRectDims[2],mStckDistAnalysisRectDims[3]});	
-			//mrphStackDistAnalyzer.drawAnalyzerGraphs(pa, mmntDispLabels, new float[] {perMStckDistAnalysisImageWidth,perMStckDistAnalysisImageWidth,mStckDistAnalysisRectDims[1], sideBarYDisp}, "");
+			ri.pushMatState();	
+			ri.setFill(255, 235,255,alpha);
+			ri.translate(0.0f,-perMStckDistAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
+			ri.drawRect(new float[]{mStckDistAnalysisRectDims[0],mStckDistAnalysisRectDims[1],mStckDistAnalysisRectDims[2],mStckDistAnalysisRectDims[3]});	
+			//mrphStackDistAnalyzer.drawAnalyzerGraphs(ri, mmntDispLabels, new float[] {perMStckDistAnalysisImageWidth,perMStckDistAnalysisImageWidth,mStckDistAnalysisRectDims[1], sideBarYDisp}, "");
 			++numWinBarsToDraw;
-			pa.popMatState();
+			ri.popMatState();
 		}
 		if(drawTrajAnalysis) {
-			pa.pushMatState();	
-			pa.setFill(235, 252,255,alpha);
-			pa.translate(0.0f,-perMStckDistAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
-			pa.drawRect(new float[]{mStckDistAnalysisRectDims[0],mStckDistAnalysisRectDims[1],mStckDistAnalysisRectDims[2],mStckDistAnalysisRectDims[3]});
-			//mrphStackDistAnalyzer.drawAnalyzerData(pa, mmntDispLabels, new float[] {perMStckDistAnalysisImageWidth,perMStckDistAnalysisImageWidth,mStckDistAnalysisRectDims[1], sideBarYDisp}, "");
-			pa.popMatState();			
+			ri.pushMatState();	
+			ri.setFill(235, 252,255,alpha);
+			ri.translate(0.0f,-perMStckDistAnalysisImageWidth * numWinBarsToDraw,0.0f);//perTrajAnalysisImageWidth up from bottom
+			ri.drawRect(new float[]{mStckDistAnalysisRectDims[0],mStckDistAnalysisRectDims[1],mStckDistAnalysisRectDims[2],mStckDistAnalysisRectDims[3]});
+			//mrphStackDistAnalyzer.drawAnalyzerData(ri, mmntDispLabels, new float[] {perMStckDistAnalysisImageWidth,perMStckDistAnalysisImageWidth,mStckDistAnalysisRectDims[1], sideBarYDisp}, "");
+			ri.popMatState();			
 		}
-		pa.popMatState();
+		ri.popMatState();
 	}//drawMaps_MrphStackDistAnalysisWins
 
 
@@ -676,31 +676,31 @@ public class mapPairManager {
 	 * @param fillOrWf
 	 */
 	public final void drawMaps_LineupFrames(boolean fillOrWf, boolean drawCircles, boolean drawTexture) {
-		pa.pushMatState();	
-		pa.setStroke(0,0,0, 255);
-		pa.setStrokeWt(2.0f);
-		pa.setFill(245, 255,232,255);
-		pa.translate(0.0f,win.getRectDim(3)-perLineupImageWidth,0.0f);
-		pa.drawRect(new float[]{lineupRectDims[0],lineupRectDims[1],lineupRectDims[2],lineupRectDims[3]});		
+		ri.pushMatState();	
+		ri.setStroke(0,0,0, 255);
+		ri.setStrokeWt(2.0f);
+		ri.setFill(245, 255,232,255);
+		ri.translate(0.0f,win.getRectDim(3)-perLineupImageWidth,0.0f);
+		ri.drawRect(new float[]{lineupRectDims[0],lineupRectDims[1],lineupRectDims[2],lineupRectDims[3]});		
 		
-		//pa.setFill(new int[] {0, 222,232},255);
+		//ri.setFill(new int[] {0, 222,232},255);
 		for(Float t : lineUpMorphMaps.keySet()) {
-			pa.pushMatState();
-				pa.translate(10.0f, 10.0f, 0.0f);
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Black, 255), 6.0f, "t = " + String.format(Base_PolyMap.strPointDispFrmt6,t));
-			pa.popMatState();
+			ri.pushMatState();
+				ri.translate(10.0f, 10.0f, 0.0f);
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Black, 255), 6.0f, "t = " + String.format(Base_PolyMap.strPointDispFrmt6,t));
+			ri.popMatState();
 			Base_PolyMap tmpMorphMap = lineUpMorphMaps.get(t);
 
-			pa.pushMatState();
-				pa.translate(.5f*perLineupImageWidth, .5f*perLineupImageWidth, 0.0f);
+			ri.pushMatState();
+				ri.translate(.5f*perLineupImageWidth, .5f*perLineupImageWidth, 0.0f);
 				tmpMorphMap.drawMap_LineUp(true, drawCircles, drawTexture, perLineupImageWidth);
-				//pa.ellipse(0.0f, 0.0f, .45f*perLineupImageWidth, .45f*perLineupImageWidth);
-			pa.popMatState();	
+				//ri.ellipse(0.0f, 0.0f, .45f*perLineupImageWidth, .45f*perLineupImageWidth);
+			ri.popMatState();	
 			
-			pa.translate(perLineupImageWidth, 0.0f, 0.0f);
-			pa.drawLine(0.0f,lineupRectDims[1], 0.0f, 0.0f, perLineupImageWidth+ lineupRectDims[1], 0.0f );
+			ri.translate(perLineupImageWidth, 0.0f, 0.0f);
+			ri.drawLine(0.0f,lineupRectDims[1], 0.0f, 0.0f, perLineupImageWidth+ lineupRectDims[1], 0.0f );
 		}			
-		pa.popMatState();	
+		ri.popMatState();	
 	}
 	
 	public final void drawMorphedMap_CntlPtTraj(int _detail) {
@@ -708,43 +708,43 @@ public class mapPairManager {
 	}
 	
 	protected final float _drawRightSideMorphMap(float _yOff, float sideBarYDisp) {
-		pa.translate(-10.0f, sideBarYDisp, 0.0f);	
+		ri.translate(-10.0f, sideBarYDisp, 0.0f);	
 		AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Morph Map : ");
-		pa.translate(10.0f, sideBarYDisp, 0.0f);					
+		ri.translate(10.0f, sideBarYDisp, 0.0f);					
 		_yOff = morphs[currMorphTypeIDX].drawMapRtSdMenuDescr(_yOff, sideBarYDisp);
-		pa.translate(-10.0f, 0.0f, 0.0f);
+		ri.translate(-10.0f, 0.0f, 0.0f);
 		return _yOff;
 	}
 	protected final float _drawRightSideMorphSlices(float _yOff, float sideBarYDisp) {
-		pa.translate(-10.0f, sideBarYDisp, 0.0f);	
+		ri.translate(-10.0f, sideBarYDisp, 0.0f);	
 		AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Morph Slices : ");
-		pa.translate(10.0f, sideBarYDisp, 0.0f);					
+		ri.translate(10.0f, sideBarYDisp, 0.0f);					
 		_yOff = morphs[currMorphTypeIDX].drawMorphSliceRtSdMenuDescr(_yOff, sideBarYDisp);
-		pa.translate(-10.0f, 0.0f, 0.0f);
+		ri.translate(-10.0f, 0.0f, 0.0f);
 		return _yOff;
 	}
 	
 	public final float drawRightSideMaps(float _yOff, float sideBarYDisp, boolean _showDistClrs, boolean drawRegCopy, boolean drawMorph,  boolean drawMorphSlicesRtSideInfo) {
 		AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan,  "Current Maps : " + mapTypes[mapType] + " Maps : ");
 		
-		pa.translate(10.0f, sideBarYDisp, 0.0f);		
+		ri.translate(10.0f, sideBarYDisp, 0.0f);		
 		for(int i=0; i<maps.length;++i) {			_yOff = maps[i].drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);		}
 		if(drawRegCopy) {_yOff = mapRegDistCalc.drawRightSideMaps(_yOff, sideBarYDisp);}
 		//if(drawRegCopy) {_yOff = copyMap.drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);}
 		if(drawMorph) {			_yOff = _drawRightSideMorphMap(_yOff, sideBarYDisp);	}		
-		pa.translate(-10.0f, sideBarYDisp, 0.0f);	
+		ri.translate(-10.0f, sideBarYDisp, 0.0f);	
 		if(_showDistClrs) {
 			AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Distortion Mins/Maxs : ");
-			pa.translate(10.0f, sideBarYDisp, 0.0f);	
+			ri.translate(10.0f, sideBarYDisp, 0.0f);	
 			_yOff = morphs[currMorphTypeIDX].drawDistortionRtSideMenuMinMax(_yOff, sideBarYDisp,  currUIVals.getDistDimToShow());
-			pa.translate(-10.0f, sideBarYDisp, 0.0f);	
+			ri.translate(-10.0f, sideBarYDisp, 0.0f);	
 		}
 		AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Morph : ");
-		pa.translate(10.0f, sideBarYDisp, 0.0f);		
+		ri.translate(10.0f, sideBarYDisp, 0.0f);		
 		//_yOff += sideBarYDisp;
 		AppMgr.showOffsetText(0,IRenderInterface.gui_Green, morphs[currMorphTypeIDX].morphTitle + " Morph : ");
 		//_yOff += sideBarYDisp;
-		pa.translate(10.0f, sideBarYDisp, 0.0f);
+		ri.translate(10.0f, sideBarYDisp, 0.0f);
 		_yOff = morphs[currMorphTypeIDX].drawMorphRtSdMenuDescr(_yOff, sideBarYDisp,morphSpeed);
 		if(drawMorphSlicesRtSideInfo) {	_yOff = _drawRightSideMorphSlices(_yOff, sideBarYDisp);}
 
@@ -757,7 +757,7 @@ public class mapPairManager {
 	 */	
 	protected final float drawCurrentMorph(float _yOff, float sideBarYDisp, float morphSpeed) {// , String[] morphScopes) {
 		_yOff = morphs[currMorphTypeIDX].drawMorphTitle(_yOff, sideBarYDisp);
-		pa.translate(10.0f,0.0f,0.0f);
+		ri.translate(10.0f,0.0f,0.0f);
 		_yOff = morphs[currMorphTypeIDX].drawMorphRtSdMenuDescr(_yOff, sideBarYDisp, morphSpeed);//,morphScopes);
 		return _yOff;
 	}

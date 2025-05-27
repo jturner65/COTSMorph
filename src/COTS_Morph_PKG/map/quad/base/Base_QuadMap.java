@@ -10,11 +10,10 @@ import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_UI_Objects.my_procApplet;
-import processing.core.PConstants;
+import base_UI_Objects.renderer.ProcessingRenderer;
 import processing.core.PImage;
 
-public abstract class baseQuadMap extends Base_PolyMap {
+public abstract class Base_QuadMap extends Base_PolyMap {
 
 //	private PShape[] checkerBoard;
 //	private PShape[] circleGrid;
@@ -44,7 +43,7 @@ public abstract class baseQuadMap extends Base_PolyMap {
 	 * @param _isKeyFrame
 	 * @param _mapTitle
 	 */
-	public baseQuadMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs,mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {
+	public Base_QuadMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs,mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {
 		super(_win, _mapMgr,  _cntlPts, _mapIdx, _mapTypeIDX, _pClrs, _currUIVals, _isKeyFrame, _mapTitle);	
 		isBaryQuad = _isBaryQuad;
 		if(isBaryQuad) {		
@@ -54,7 +53,7 @@ public abstract class baseQuadMap extends Base_PolyMap {
 		}	
 	}
 
-	public baseQuadMap(String _mapTitle, baseQuadMap _otr) {
+	public Base_QuadMap(String _mapTitle, Base_QuadMap _otr) {
 		super(_mapTitle,  _otr);	
 		isBaryQuad = _otr.isBaryQuad;
 		if(isBaryQuad) {		
@@ -118,14 +117,14 @@ public abstract class baseQuadMap extends Base_PolyMap {
 	protected void _updateCntrlPtDFromOtherMap(Base_ControlFlags flags) {
 		if((isKeyFrameMap) && (mapIdx == 1)){		///b map, 
 			if(this.otrMap !=null) {
-				baseQuadMap _otr = ((baseQuadMap)otrMap);
+				Base_QuadMap _otr = ((Base_QuadMap)otrMap);
 				cntlPtD_baryCoords = new float[_otr.cntlPtD_baryCoords.length];
 				for(int i=0;i<_otr.cntlPtD_baryCoords.length;++i) {
 					cntlPtD_baryCoords[i]=_otr.cntlPtD_baryCoords[i];
 				}
 				cntlPts[3].set(myPointf.calcPointFromNormBaryCoords(cntlPts, cntlPtD_baryCoords));
 			} else {
-				win.getMsgObj().dispInfoMessage("baseQuadMap", "_updateCntrlPtDFromOtherMap", "Warning : " + this.mapTitle +" not properly calculating D control point due to otrMap == null");
+				win.getMsgObj().dispInfoMessage("Base_QuadMap", "_updateCntrlPtDFromOtherMap", "Warning : " + this.mapTitle +" not properly calculating D control point due to otrMap == null");
 			}	
 		} else {		//a map or morph maps - recalc barycentric coords based on state of d
 			cntlPtD_baryCoords = cntlPts[3].calcNormBaryCoords(cntlPts);		
@@ -199,60 +198,60 @@ public abstract class baseQuadMap extends Base_PolyMap {
 	protected final void _drawPoly(int i, int j) {
 		myPointf pt;
 		float tx, ty = polyPointTVals[j];
-		((my_procApplet)pa).beginShape();
+		ri.gl_beginShape();
 		
-		((my_procApplet)pa).normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
+		ri.gl_normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
 		for (tx = polyPointTVals[i]; tx<polyPointTVals[i+1];tx+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+			ri.gl_vertex(pt.x,pt.y,pt.z);
 		}
 		tx = polyPointTVals[i+1];					
 		for (ty = polyPointTVals[j]; ty<polyPointTVals[j+1];ty+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+			ri.gl_vertex(pt.x,pt.y,pt.z);
 		}
 		
 		ty = polyPointTVals[j+1];
 		for (tx = polyPointTVals[i+1]; tx>polyPointTVals[i];tx-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+			ri.gl_vertex(pt.x,pt.y,pt.z);
 		}
 		tx = polyPointTVals[i];	
 		for (ty = polyPointTVals[j+1]; ty>polyPointTVals[j];ty-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+			ri.gl_vertex(pt.x,pt.y,pt.z);
 		}
-		((my_procApplet)pa).endShape(PConstants.CLOSE);	
+		ri.gl_endShape(true);	
 	}
 	
 	protected final void _drawPolyTexture(PImage _img, int i, int j) {
 		myPointf pt;
 		float tx, ty = polyPointTVals[j];
 		
-		((my_procApplet)pa).beginShape();
-		((my_procApplet)pa).texture(_img);
-		((my_procApplet)pa).normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
+		ri.gl_beginShape();
+		((ProcessingRenderer)ri).texture(_img);
+		ri.gl_normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
 		for (tx = polyPointTVals[i]; tx<polyPointTVals[i+1];tx+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z, tx, ty);
+			ri.vTextured(pt, tx, ty);
 		}
 		tx = polyPointTVals[i+1];					
 		for (ty = polyPointTVals[j]; ty<polyPointTVals[j+1];ty+=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z, tx, ty);
+			ri.vTextured(pt, tx, ty);
 		}
 		
 		ty = polyPointTVals[j+1];
 		for (tx = polyPointTVals[i+1]; tx>polyPointTVals[i];tx-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z, tx, ty);
+			ri.vTextured(pt, tx, ty);
 		}
 		tx = polyPointTVals[i];	
 		for (ty = polyPointTVals[j+1]; ty>polyPointTVals[j];ty-=subDivLenPerPoly) {
 			pt = calcMapPt(tx, ty);
-			((my_procApplet)pa).vertex(pt.x,pt.y,pt.z, tx, ty);
+			ri.vTextured(pt, tx, ty);
 		}
-		((my_procApplet)pa).endShape(PConstants.CLOSE);	
+		ri.gl_endShape(true);	
 	}
 	/**
 	 * draw a minimized lineup picture with appropriate settings
@@ -270,81 +269,81 @@ public abstract class baseQuadMap extends Base_PolyMap {
 	
 	@Override
 	public void drawMap_Texture() {
-		pa.pushMatState();	
-		pa.noFill();
-		pa.noStroke();
+		ri.pushMatState();	
+		ri.noFill();
+		ri.noStroke();
 		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals.length-1;++j) {		_drawPolyTexture(getImageToMap(), i,j);		}}			
-		pa.popMatState();
+		ri.popMatState();
 	}
 	
 	@Override
 	public final void drawMap_PolyCircles_Fill() {
-		pa.pushMatState();	
-		pa.setStroke(255,255,255,255);
-		pa.setStrokeWt(2.0f);		
+		ri.pushMatState();	
+		ri.setStroke(255,255,255,255);
+		ri.setStrokeWt(2.0f);		
 		int clrIdx = 1;		
 		float r = 1.f/(1.0f*numCellsPerSide), tx, ty, halfR = r/2.0f;
 		float circInterp = .12f;
 		myPointf pt;
 		for(int i=0;i<polyPointTVals.length-1;++i) {
-			float ri = r*i;
+			float rtimesI = r*i;
 			clrIdx = 1-(i % 2);
 			for(int j=0;j<polyPointTVals.length-1;++j) {
-				float rj = r * j;
-				((my_procApplet)pa).beginShape();
+				float rtimesJ = r*j;
+				ri.gl_beginShape();
 			    for(float u=0; u<MyMathUtils.TWO_PI_F; u+=circInterp) {
-			    	pa.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
-			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
-			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
+			    	ri.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
+			    	tx=(float) (halfR + rtimesI + halfR*Math.cos(u));
+			    	ty=(float) (halfR + rtimesJ + halfR*Math.sin(u));
 					pt = calcMapPt(tx, ty);
-					((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+					ri.gl_vertex(pt.x,pt.y,pt.z);
 					
 			    }
-			    ((my_procApplet)pa).endShape(PConstants.CLOSE);	
+			    ri.gl_endShape(true);	
 				clrIdx = (clrIdx + 1) % 2;
 			}	
 		}
 		
-		pa.popMatState();
+		ri.popMatState();
 	}
 	@Override
 	public final void drawMap_PolyCircles_Wf() {
-		pa.pushMatState();	
-		pa.noFill();
-		pa.setStroke(gridColor, gridColor[3]);
-		pa.setStrokeWt(2.0f);	
+		ri.pushMatState();	
+		ri.noFill();
+		ri.setStroke(gridColor, gridColor[3]);
+		ri.setStrokeWt(2.0f);	
 		
 		float r = 1.0f/(1.0f*numCellsPerSide), tx, ty, halfR = r/2.0f;
 		float circInterp = .12f;
 		myPointf pt;
 		for(int i=0;i<polyPointTVals.length-1;++i) {
-			float ri = r*i;
+			float rtimesI = r*i;
 			for(int j=0;j<polyPointTVals.length-1;++j) {
-				float rj = r * j;
-				((my_procApplet)pa).beginShape();
+				float rtimesJ = r*j;
+				ri.gl_beginShape();
 			    for(float u=0; u<MyMathUtils.TWO_PI_F; u+=circInterp) {
-			    	tx=(float) (halfR + ri + halfR*Math.cos(u));
-			    	ty=(float) (halfR + rj + halfR*Math.sin(u));
+			    	tx=(float) (halfR + rtimesI + halfR*Math.cos(u));
+			    	ty=(float) (halfR + rtimesJ + halfR*Math.sin(u));
 					pt = calcMapPt(tx, ty);
-					((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);			    
+					ri.gl_vertex(pt.x,pt.y,pt.z);			    
 			    }
-			    ((my_procApplet)pa).endShape(PConstants.CLOSE);	
+			    ri.gl_endShape(true);	
 			}	
 		}
 	
-		pa.popMatState();		
+		ri.popMatState();		
 	}
 	
 	@Override
 	protected final float drawRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		if(this.isBaryQuad) {
-			pa.pushMatState();	
-			pa.translate(10.0f,0.0f, 0.0f);
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Cntl Pt D Bary : ");
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "["+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
-			pa.popMatState();
+			ri.pushMatState();	
+			ri.translate(10.0f,0.0f, 0.0f);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.5f, "Cntl Pt D Bary : ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "["+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
+			ri.popMatState();
 				
-			yOff += sideBarYDisp;pa.translate(0.0f,sideBarYDisp, 0.0f);
+			yOff += sideBarYDisp;ri.translate(0.0f,sideBarYDisp, 0.0f);
 		
 		}
 		yOff = _drawQuadMapRtSdMenuDescr_Indiv(yOff, sideBarYDisp);
@@ -364,4 +363,4 @@ public abstract class baseQuadMap extends Base_PolyMap {
 	}
 	
 	
-}//class baseQuadMap
+}//class Base_QuadMap

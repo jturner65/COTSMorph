@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.map.base.Base_PolyMap;
-import COTS_Morph_PKG.map.quad.base.baseQuadMap;
+import COTS_Morph_PKG.map.quad.base.Base_QuadMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.transformer.spiral.COTS_Transformer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
@@ -19,7 +19,7 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
  * @author john
  *
  */
-public class COTSMap extends baseQuadMap {
+public class COTSMap extends Base_QuadMap {
 	
 	/**
 	 * data holding COTS map control values
@@ -174,13 +174,13 @@ public class COTSMap extends baseQuadMap {
 	
 	/**
 	 * instance-specific point drawing
-	 * @param pa
+	 * @param ri
 	 */
 	@Override
 	protected void _drawCntlPoints_Indiv(boolean isCurMap, int detail) {
 		if(detail < COTS_MorphWin.drawMapDet_CntlPts_COV_EdgePts_F_IDX) {return;}
-		pa.setSphereDetail(5);
-		pa.setStroke(polyColors[1], 255);
+		ri.setSphereDetail(5);
+		ri.setStroke(polyColors[1], 255);
 		mgr._drawPt(cots.getF(), sphereRad*1.5f);		
 	}
 	
@@ -193,15 +193,15 @@ public class COTSMap extends baseQuadMap {
 	@Override
 	protected final void drawRtSdMenuTitle_Indiv() {
 		if(null == otrMap) {return;}
-		pa.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Shares branching on edit with other map ? ");
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Yellow, 255), 4.5f,  ""+shouldShareBranching);
-		pa.popMatState();
+		ri.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.5f, "Shares branching on edit with other map ? ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), 4.5f,  ""+shouldShareBranching);
+		ri.popMatState();
 	}
 
 	@Override
 	protected float _drawQuadMapRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
-		yOff = cots.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
+		yOff = cots.drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp);
 		return yOff;
 	}
 	/**

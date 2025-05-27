@@ -82,24 +82,24 @@ public abstract class baseTransformer {
 	// draw routines
 	protected static final String[] transLbls = {"U","V","W","X","Y","Z"};
 	
-	protected final void showOffsetText_RightSideMenu(IRenderInterface pa, int[] tclr, float mult,  String txt) {
-		pa.setFill(tclr,tclr[3]);pa.setStroke(tclr,tclr[3]);
-		pa.showText(txt,0.0f,0.0f,0.0f);
-		pa.translate(txt.length()*mult, 0.0f,0.0f);		
+	protected final void showOffsetText_RightSideMenu(IRenderInterface ri, int[] tclr, float mult,  String txt) {
+		ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
+		ri.showText(txt,0.0f,0.0f,0.0f);
+		ri.translate(txt.length()*mult, 0.0f,0.0f);		
 	}
 
 
 	/**
 	 * configure and draw this similiarity's quantities on right side display
-	 * @param pa
+	 * @param ri
 	 * @param yOff
 	 * @param sideBarYDisp
 	 * @return
 	 */
 	public final float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp) {
 		return drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, transLbls);
-//		for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, transLbls[i]);}
-//		yOff = drawRightSideBarMenuDescr_Indiv(pa, yOff, sideBarYDisp);
+//		for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp, transLbls[i]);}
+//		yOff = drawRightSideBarMenuDescr_Indiv(ri, yOff, sideBarYDisp);
 //		return yOff;
 	}
 	public final float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp, String[] _transLbls) {

@@ -90,7 +90,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 	@Override
 	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		for(int i=0;i<transforms.length; ++i) {
-			yOff += transforms[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, new String[] {transLbls[i]+":"});			//wackiness due to how transformations vs similarities are being constructed
+			yOff += transforms[i].drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp, new String[] {transLbls[i]+":"});			//wackiness due to how transformations vs similarities are being constructed
 		}
 		return yOff;
 	}
@@ -113,34 +113,34 @@ public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 			}		
 		}
 		if(debug) {
-			pa.pushMatState();	
-			pa.setFill(0,0,0,255);
-			pa.setStroke(0,0,0,255);
-			pa.setStrokeWt(1.0f);
+			ri.pushMatState();	
+			ri.setFill(0,0,0,255);
+			ri.setStroke(0,0,0,255);
+			ri.setStrokeWt(1.0f);
 			for(int i=0;i<transforms.length;++i) {
 				for(float t=0.0f; t<=1.0f;t+=.1f) {
 //					myPointf ea0 = myPointf._add(transforms[i].transformPoint(edgesA[i][0], 1.0f-t), myVectorf._mult(normDispTimeVec,1.0f-t)),
 //							ea1 = myPointf._add(transforms[i].transformPoint(edgesA[i][1], 1.0f-t),myVectorf._mult(normDispTimeVec, 1.0f-t));
 					myPointf ea0 = myPointf._add(transforms[i].transformPoint(crnrPtAras[i][0], 1.0f-t), myVectorf._mult(normDispTimeVec,1.0f-t)),
 							ea1 = myPointf._add(transforms[i].transformPoint(crnrPtAras[i][1], 1.0f-t),myVectorf._mult(normDispTimeVec, 1.0f-t));
-					pa.drawLine(ea0, ea1);
+					ri.drawLine(ea0, ea1);
 				}
 			}	
-			pa.popMatState();
+			ri.popMatState();
 		}
 		if(drawCntlPts) {
-			pa.pushMatState();	
-			pa.setFill(0,0,0,255);
-			pa.setStroke(0,0,0,255);
-			pa.setStrokeWt(1.0f);
-			pa.setSphereDetail(5);
-			pa.setStroke(mapA.getPolyColors()[1], 255);
+			ri.pushMatState();	
+			ri.setFill(0,0,0,255);
+			ri.setStroke(0,0,0,255);
+			ri.setStrokeWt(1.0f);
+			ri.setSphereDetail(5);
+			ri.setStroke(mapA.getPolyColors()[1], 255);
 			for(int i=0;i<transforms.length;++i) {			
 				myPointf F = new myPointf(transforms[i].getF()); 				
 				F.set(myPointf._add(F, myVectorf._mult(normDispTimeVec, morphT)));
 				mapMgr._drawPt(F, Base_PolyMap.sphereRad*1.5f);	
 			}
-			pa.popMatState();	
+			ri.popMatState();	
 		}
 	}//drawMorphSpecificValues
 

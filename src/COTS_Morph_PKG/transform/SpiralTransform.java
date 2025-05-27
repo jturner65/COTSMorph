@@ -252,53 +252,53 @@ public class SpiralTransform extends baseTransform {
 	
 	/**
 	 * configure and draw this similiarity's quantities on right side display
-	 * @param pa
+	 * @param ri
 	 * @param yOff
 	 * @param sideBarYDisp
 	 * @return
 	 */
 	@Override
-	public final float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp, String coordName) {
-		pa.translate(-10.0f, 0.0f, 0.0f);
+	public final float drawRightSideBarMenuDescr(IRenderInterface ri, float yOff, float sideBarYDisp, String coordName) {
+		ri.translate(-10.0f, 0.0f, 0.0f);
 		String[] dispVals = new String[]{String.format(Base_PolyMap.strPointDispFrmt8,m),String.format(Base_PolyMap.strPointDispFrmt8,a),String.format(Base_PolyMap.strPointDispFrmt8,a_BranchDisp)};	
-		pa.pushMatState();
-		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, coordName + " :");
+		ri.pushMatState();
+		showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 3.5f, coordName + " :");
 		for(int j=0;j<rtMenuDispType.length;++j) {			
-			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.0f, rtMenuDispType[j]+" :");
-			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightGreen, 255), 5.7f, dispVals[j]);
+			showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 3.0f, rtMenuDispType[j]+" :");
+			showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_LightGreen, 255), 5.7f, dispVals[j]);
 		}
 		
-//		pa.popMatState();
+//		ri.popMatState();
 //		yOff += sideBarYDisp;
-//		pa.translate(0.0f,sideBarYDisp, 0.0f);
-//		pa.pushMatState();		
+//		ri.translate(0.0f,sideBarYDisp, 0.0f);
+//		ri.pushMatState();		
 		if(isDegenerate) {
-			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "No F");
+			showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 3.5f, "No F");
 		} else {
 			
-			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
-			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
+			showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 3.5f, "F : ");
+			showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
 		}
-		pa.popMatState();
+		ri.popMatState();
 			
 		yOff += sideBarYDisp;
-		pa.translate(10.0f,sideBarYDisp, 0.0f);
-		//pa.translate(0.0f,sideBarYDisp, 0.0f);
+		ri.translate(10.0f,sideBarYDisp, 0.0f);
+		//ri.translate(0.0f,sideBarYDisp, 0.0f);
 		return yOff;
 	};
 	
-	public final float drawFixedPoint(IRenderInterface pa, float yOff, float sideBarYDisp){
-		pa.translate(10.0f, 0.0f, 0.0f);
+	public final float drawFixedPoint(IRenderInterface ri, float yOff, float sideBarYDisp){
+		ri.translate(10.0f, 0.0f, 0.0f);
 		if(isDegenerate) {
-			showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 3.5f, "Theta == 0 caused degenerate spiral.");
+			showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 3.5f, "Theta == 0 caused degenerate spiral.");
 		} else {
-			pa.pushMatState();		
-				showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
-				showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
-			pa.popMatState();
+			ri.pushMatState();		
+				showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 5.5f, "Fixed Point : ");
+				showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "("+F.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
+			ri.popMatState();
 		}
 		yOff += sideBarYDisp;
-		pa.translate(-10.0f,sideBarYDisp, 0.0f);
+		ri.translate(-10.0f,sideBarYDisp, 0.0f);
 		return yOff;
 	}	
 	

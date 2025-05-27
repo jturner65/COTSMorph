@@ -3,7 +3,7 @@ package COTS_Morph_PKG.map.triangular;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.map.base.Base_PolyMap;
-import COTS_Morph_PKG.map.triangular.base.baseTriangleMap;
+import COTS_Morph_PKG.map.triangular.base.Base_TriangleMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -11,7 +11,7 @@ import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
-public class BiLinTriPolyMap extends baseTriangleMap {
+public class BiLinTriPolyMap extends Base_TriangleMap {
 
 	public BiLinTriPolyMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {
 		super(_win, _mapMgr, _cntlPts, _mapIdx, _mapTypeIDX, _pClrs, _currUIVals, _isKeyFrame, _mapTitle);

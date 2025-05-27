@@ -3,7 +3,7 @@ package COTS_Morph_PKG.map.triangular;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.map.base.Base_PolyMap;
-import COTS_Morph_PKG.map.triangular.base.baseTriangleMap;
+import COTS_Morph_PKG.map.triangular.base.Base_TriangleMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -11,7 +11,7 @@ import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
-public class PointNormTriPolyMap extends baseTriangleMap {
+public class PointNormTriPolyMap extends Base_TriangleMap {
 	/**
 	 * normals at each control point - used to set other map's cntl point location
 	 */
@@ -172,24 +172,24 @@ public class PointNormTriPolyMap extends baseTriangleMap {
 			myPointf p = cntlPts[i];
 			mgr._drawVec(p, cntlPtNormEndPts[i], new int[] {0,0,0,255}, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));
 		}
-		pa.pushMatState();
-		if(mapIdx==0) {		pa.setStroke(255, 0 ,255,255);	} else {pa.setStroke(0, 255,255,255);}
+		ri.pushMatState();
+		if(mapIdx==0) {		ri.setStroke(255, 0 ,255,255);	} else {ri.setStroke(0, 255,255,255);}
 		
-		pa.setStrokeWt(1.0f);
+		ri.setStrokeWt(1.0f);
 		for(int i=0;i<otrCntlPts.length;++i) {
 			myPointf p = otrCntlPts[i];
 			mgr._drawPt(p, sphereRad);
 		}
-		pa.popMatState();
+		ri.popMatState();
 		
-		pa.pushMatState();	
-		pa.setStroke(255,255,0,255);
-		pa.setStrokeWt(1.0f);		
+		ri.pushMatState();	
+		ri.setStroke(255,255,0,255);
+		ri.setStrokeWt(1.0f);		
 		mgr._drawPt(Qpt, sphereRad);
 		if((otrMap != null) && (mapIdx == 0)) {
-			pa.drawLine(((PointNormTriPolyMap)otrMap).Qpt, Qpt);
+			ri.drawLine(((PointNormTriPolyMap)otrMap).Qpt, Qpt);
 		}
-		pa.popMatState();
+		ri.popMatState();
 	}
 	
 	@Override

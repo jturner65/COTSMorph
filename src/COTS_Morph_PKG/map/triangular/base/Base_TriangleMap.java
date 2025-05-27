@@ -8,21 +8,19 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_UI_Objects.my_procApplet;
-import processing.core.PConstants;
 
 /**
  * base class for triangle maps, that provides overrides for functions in baseMap that don't make sense for triangles
  * @author john
  *
  */
-public abstract class baseTriangleMap extends Base_PolyMap {
+public abstract class Base_TriangleMap extends Base_PolyMap {
 
-	public baseTriangleMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {
+	public Base_TriangleMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, String _mapTitle) {
 		super(_win, _mapMgr,_cntlPts, _mapIdx, _mapTypeIDX, _pClrs, _currUIVals, _isKeyFrame, _mapTitle);		
 	}
 
-	public baseTriangleMap(String _mapTitle, baseTriangleMap _otr) {		super(_mapTitle, _otr);			}
+	public Base_TriangleMap(String _mapTitle, Base_TriangleMap _otr) {		super(_mapTitle, _otr);			}
 	
 	/**
 	 * instead of tx and ty being used as planar interpolants, for triangles these can be set as barycentric coords v and w, with u = 1-v-w
@@ -54,11 +52,11 @@ public abstract class baseTriangleMap extends Base_PolyMap {
 		myPointf[][][] res = new myPointf[numCellsPerSide][numCellsPerSide][3];		
 		
 //		pt = calcMapPt(polyPointTVals[i], polyPointTVals[j]);
-//		pa.vertex(pt.x,pt.y,pt.z);
+//		ri.vertex(pt.x,pt.y,pt.z);
 //		pt = calcMapPt(polyPointTVals[i+1], polyPointTVals[j]);			
-//		pa.vertex(pt.x,pt.y,pt.z);
+//		ri.vertex(pt.x,pt.y,pt.z);
 //		pt = calcMapPt(polyPointTVals[i],polyPointTVals[j+1]);
-//		pa.vertex(pt.x,pt.y,pt.z);
+//		ri.vertex(pt.x,pt.y,pt.z);
 			
 		
 		for(int row=0;row<numCellsPerSide;++row) {
@@ -145,46 +143,46 @@ public abstract class baseTriangleMap extends Base_PolyMap {
 		myPointf pt;
 		float tv, tw;
 		if(i+j < polyPointTVals.length-1) {
-			((my_procApplet)pa).beginShape();		
-			((my_procApplet)pa).normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
+			ri.gl_beginShape();		
+			ri.gl_normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
 			for(tv = polyPointTVals[i]; tv <= polyPointTVals[i+1]; tv +=subDivLenPerPoly) {
 				pt = calcMapPt(tv, polyPointTVals[j]);
-				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+				ri.gl_vertex(pt.x,pt.y,pt.z);
 			}
 			for(tv = polyPointTVals[i+1], tw = polyPointTVals[j]; 
 					tv >= polyPointTVals[i] && tw <=polyPointTVals[j+1]; 
 					tv -=subDivLenPerPoly, tw+=subDivLenPerPoly) {
 				pt = calcMapPt(tv, tw);			
-				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+				ri.gl_vertex(pt.x,pt.y,pt.z);
 			}
 			for(tw = polyPointTVals[j+1]; tw >= polyPointTVals[j]; tw-=subDivLenPerPoly) {
 				pt = calcMapPt(polyPointTVals[i], tw);			
-				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+				ri.gl_vertex(pt.x,pt.y,pt.z);
 				
 			}	
-			((my_procApplet)pa).endShape(PConstants.CLOSE);	
+			ri.gl_endShape(true);	
 			
 		} 
 		if(i > j){
 			int newI = (i > j ? i - j : i);
 			int newJ = (i > j ? j : j-i);
-			((my_procApplet)pa).beginShape();		
-			((my_procApplet)pa).normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
+			ri.gl_beginShape();		
+			ri.gl_normal(basisVecs[0].x, basisVecs[0].y, basisVecs[0].z);
 			for(tw = polyPointTVals[newJ]; tw <= polyPointTVals[newJ+1]; tw +=subDivLenPerPoly) {
 				pt = calcMapPt(polyPointTVals[newI], tw);
-				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+				ri.gl_vertex(pt.x,pt.y,pt.z);
 			}
 			for(tv = polyPointTVals[newI]; tv >= polyPointTVals[newI-1]; tv -=subDivLenPerPoly) {
 				pt = calcMapPt(tv, polyPointTVals[newJ+1]);			
-				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+				ri.gl_vertex(pt.x,pt.y,pt.z);
 			}
 			for(tv = polyPointTVals[newI-1], tw = polyPointTVals[newJ+1]; 
 					tv <= polyPointTVals[newI] && tw >=polyPointTVals[newJ]; 
 					tv +=subDivLenPerPoly, tw-=subDivLenPerPoly) {
 				pt = calcMapPt(tv, tw);			
-				((my_procApplet)pa).vertex(pt.x,pt.y,pt.z);
+				ri.gl_vertex(pt.x,pt.y,pt.z);
 			}
-			((my_procApplet)pa).endShape(PConstants.CLOSE);
+			ri.gl_endShape(true);
 		}
 	}//_drawPoly
 		

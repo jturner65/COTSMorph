@@ -3,7 +3,7 @@ package COTS_Morph_PKG.map.quad;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.map.base.Base_PolyMap;
-import COTS_Morph_PKG.map.quad.base.baseQuadMap;
+import COTS_Morph_PKG.map.quad.base.Base_QuadMap;
 import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
@@ -11,7 +11,7 @@ import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
-public class BiLinMap extends baseQuadMap {
+public class BiLinMap extends Base_QuadMap {
 
 	public BiLinMap(COTS_MorphWin _win,  mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIdx, int[][] _pClrs, mapUpdFromUIData _currUIVals,  boolean _isKeyFrame, boolean _isBaryQuad, String _mapTitle) {
 		super(_win, _mapMgr, _cntlPts,_mapIdx, _mapTypeIdx, _pClrs,_currUIVals, _isKeyFrame, _isBaryQuad, _mapTitle);
@@ -72,7 +72,7 @@ public class BiLinMap extends baseQuadMap {
 	
 	/**
 	 * instance-specific point drawing
-	 * @param pa
+	 * @param ri
 	 */
 	@Override
 	protected void _drawCntlPoints_Indiv(boolean isCurMap, int detail) {

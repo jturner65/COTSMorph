@@ -35,10 +35,10 @@ public abstract class baseTransform {
 	}
 	protected abstract void reset_Indiv();
 	
-	protected final void showOffsetText_RightSideMenu(IRenderInterface pa, int[] tclr, float mult,  String txt) {
-		pa.setFill(tclr,tclr[3]);pa.setStroke(tclr,tclr[3]);
-		pa.showText(txt,0.0f,0.0f,0.0f);
-		pa.translate(txt.length()*mult, 0.0f,0.0f);		
+	protected final void showOffsetText_RightSideMenu(IRenderInterface ri, int[] tclr, float mult,  String txt) {
+		ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
+		ri.showText(txt,0.0f,0.0f,0.0f);
+		ri.translate(txt.length()*mult, 0.0f,0.0f);		
 	}
 
 	
@@ -93,7 +93,7 @@ public abstract class baseTransform {
 	
 	/**
 	 * configure and draw this similiarity's quantities on right side display
-	 * @param pa
+	 * @param ri
 	 * @param yOff
 	 * @param sideBarYDisp
 	 * @param coordName

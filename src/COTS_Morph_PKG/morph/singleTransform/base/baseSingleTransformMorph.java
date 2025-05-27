@@ -88,9 +88,9 @@ public abstract class baseSingleTransformMorph extends baseMorph {
 	@Override
 	public final float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		if(transform==null) {return yOff;}
-		transform.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
+		transform.drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp);
 		yOff += sideBarYDisp;
-		pa.translate(0.0f,sideBarYDisp, 0.0f);	
+		ri.translate(0.0f,sideBarYDisp, 0.0f);	
 		return yOff;
 	}
 	@Override

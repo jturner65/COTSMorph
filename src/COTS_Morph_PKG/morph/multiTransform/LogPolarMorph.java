@@ -14,7 +14,7 @@ import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 /**
  * 3-Implement a LMP (Log Polar Morph), where, for each corner pair (say A0 and A1) we compute the arithmetic average rotation angle (A0B0^A1B1+ A0C0^A1C1+  A0D0^A1D1)/3   
- * and geometric average magnification ratio (cubic root of the product of ratios |A1B1| / | A0B0| …
+ * and geometric average magnification ratio (cubic root of the product of ratios |A1B1| / | A0B0| ï¿½
  * Then compute At as a point on the spiral from A0 to A1 with that average angle and ratio.
  * @author john
  *
@@ -95,11 +95,11 @@ public class LogPolarMorph extends baseMultiTransformMorphs {
 	 */
 	@Override
 	public void drawMorphSpecificValues(boolean debug, boolean _isFill, boolean _drawCircles) {
-		pa.pushMatState();	
-		pa.setFill(0,0,0,255);
-		pa.setStroke(0,0,0,255);
-		pa.setStrokeWt(1.0f);
+		ri.pushMatState();	
+		ri.setFill(0,0,0,255);
+		ri.setStroke(0,0,0,255);
+		ri.setStrokeWt(1.0f);
 		// ...
-		pa.popMatState();	
+		ri.popMatState();	
 	}
 }//class drawnLineMorph

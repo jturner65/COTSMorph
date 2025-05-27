@@ -14,7 +14,7 @@ import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.my_procApplet;
+import base_UI_Objects.renderer.ProcessingRenderer;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
@@ -241,8 +241,8 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	 */
 	private void _initMapManagers() {
 		textureImgs = new PImage[2];
-		textureImgs[0]=((my_procApplet) ri).loadImage("faceImage_0.jpg");	
-		textureImgs[1]=((my_procApplet) ri).loadImage("faceImage_1.jpg");		
+		textureImgs[0]=((ProcessingRenderer) ri).loadImage("faceImage_0.jpg");	
+		textureImgs[1]=((ProcessingRenderer) ri).loadImage("faceImage_1.jpg");		
 		mapManagers = new mapPairManager[mapPairManager.mapTypes.length];
 		
 		for(int i=0;i<mapManagers.length;++i) {		

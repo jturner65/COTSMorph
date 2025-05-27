@@ -10,7 +10,6 @@ import COTS_Morph_PKG.utils.controlFlags.mapCntlFlags;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
-import base_UI_Objects.my_procApplet;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
@@ -23,7 +22,7 @@ import processing.core.PImage;
  *
  */
 public abstract class Base_PolyMap {
-	public static IRenderInterface pa;
+	public static IRenderInterface ri;
 	public COTS_MorphWin win;
 	public static GUI_AppManager AppMgr;
 	/**
@@ -135,7 +134,7 @@ public abstract class Base_PolyMap {
 
 	protected static final int[] whiteClr = new int[] {255,255,255,255};
 	public Base_PolyMap(COTS_MorphWin _win, mapPairManager _mapMgr, myPointf[] _cntlPts, int _mapIdx, int _mapTypeIDX, int[][] _pClrs, mapUpdFromUIData _currUIVals, boolean _isKeyFrame, String _mapTitle) {
-		win=_win; pa=Base_DispWindow.ri;AppMgr = Base_DispWindow.AppMgr; mgr = _mapMgr; currUIVals = _currUIVals;
+		win=_win; ri=Base_DispWindow.ri;AppMgr = Base_DispWindow.AppMgr; mgr = _mapMgr; currUIVals = _currUIVals;
 		mapTypeIDX = _mapTypeIDX;	mapIdx = _mapIdx;		curMorphTVal = 1.0f * mapIdx;
 		mapTitle = _mapTitle;		mapTtlXOff = win.getTextHeightOffset()*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(0,0,0);
 		isKeyFrameMap = _isKeyFrame;
@@ -152,7 +151,7 @@ public abstract class Base_PolyMap {
 	 * @param _otr
 	 */
 	public Base_PolyMap(String _mapTitle, Base_PolyMap _otr) {
-		win=_otr.win; pa=Base_DispWindow.ri;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
+		win=_otr.win; ri=Base_DispWindow.ri;mgr =_otr.mgr;currUIVals = _otr.currUIVals;
 		mapIdx = _otr.mapIdx;		mapTypeIDX = _otr.mapTypeIDX;
 		mapTitle = _mapTitle ;		mapTtlXOff = win.getTextHeightOffset()*mapTitle.length()*.25f;		mapTitleOffset = new myPointf(_otr.mapTitleOffset);
 		//keyframes are never copies;
@@ -609,17 +608,17 @@ public abstract class Base_PolyMap {
 		 		
 	/**
 	 * draw the control points for this map
-	 * @param pa
+	 * @param ri
 	 */
 	private void _drawCntlPts(boolean isCurMap, int detail) {
-		pa.setSphereDetail(5);
-		pa.setStroke(0,0,0,255);
+		ri.setSphereDetail(5);
+		ri.setStroke(0,0,0,255);
 		for(int i=0;i<cntlPts.length;++i) {	myPointf p = cntlPts[i];mgr._drawPt(p, (p.equals(currMseModCntlPt) && isCurMap ? 2.0f*sphereRad : sphereRad));}
 		if(detail >= COTS_MorphWin.drawMapDet_CntlPts_COV_IDX) {		
 			mgr._drawPt(cntlPtCOV,sphereRad*1.5f);	
-			pa.setStroke(255,0,0,255);
+			ri.setStroke(255,0,0,255);
 			mgr._drawPt(cntlPtCOM, sphereRad*1.5f);	
-			pa.setStroke(0,0,0,255);
+			ri.setStroke(0,0,0,255);
 		}		
 		//instance specific 
 		_drawCntlPoints_Indiv(isCurMap, detail);
@@ -630,9 +629,9 @@ public abstract class Base_PolyMap {
 	 * draw polygon around control points
 	 */
 	protected final void _drawCntlPtPoly() {
-		pa.gl_beginShape();
-		for(int i=0;i<cntlPts.length;++i) {		((my_procApplet)pa).vertex(cntlPts[i].x,cntlPts[i].y,cntlPts[i].z);	}
-		pa.gl_endShape(true);	
+		ri.gl_beginShape();
+		for(int i=0;i<cntlPts.length;++i) {		ri.gl_vertex(cntlPts[i].x,cntlPts[i].y,cntlPts[i].z);	}
+		ri.gl_endShape(true);	
 	}
 	
 	/**
@@ -643,43 +642,43 @@ public abstract class Base_PolyMap {
 		int clrIdx = 0;
 		for(int i=0;i<edgePts.length;++i) {
 			clrIdx = i % 2;
-			pa.setStroke(polyColors[clrIdx], polyColors[clrIdx][3]);
+			ri.setStroke(polyColors[clrIdx], polyColors[clrIdx][3]);
 			for(int j=0;j<edgePts[i].length;++j) {
-				pa.drawLine(edgePts[i][j],otrMap.edgePts[i][j]);
+				ri.drawLine(edgePts[i][j],otrMap.edgePts[i][j]);
 			}
 		}		
 	}
 		
 	public void drawMap_CntlPts(boolean isCurMap, int detail) {
-		pa.pushMatState();	
+		ri.pushMatState();	
 		_drawCntlPts(isCurMap, detail);
-		pa.popMatState();
+		ri.popMatState();
 	}	
 
 	public void drawMap_Fill() {
-		pa.pushMatState();	
-		pa.setStroke(255,255,255,255);
-		pa.setStrokeWt(1.0f);
+		ri.pushMatState();	
+		ri.setStroke(255,255,255,255);
+		ri.setStrokeWt(1.0f);
 		int clrIdx = 0;
 		
 		for(int i=0;i<polyPointTVals.length-1;++i) {
 			clrIdx = i % 2;
 			for(int j=0;j<polyPointTVals.length-1;++j) {
-				pa.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
+				ri.setFill(polyColors[clrIdx], polyColors[clrIdx][3]);
 				_drawPoly(i,j);		
 				clrIdx = (clrIdx + 1) % 2;
 			}				
 		}	
-		pa.popMatState();
+		ri.popMatState();
 	}//drawMap_Fill
 	
 	public void drawMap_Wf() {
-		pa.pushMatState();	
-		pa.noFill();
-		pa.setStroke(gridColor, gridColor[3]);
-		pa.setStrokeWt(2.0f);	
+		ri.pushMatState();	
+		ri.noFill();
+		ri.setStroke(gridColor, gridColor[3]);
+		ri.setStrokeWt(2.0f);	
 		for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals.length-1;++j) {_drawPoly(i,j);}}	
-		pa.popMatState();
+		ri.popMatState();
 	}//drawMap_Wf
 	
 	/**
@@ -690,18 +689,18 @@ public abstract class Base_PolyMap {
 	 */
 	public void drawMap_DistColor(float mult, int dimIDX) {
 		if(distCellColors==null) {return;}
-		pa.pushMatState();	
-		pa.setStroke(255,255,255,255);
-		pa.setStrokeWt(1.0f);		
+		ri.pushMatState();	
+		ri.setStroke(255,255,255,255);
+		ri.setStrokeWt(1.0f);		
 		for(int i=0;i<polyPointTVals.length-1;++i) {			
 			for(int j=0;j<polyPointTVals.length-1;++j) {
 				float redMult = mult*distCellColors[i][j][dimIDX],
 					greenMult = (redMult == 0 ? 1.0f : 1.0f/redMult);
-				pa.setFill((int)(redMult* 255), (int)(greenMult * 255),0,255);
+				ri.setFill((int)(redMult* 255), (int)(greenMult * 255),0,255);
 				_drawPoly(i,j);					
 			}				
 		}	
-		pa.popMatState();
+		ri.popMatState();
 	}//drawMap_Fill
 	
 	
@@ -720,18 +719,18 @@ public abstract class Base_PolyMap {
 	 */
 	public final void drawMap_LineUp(boolean fillOrWf, boolean drawCircles, boolean drawTexture, float frameDim) {
 		//need to center map and shrink to fit in square of size frameDim
-		pa.pushMatState();	
+		ri.pushMatState();	
 		if(win.is3D) {//rotate to bring into plane
 			float[] axisAngle = MyMathUtils.toAxisAngle(basisVecs, 2,1,0);
 			//win.getMsgObj().dispInfoMessage("baseMap::"+mapTitle, "drawMap_LineUp", " axis angle result : " + axisAngle[0]+","+axisAngle[1]+","+axisAngle[2]+","+axisAngle[3]);
-			pa.rotate(-axisAngle[0],axisAngle[1],axisAngle[2],axisAngle[3]);
-			pa.rotate(MyMathUtils.PI_F, 1,0,0);
+			ri.rotate(-axisAngle[0],axisAngle[1],axisAngle[2],axisAngle[3]);
+			ri.rotate(MyMathUtils.PI_F, 1,0,0);
 		}
 		float scaleVal = frameDim/(2.0f * mostDistCntlPt._dist(cntlPtCOV));//2 x dist to get diameter instead of radius from COV
-		pa.scale(scaleVal);		
-		pa.translate(-cntlPtCOV.x,-cntlPtCOV.y, -cntlPtCOV.z );
+		ri.scale(scaleVal);		
+		ri.translate(-cntlPtCOV.x,-cntlPtCOV.y, -cntlPtCOV.z );
 		drawMap_LineUp_Indiv(fillOrWf, drawCircles, drawTexture);
-		pa.popMatState();
+		ri.popMatState();
 	};
 	
 	protected abstract void drawMap_LineUp_Indiv(boolean fillOrWf, boolean drawCircles, boolean drawTexture);
@@ -739,26 +738,26 @@ public abstract class Base_PolyMap {
 	
 	public void drawMap_EdgeLines() {
 		if(null==otrMap) {return;}
-		pa.pushMatState();	
-		pa.noFill();
-		pa.setStrokeWt(1.5f);	
+		ri.pushMatState();	
+		ri.noFill();
+		ri.setStrokeWt(1.5f);	
 		//draw lines from this map's edges to other map's edges
 		_drawLineBtwnMapEdges();
-		pa.popMatState();		
+		ri.popMatState();		
 	}
 	
 	/**
 	 * draw orthogonal frame - red is normal to map plane
 	 */
 	public void drawOrthoFrame() {
-		pa.pushMatState();	
-			pa.showPtAsSphere(cntlPtCOV,5.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
-			pa.setStrokeWt(3.0f);
-			pa.translate(cntlPtCOV);
-			pa.setStroke(255,0,0,255);	pa.drawLine(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);pa.showPtAsSphere(orthoFrame[0], 6.0f, 5, IRenderInterface.gui_Red, IRenderInterface.gui_Red);
-			pa.setStroke(0,255,0,255);	pa.drawLine(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);pa.showPtAsSphere(orthoFrame[1], 6.0f, 5, IRenderInterface.gui_Green, IRenderInterface.gui_Green);
-			pa.setStroke(0,0,255,255);	pa.drawLine(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);pa.showPtAsSphere(orthoFrame[2], 6.0f, 5, IRenderInterface.gui_Blue, IRenderInterface.gui_Blue);
-		pa.popMatState();				
+		ri.pushMatState();	
+			ri.showPtAsSphere(cntlPtCOV,5.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
+			ri.setStrokeWt(3.0f);
+			ri.translate(cntlPtCOV);
+			ri.setStroke(255,0,0,255);	ri.drawLine(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);ri.showPtAsSphere(orthoFrame[0], 6.0f, 5, IRenderInterface.gui_Red, IRenderInterface.gui_Red);
+			ri.setStroke(0,255,0,255);	ri.drawLine(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);ri.showPtAsSphere(orthoFrame[1], 6.0f, 5, IRenderInterface.gui_Green, IRenderInterface.gui_Green);
+			ri.setStroke(0,0,255,255);	ri.drawLine(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);ri.showPtAsSphere(orthoFrame[2], 6.0f, 5, IRenderInterface.gui_Blue, IRenderInterface.gui_Blue);
+		ri.popMatState();				
 	}//_drawOrthoFrame
 	
 	public static final String strPointDispFrmt8 = "%8.3f";
@@ -766,9 +765,9 @@ public abstract class Base_PolyMap {
 	public static final String strPointDispFrmt6 = "%6.3f";
 
 	public void drawHeaderAndLabels(boolean _drawLabels, int detail) {
-		pa.pushMatState();
-		pa.setFill(0,0,0,255);
-		pa.setStroke(0,0,0,255);
+		ri.pushMatState();
+		ri.setFill(0,0,0,255);
+		ri.setStroke(0,0,0,255);
 		win._drawLabelAtPt(mapTitleOffset, mapTitle, 0.0f, 0.0f);
 		if(_drawLabels) {
 			for(int i=0; i< cntlPts.length;++i) {	win._drawLabelAtPt(cntlPts[i],cntlPtLbls[i] + "_"+mapIdx + " : (" + cntlPts[i].toStrCSV(strPointDispFrmt8)+")", 2.5f,-2.5f);}
@@ -778,7 +777,7 @@ public abstract class Base_PolyMap {
 			}
 			_drawPointLabels_Indiv(detail);
 		}
-		pa.popMatState();
+		ri.popMatState();
 	}//drawHeaderAndLabels
 
 	/**
@@ -786,66 +785,66 @@ public abstract class Base_PolyMap {
 	 */
 	public final float drawRtSdMenuDescr(float yOff, float sideBarYDisp, boolean showTitle, boolean showCntlPtsAndCentroid) {
 		if(showTitle) {
-			pa.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.2f, mapTitle);
+			ri.pushMatState();
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), 6.2f, mapTitle);
 			if(dispTitleOn2Lines) {
-				pa.popMatState();
-				yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
-				pa.pushMatState();
+				ri.popMatState();
+				yOff += sideBarYDisp;			ri.translate(0.0f,sideBarYDisp, 0.0f);
+				ri.pushMatState();
 			}
 				
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, " | # Cells Per Side : ");
-			AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 4.5f, " | # Cells Per Side : ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
 			if (otrMap!=null) {
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.5f, " | Other Map : ");
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, otrMap.mapTitle);
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.5f, " | Other Map : ");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), 6.5f, otrMap.mapTitle);
 			}
 			
-			pa.popMatState();
-			yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
+			ri.popMatState();
+			yOff += sideBarYDisp;			ri.translate(0.0f,sideBarYDisp, 0.0f);
 			drawRtSdMenuTitle_Indiv();
 		} else {
-			pa.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.5f, "# Cells Per Side : ");
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
-			pa.popMatState();
+			ri.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 4.5f, "# Cells Per Side : ");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), 6.5f, ""+numCellsPerSide);
+			ri.popMatState();
 		}
 		yOff += sideBarYDisp;		
 		if(showCntlPtsAndCentroid) {
-			pa.translate(20.0f,sideBarYDisp, 0.0f);
-			pa.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Area of Map :  ");
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, String.format(strPointDispFrmt8,areaOfMap));
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Cntl Pt Poly Area :  ");
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 6.0f, String.format(strPointDispFrmt8,polyAreaOfMap));
-			pa.popMatState();
-			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
+			ri.translate(20.0f,sideBarYDisp, 0.0f);
+			ri.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.0f, "Area of Map :  ");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, String.format(strPointDispFrmt8,areaOfMap));
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.0f, "Cntl Pt Poly Area :  ");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 6.0f, String.format(strPointDispFrmt8,polyAreaOfMap));
+			ri.popMatState();
+			yOff += sideBarYDisp;		ri.translate(0.0f,sideBarYDisp, 0.0f);
 			
-			pa.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Centroid :  ");
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
-			pa.popMatState();
-			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
-			pa.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "COM :  ");
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOM.toStrCSV(strPointDispFrmt8)+")");
-			pa.popMatState();
-			yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);
+			ri.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.0f, "Centroid :  ");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
+			ri.popMatState();
+			yOff += sideBarYDisp;		ri.translate(0.0f,sideBarYDisp, 0.0f);
+			ri.pushMatState();
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.0f, "COM :  ");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 5.0f, "("+cntlPtCOM.toStrCSV(strPointDispFrmt8)+")");
+			ri.popMatState();
+			yOff += sideBarYDisp;		ri.translate(0.0f,sideBarYDisp, 0.0f);
 			for(int i=0;i<cntlPts.length;++i) {
-				pa.pushMatState();
-					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.3f, "Cntl Pt " + i + " : ");
-					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 5.8f, "("+cntlPts[i].toStrCSV(strPointDispFrmt8)+")");
-					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 4.0f, "Theta : ");
-					AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_LightCyan, 255), 4.0f, String.format(strPointDispFrmt8, cntlPtAngles[i]));
-				pa.popMatState();
-				yOff += sideBarYDisp;			pa.translate(0.0f,sideBarYDisp, 0.0f);
+				ri.pushMatState();
+					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 4.3f, "Cntl Pt " + i + " : ");
+					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 5.8f, "("+cntlPts[i].toStrCSV(strPointDispFrmt8)+")");
+					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 4.0f, "Theta : ");
+					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 4.0f, String.format(strPointDispFrmt8, cntlPtAngles[i]));
+				ri.popMatState();
+				yOff += sideBarYDisp;			ri.translate(0.0f,sideBarYDisp, 0.0f);
 			}		
-			pa.translate(-20.0f,sideBarYDisp, 0.0f);
+			ri.translate(-20.0f,sideBarYDisp, 0.0f);
 		}
 
 		
 		yOff = drawRtSdMenuDescr_Indiv(yOff,sideBarYDisp);
-		yOff += sideBarYDisp;		pa.translate(0.0f,sideBarYDisp, 0.0f);	
+		yOff += sideBarYDisp;		ri.translate(0.0f,sideBarYDisp, 0.0f);	
 		
 		return yOff;
 	}

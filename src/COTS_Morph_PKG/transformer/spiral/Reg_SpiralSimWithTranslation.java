@@ -81,15 +81,15 @@ public class Reg_SpiralSimWithTranslation extends baseSpiralTransformer {
 	
 
 	@Override
-	protected float drawRightSideBarMenuDescr_Indiv(IRenderInterface pa, float yOff, float sideBarYDisp) {	
-		pa.translate(10.0f, 0.0f, 0.0f);
-		pa.pushMatState();		
-		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_White, 255), 5.0f, "Translation : ");
+	protected float drawRightSideBarMenuDescr_Indiv(IRenderInterface ri, float yOff, float sideBarYDisp) {	
+		ri.translate(10.0f, 0.0f, 0.0f);
+		ri.pushMatState();		
+		showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 5.0f, "Translation : ");
 		myPointf pt = new myPointf((myPointf)translation);
-		showOffsetText_RightSideMenu(pa, pa.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
-		pa.popMatState();
+		showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
+		ri.popMatState();
 		yOff += sideBarYDisp;
-		pa.translate(-10.0f,sideBarYDisp, 0.0f);
+		ri.translate(-10.0f,sideBarYDisp, 0.0f);
 
 		return yOff;	}
 

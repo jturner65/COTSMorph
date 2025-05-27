@@ -47,12 +47,12 @@ public class RigidMorph extends baseSingleTransformMorph {
 
 	@Override
 	public void drawMorphSpecificValues(boolean debug, boolean drawCntlPts, boolean showLbls) {
-		pa.pushMatState();	
-		pa.setFill(0,0,0,255);
-		pa.setStroke(0,0,0,255);
-		pa.setStrokeWt(1.0f);
+		ri.pushMatState();	
+		ri.setFill(0,0,0,255);
+		ri.setStroke(0,0,0,255);
+		ri.setStrokeWt(1.0f);
 		
-		pa.popMatState();	
+		ri.popMatState();	
 	}
 
 }// class RigidMorph

@@ -72,7 +72,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	 * Called in pre-draw initial setup, before first init
 	 * potentially override setup variables on per-project basis.
 	 * Do not use for setting background color or Skybox anymore.
-	 *  	(Current settings in my_procApplet) 	
+	 *  	(Current settings in ProcessingRenderer) 	
 	 *  	strokeCap(PROJECT);
 	 *  	textSize(txtSz);
 	 *  	textureMode(NORMAL);			
@@ -95,7 +95,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 	 * @param smthLvl 0 == no smoothing,  	int: either 2, 3, 4, or 8 depending on the renderer
 	 */
 	@Override
-	protected void setSmoothing() {	ri.setSmoothing(8);}
+	public void setSmoothing() {	ri.setSmoothing(8);}
 	
 	/**
 	 * whether or not we want to restrict window size on widescreen monitors

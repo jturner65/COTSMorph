@@ -92,8 +92,8 @@ public abstract class baseMultiTransformMorphs extends baseMorph {
 	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		if(transformsAreBad()) {return yOff;}
 		for(int i=0;i<transforms.length;++i) {
-			transforms[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp);
-			yOff += sideBarYDisp;	pa.translate(0.0f,sideBarYDisp, 0.0f);	
+			transforms[i].drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp);
+			yOff += sideBarYDisp;	ri.translate(0.0f,sideBarYDisp, 0.0f);	
 		}		
 		return yOff;
 	}

@@ -166,17 +166,17 @@ public class CompoundMorph extends baseMorph {
 	@Override
 	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		for(int i=0;i<_currPerMorphMaps.length;++i) {
-			pa.pushMatState();
-				pa.translate(-10.0f,0.0f,0.0f);
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_Green, 255), 6.5f, "Morph For :");
-				AppMgr.showOffsetText_RightSideMenu(pa.getClr(IRenderInterface.gui_White, 255), 6.5f, morphFtrNames[i]);
-			pa.popMatState();		
+			ri.pushMatState();
+				ri.translate(-10.0f,0.0f,0.0f);
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), 6.5f, "Morph For :");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 6.5f, morphFtrNames[i]);
+			ri.popMatState();		
 			yOff += sideBarYDisp;
-			pa.translate(0.0f,sideBarYDisp, 0.0f);			
+			ri.translate(0.0f,sideBarYDisp, 0.0f);			
 			yOff =  morphsAvailable[i][currMorphToUseIDX[i]].drawMorphTitle(yOff, sideBarYDisp);
 			yOff = morphsAvailable[i][currMorphToUseIDX[i]].drawMorphRtSdMenuDescr_Indiv(yOff, sideBarYDisp);
 			yOff += sideBarYDisp;
-			pa.translate(0.0f,sideBarYDisp, 0.0f);			
+			ri.translate(0.0f,sideBarYDisp, 0.0f);			
 
 		}
 		return yOff;
@@ -184,14 +184,14 @@ public class CompoundMorph extends baseMorph {
 
 	@Override
 	public void drawMorphSpecificValues(boolean debug, boolean drawCntlPts, boolean showLbls) {
-		pa.pushMatState();	
-		pa.setFill(0,0,0,255);
-		pa.setStroke(0,0,0,255);
-		pa.setStrokeWt(1.0f);		
+		ri.pushMatState();	
+		ri.setFill(0,0,0,255);
+		ri.setStroke(0,0,0,255);
+		ri.setStrokeWt(1.0f);		
 		for(int i=0;i<numMorphFeatures;++i) {
 			morphsAvailable[i][currMorphToUseIDX[i]].drawMorphSpecificValues(debug, drawCntlPts, showLbls);
 		}
-		pa.popMatState();
+		ri.popMatState();
 	}
 
 	
