@@ -194,8 +194,8 @@ public class COTSMap extends Base_QuadMap {
 	protected final void drawRtSdMenuTitle_Indiv() {
 		if(null == otrMap) {return;}
 		ri.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.5f, "Shares branching on edit with other map ? ");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), 4.5f,  ""+shouldShareBranching);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Shares branching on edit with other map ? ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), ""+shouldShareBranching);
 		ri.popMatState();
 	}
 

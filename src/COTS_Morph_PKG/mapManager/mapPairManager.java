@@ -687,7 +687,7 @@ public class mapPairManager {
 		for(Float t : lineUpMorphMaps.keySet()) {
 			ri.pushMatState();
 				ri.translate(10.0f, 10.0f, 0.0f);
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Black, 255), 6.0f, "t = " + String.format(Base_PolyMap.strPointDispFrmt6,t));
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Black, 255), "t = " + String.format(Base_PolyMap.strPointDispFrmt6,t));
 			ri.popMatState();
 			Base_PolyMap tmpMorphMap = lineUpMorphMaps.get(t);
 

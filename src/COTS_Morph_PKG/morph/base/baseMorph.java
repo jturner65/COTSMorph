@@ -721,9 +721,9 @@ public abstract class baseMorph {
 	
 	public final float drawMapRtSdMenuDescr(float yOff, float sideBarYDisp) {		
 		ri.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), 6.5f, morphTitle);
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.6f, " Morph Frame @ Time : ");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(Base_PolyMap.strPointDispFrmt8,morphT));
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), morphTitle);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), " Morph Frame @ Time : ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), String.format(Base_PolyMap.strPointDispFrmt8,morphT));
 		ri.popMatState();
 	
 		yOff += sideBarYDisp;
@@ -755,12 +755,12 @@ public abstract class baseMorph {
 	 */
 	private final void _drawRtSideMenuDistSummaries(float[] vals,  String label, int curIdx) {
 		ri.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.2f, label + " :[");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), label + " :[");
 			for(int i=0;i<vals.length-1;++i) {
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr((i==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(Base_PolyMap.strPointDispFrmt85,vals[i])+", ");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr((i==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), String.format(Base_PolyMap.strPointDispFrmt85,vals[i])+", ");
 			}
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr((vals.length-1==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), 7.0f, String.format(Base_PolyMap.strPointDispFrmt85,vals[vals.length-1]));
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.2f, "]");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr((vals.length-1==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), String.format(Base_PolyMap.strPointDispFrmt85,vals[vals.length-1]));
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "]");
 		ri.popMatState();	
 	}
 	
@@ -779,19 +779,19 @@ public abstract class baseMorph {
 	
 	public final float drawMorphRtSdMenuDescr(float yOff, float sideBarYDisp, float _morphSpeed) {//, String[] _scopeList) {
 		ri.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 6.2f, "Morph Between :");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapA.mapTitle);
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 6.2f, " and");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), 6.8f, mapB.mapTitle);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Morph Between :");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), mapA.mapTitle);
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), " and");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), mapB.mapTitle);
 		ri.popMatState();		
 		yOff += sideBarYDisp;
 		ri.translate(0.0f,sideBarYDisp, 0.0f);		
 		
 		ri.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 6.0f, "Currently at time :");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(Base_PolyMap.strPointDispFrmt8,morphT));
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 6.5f, " | Speed :");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), 6.5f, String.format(Base_PolyMap.strPointDispFrmt8,_morphSpeed));
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Currently at time :");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), String.format(Base_PolyMap.strPointDispFrmt8,morphT));
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), " | Speed :");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), String.format(Base_PolyMap.strPointDispFrmt8,_morphSpeed));
 		ri.popMatState();		
 		
 		yOff += sideBarYDisp;

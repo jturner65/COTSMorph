@@ -168,8 +168,8 @@ public class CompoundMorph extends baseMorph {
 		for(int i=0;i<_currPerMorphMaps.length;++i) {
 			ri.pushMatState();
 				ri.translate(-10.0f,0.0f,0.0f);
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), 6.5f, "Morph For :");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 6.5f, morphFtrNames[i]);
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), "Morph For :");
+				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), morphFtrNames[i]);
 			ri.popMatState();		
 			yOff += sideBarYDisp;
 			ri.translate(0.0f,sideBarYDisp, 0.0f);			

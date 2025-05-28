@@ -339,8 +339,8 @@ public abstract class Base_QuadMap extends Base_PolyMap {
 		if(this.isBaryQuad) {
 			ri.pushMatState();	
 			ri.translate(10.0f,0.0f, 0.0f);
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), 5.5f, "Cntl Pt D Bary : ");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), 3.0f, "["+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Cntl Pt D Bary : ");
+			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), "["+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
 			ri.popMatState();
 				
 			yOff += sideBarYDisp;ri.translate(0.0f,sideBarYDisp, 0.0f);

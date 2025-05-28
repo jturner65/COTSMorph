@@ -683,16 +683,15 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	
 	@Override
 	public final void drawCustMenuObjs(float animTimeMod) {}
-	
-	protected float sideBarYDisp = 11.0f;
+
 	@Override
 	protected final void drawRightSideInfoBarPriv(float modAmtMillis) {
-		float _yOff = getTextHeightOffset() - 4;
+		float[] rtSideYOffVals = AppMgr.getRtSideYOffVals();
 		//start with yOff
 		ri.pushMatState();
 		ri.scale(1.05f);
 		//draw map values
-		_yOff = drawRightSideMaps(_yOff);
+		drawRightSideMaps(rtSideYOffVals);
 		
 		ri.popMatState();	
 	}
@@ -704,9 +703,9 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 		if(uiMgr.getPrivFlag(showOrientedLineupIDX)) {
 			mapManagers[currMapTypeIDX].drawMaps_LineupFrames(uiMgr.getPrivFlag(drawMap_FillOrWfIDX), uiMgr.getPrivFlag(drawMap_CellCirclesIDX), uiMgr.getPrivFlag(drawMap_ImageIDX));
 		} else if(uiMgr.getPrivFlag(showTrajAnalysisWinIDX) || uiMgr.getPrivFlag(showMorphAnalysisGraphsIDX)) { 
-			mapManagers[currMapTypeIDX].drawMaps_MorphAnalysisWins(uiMgr.getPrivFlag(showTrajAnalysisWinIDX),uiMgr.getPrivFlag(showMorphAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],drawMapDetail,sideBarYDisp) ;
+			mapManagers[currMapTypeIDX].drawMaps_MorphAnalysisWins(uiMgr.getPrivFlag(showTrajAnalysisWinIDX),uiMgr.getPrivFlag(showMorphAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],drawMapDetail,getTextHeightOffset()) ;
 		} else if(uiMgr.getPrivFlag(showMrphStackDistAnalysisWinIDX) || uiMgr.getPrivFlag(showMrphStackDistAnalysisGraphsIDX)) { 
-			mapManagers[currMapTypeIDX].drawMaps_MrphStackDistAnalysisWins(uiMgr.getPrivFlag(showMrphStackDistAnalysisWinIDX),uiMgr.getPrivFlag(showMrphStackDistAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],sideBarYDisp) ;
+			mapManagers[currMapTypeIDX].drawMaps_MrphStackDistAnalysisWins(uiMgr.getPrivFlag(showMrphStackDistAnalysisWinIDX),uiMgr.getPrivFlag(showMrphStackDistAnalysisGraphsIDX), allMmntDispLabels[currMmntDispIDX],getTextHeightOffset()) ;
 		}		
 	}		
 	
@@ -716,9 +715,9 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	 * @return
 	 */
 	
-	protected final float drawRightSideMaps(float _yOff) {
-		_yOff = mapManagers[currMapTypeIDX].drawRightSideMaps(_yOff, sideBarYDisp,uiMgr.getPrivFlag(drawMorph_DistColorsIDX), uiMgr.getPrivFlag(drawMap_RegCopyIDX), uiMgr.getPrivFlag(drawMorph_MapIDX), uiMgr.getPrivFlag(drawMorph_Slices_RtSideInfoIDX));		
-		return _yOff;
+	protected final float drawRightSideMaps(float[] rtSideYOffVals) {
+		rtSideYOffVals[0] = mapManagers[currMapTypeIDX].drawRightSideMaps(rtSideYOffVals[0], rtSideYOffVals[1],uiMgr.getPrivFlag(drawMorph_DistColorsIDX), uiMgr.getPrivFlag(drawMap_RegCopyIDX), uiMgr.getPrivFlag(drawMorph_MapIDX), uiMgr.getPrivFlag(drawMorph_Slices_RtSideInfoIDX));		
+		return rtSideYOffVals[0];
 	}
 	
 	public abstract void _drawLabelAtPt(myPointf p, String lbl, float xOff, float yOff);	
