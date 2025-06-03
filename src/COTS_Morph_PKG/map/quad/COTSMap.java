@@ -10,7 +10,6 @@ import COTS_Morph_PKG.transformer.spiral.COTS_Transformer;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
-import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -194,8 +193,8 @@ public class COTSMap extends Base_QuadMap {
 	protected final void drawRtSdMenuTitle_Indiv() {
 		if(null == otrMap) {return;}
 		ri.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Shares branching on edit with other map ? ");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Yellow, 255), ""+shouldShareBranching);
+			AppMgr.showMenuTxt_White("Shares branching on edit with other map ? ");
+			AppMgr.showMenuTxt_Yellow(""+shouldShareBranching);
 		ri.popMatState();
 	}
 

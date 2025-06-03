@@ -786,18 +786,18 @@ public abstract class Base_PolyMap {
 	public final float drawRtSdMenuDescr(float yOff, float sideBarYDisp, boolean showTitle, boolean showCntlPtsAndCentroid) {
 		if(showTitle) {
 			ri.pushMatState();
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), mapTitle);
+			AppMgr.showMenuTxt_Green( mapTitle);
 			if(dispTitleOn2Lines) {
 				ri.popMatState();
 				yOff += sideBarYDisp;			ri.translate(0.0f,sideBarYDisp, 0.0f);
 				ri.pushMatState();
 			}
 				
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), " | # Cells Per Side : ");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), ""+numCellsPerSide);
+			AppMgr.showMenuTxt_White(" | # Cells Per Side : ");
+			AppMgr.showMenuTxt_Green(""+numCellsPerSide);
 			if (otrMap!=null) {
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), " | Other Map : ");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), otrMap.mapTitle);
+				AppMgr.showMenuTxt_White(" | Other Map : ");
+				AppMgr.showMenuTxt_Green( otrMap.mapTitle);
 			}
 			
 			ri.popMatState();
@@ -805,37 +805,37 @@ public abstract class Base_PolyMap {
 			drawRtSdMenuTitle_Indiv();
 		} else {
 			ri.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "# Cells Per Side : ");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), ""+numCellsPerSide);
+				AppMgr.showMenuTxt_White("# Cells Per Side : ");
+				AppMgr.showMenuTxt_Green(""+numCellsPerSide);
 			ri.popMatState();
 		}
 		yOff += sideBarYDisp;		
 		if(showCntlPtsAndCentroid) {
 			ri.translate(20.0f,sideBarYDisp, 0.0f);
 			ri.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Area of Map :  ");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), String.format(strPointDispFrmt8,areaOfMap));
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Cntl Pt Poly Area :  ");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), String.format(strPointDispFrmt8,polyAreaOfMap));
+				AppMgr.showMenuTxt_White("Area of Map :  ");
+				AppMgr.showMenuTxt_LightCyan( String.format(strPointDispFrmt8,areaOfMap));
+				AppMgr.showMenuTxt_White("Cntl Pt Poly Area :  ");
+				AppMgr.showMenuTxt_LightCyan( String.format(strPointDispFrmt8,polyAreaOfMap));
 			ri.popMatState();
 			yOff += sideBarYDisp;		ri.translate(0.0f,sideBarYDisp, 0.0f);
 			
 			ri.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Centroid :  ");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), "("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
+				AppMgr.showMenuTxt_White("Centroid :  ");
+				AppMgr.showMenuTxt_LightCyan("("+cntlPtCOV.toStrCSV(strPointDispFrmt8)+")");
 			ri.popMatState();
 			yOff += sideBarYDisp;		ri.translate(0.0f,sideBarYDisp, 0.0f);
 			ri.pushMatState();
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "COM :  ");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), "("+cntlPtCOM.toStrCSV(strPointDispFrmt8)+")");
+				AppMgr.showMenuTxt_White("COM :  ");
+				AppMgr.showMenuTxt_LightCyan("("+cntlPtCOM.toStrCSV(strPointDispFrmt8)+")");
 			ri.popMatState();
 			yOff += sideBarYDisp;		ri.translate(0.0f,sideBarYDisp, 0.0f);
 			for(int i=0;i<cntlPts.length;++i) {
 				ri.pushMatState();
-					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Cntl Pt " + i + " : ");
-					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), "("+cntlPts[i].toStrCSV(strPointDispFrmt8)+")");
-					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Theta : ");
-					AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), String.format(strPointDispFrmt8, cntlPtAngles[i]));
+					AppMgr.showMenuTxt_White("Cntl Pt " + i + " : ");
+					AppMgr.showMenuTxt_LightCyan("("+cntlPts[i].toStrCSV(strPointDispFrmt8)+")");
+					AppMgr.showMenuTxt_White("Theta : ");
+					AppMgr.showMenuTxt_LightCyan( String.format(strPointDispFrmt8, cntlPtAngles[i]));
 				ri.popMatState();
 				yOff += sideBarYDisp;			ri.translate(0.0f,sideBarYDisp, 0.0f);
 			}		

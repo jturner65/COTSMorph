@@ -8,7 +8,6 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.morph.base.baseMorph;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
-import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 
@@ -168,8 +167,8 @@ public class CompoundMorph extends baseMorph {
 		for(int i=0;i<_currPerMorphMaps.length;++i) {
 			ri.pushMatState();
 				ri.translate(-10.0f,0.0f,0.0f);
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_Green, 255), "Morph For :");
-				AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), morphFtrNames[i]);
+				AppMgr.showMenuTxt_Green("Morph For :");
+				AppMgr.showMenuTxt_White( morphFtrNames[i]);
 			ri.popMatState();		
 			yOff += sideBarYDisp;
 			ri.translate(0.0f,sideBarYDisp, 0.0f);			

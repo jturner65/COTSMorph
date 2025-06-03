@@ -7,7 +7,6 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
-import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_UI_Objects.renderer.ProcessingRenderer;
@@ -339,8 +338,8 @@ public abstract class Base_QuadMap extends Base_PolyMap {
 		if(this.isBaryQuad) {
 			ri.pushMatState();	
 			ri.translate(10.0f,0.0f, 0.0f);
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_White, 255), "Cntl Pt D Bary : ");
-			AppMgr.showOffsetText_RightSideMenu(ri.getClr(IRenderInterface.gui_LightCyan, 255), "["+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
+			AppMgr.showMenuTxt_White("Cntl Pt D Bary : ");
+			AppMgr.showMenuTxt_LightCyan("["+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[0])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[1])+","+String.format(Base_PolyMap.strPointDispFrmt8,cntlPtD_baryCoords[2])+"]");
 			ri.popMatState();
 				
 			yOff += sideBarYDisp;ri.translate(0.0f,sideBarYDisp, 0.0f);

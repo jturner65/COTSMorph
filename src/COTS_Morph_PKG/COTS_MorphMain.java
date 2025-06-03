@@ -302,10 +302,5 @@ public class COTS_MorphMain extends GUI_AppManager {
 			default : {break;}
 		}
 	}//setFlags  
-
-
-	@Override
-	public int[] getClr_Custom(int colorVal, int alpha) {	return new int[] {255,255,255,alpha};}
-
 	
 }//class SOM_GeometryMain
