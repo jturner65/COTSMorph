@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import COTS_Morph_PKG.ui.COTS_Morph2DWin;
 import COTS_Morph_PKG.ui.COTS_Morph3DWin;
-import base_UI_Objects.*;
+import base_UI_Objects.GUI_AppManager;
 import base_Utils_Objects.io.messaging.MsgCodes;
 /**
  * Experiment with self organizing maps in applications related to graphics and geometry

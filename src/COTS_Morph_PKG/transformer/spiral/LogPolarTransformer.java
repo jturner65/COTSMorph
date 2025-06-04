@@ -3,9 +3,9 @@ package COTS_Morph_PKG.transformer.spiral;
 import COTS_Morph_PKG.transform.SpiralTransform;
 import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
-import base_Render_Interface.IRenderInterface;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
+import base_Render_Interface.IRenderInterface;
 
 public class LogPolarTransformer extends baseSpiralTransformer {
 	protected final int numTransforms;

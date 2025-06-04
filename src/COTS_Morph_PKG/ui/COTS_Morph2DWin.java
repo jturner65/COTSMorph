@@ -1,15 +1,14 @@
 package COTS_Morph_PKG.ui;
 
-import java.util.ArrayList;
 import java.util.TreeMap;
 
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
+import base_Math_Objects.vectorObjs.doubles.myPoint;
+import base_Math_Objects.vectorObjs.doubles.myVector;
+import base_Math_Objects.vectorObjs.floats.myPointf;
+import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IRenderInterface;
 import base_UI_Objects.GUI_AppManager;
-import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.floats.myPointf;
-import base_Math_Objects.vectorObjs.doubles.myVector;
-import base_Math_Objects.vectorObjs.floats.myVectorf;
 
 public class COTS_Morph2DWin extends COTS_MorphWin {
 	
@@ -54,7 +53,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 	}
 
 	@Override
-	protected final int initAllPrivBtns_Indiv(ArrayList<Object[]> tmpBtnNamesArray) {
+	protected final int initAllPrivBtns_Indiv(TreeMap<Integer, Object[]> tmpBtnNamesArray) {
 		return _numPrivButtons;
 	}//initAllPrivBtns
 	/**
