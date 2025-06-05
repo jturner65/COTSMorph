@@ -52,46 +52,53 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
 		return bndPts;
 	}
 
-	@Override
-	protected final int initAllPrivBtns_Indiv(TreeMap<Integer, Object[]> tmpBtnNamesArray) {
-		return _numPrivButtons;
-	}//initAllPrivBtns
 	/**
-	 * which indexes are for rows, columns and slices
+	 * Retrieve the total number of defined privFlags booleans (application-specific state bools and interactive buttons)
 	 */
 	@Override
-	protected final int[] getRowColSliceIDXs() {
-		return new int[] {1,2,3};
-	}
-
+	public int getTotalNumOfPrivBools(){		return _numPrivButtons;	}//initAllPrivBtns
 	
 	/**
-	 * init ui objects from maps, keyed by ui object idx, with value being data
+	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
 	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
 	 *           the first element double array of min/max/mod values                                                   
 	 *           the 2nd element is starting value                                                                      
 	 *           the 3rd elem is label for object                                                                       
-	 *           the 4th element is boolean array of {treat as int, has list values, value is sent to owning window}    
-	 * @param tmpListObjVals
+	 *           the 4th element is object type (GUIObj_Type enum)
+	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 *           	idx 0: value is sent to owning window,  
+	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
+	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
+	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *           	idx 0: whether multi-line(stacked) or not                                                  
+	 *              idx 1: if true, build prefix ornament                                                      
+	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
+	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
+	 * @param firstBtnIDX : first index to place button objects in @tmpBtnNamesArray 
+	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
+	 * 				the first element is true label
+	 * 				the second element is false label
+	 * 				the third element is integer flag idx 
 	 */
 	@Override
-	protected void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals) {	
-	}
+	protected void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, int firstBtnIDX, TreeMap<Integer, Object[]> tmpBtnNamesArray) {}
+	
+	/**
+	 * which indexes are for rows, columns and slices
+	 */
+	@Override
+	protected final int[] getRowColSliceIDXs() {		return new int[] {1,2,3};	}
 	
 	/**
 	 * Check class-specific int/list ui objs upon population.  returns true if found
 	 */
 	@Override
-	protected boolean setUI_IntValsCustom_Indiv(int UIidx, int ival) {
-		return false;
-	}
+	protected boolean setUI_IntValsCustom_Indiv(int UIidx, int ival) {		return false;	}
 	/**
 	 * Check class-specific float ui objs upon population.  returns true if found
 	 */
 	@Override
-	protected boolean setUI_FloatValsCustom_Indiv(int UIidx, float val) {
-		return false;
-	}
+	protected boolean setUI_FloatValsCustom_Indiv(int UIidx, float val) {		return false;	}
 	@Override
 	public void setPrivFlags_Indiv(int idx, boolean val) {
 		switch (idx) {// special actions for each flag
