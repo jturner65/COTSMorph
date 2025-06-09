@@ -147,7 +147,7 @@ public class COTS_MorphMain extends GUI_AppManager {
 		showInfo = true;
 		//titles and descs, need to be set before sidebar menu is defined
 		String[] _winTitles = new String[]{"","2D COTS Morph","3D COTS Morph"},//,"SOM Map UI"},
-				_winDescr = new String[] {"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
+				_winDescr = new String[]{"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
 
 		//instanced window dims when open and closed - only showing 1 open at a time - and init cam vals
 		float[][] _floatDims  = getDefaultWinAndCameraDims();	

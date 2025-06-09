@@ -35,8 +35,8 @@ public class SpiralTransform extends baseTransform {
 	 */
 	protected boolean isDegenerate;
 	
-	//protected static final String[] rtMenuDispType = new String[] {"Scale","Angle","Branch"};
-	protected static final String[] rtMenuDispType = new String[] {"S","A","B"};
+	//protected static final String[] rtMenuDispType = new String[]{"Scale","Angle","Branch"};
+	protected static final String[] rtMenuDispType = new String[]{"S","A","B"};
 	/**
 	 * these are only  used if degenerate, for lerp
 	 */

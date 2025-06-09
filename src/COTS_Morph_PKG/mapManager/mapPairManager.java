@@ -83,7 +83,7 @@ public class mapPairManager {
 	/**
 	 * types of morphs supported
 	 */
-	public static final String[] morphTypes = new String[] {
+	public static final String[] morphTypes = new String[]{
 		"LERP",						//linearly interpolate control points
 		"Log Polar",
 		"Rigid",
@@ -96,7 +96,7 @@ public class mapPairManager {
 	/**
 	 * morph types available to compound morph - CompoundMorphIDX should not be available
 	 */
-	public static final String[] cmpndMorphTypes = new String[] {
+	public static final String[] cmpndMorphTypes = new String[]{
 		"LERP",						//linearly interpolate control points
 		"Log Polar",			
 		"Rigid",
@@ -123,7 +123,7 @@ public class mapPairManager {
 	/**
 	 * types of maps supported
 	 */
-	public static final String[] mapTypes = new String[] {
+	public static final String[] mapTypes = new String[]{
 		"Triangle",
 		"Pt-Norm Tri",
 		"Bilinear",

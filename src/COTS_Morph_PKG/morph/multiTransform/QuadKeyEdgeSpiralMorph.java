@@ -90,7 +90,7 @@ public class QuadKeyEdgeSpiralMorph extends baseMultiTransformMorphs {
 	@Override
 	public float drawMorphRtSdMenuDescr_Indiv(float yOff, float sideBarYDisp) {
 		for(int i=0;i<transforms.length; ++i) {
-			yOff += transforms[i].drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp, new String[] {transLbls[i]+":"});			//wackiness due to how transformations vs similarities are being constructed
+			yOff += transforms[i].drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp, new String[]{transLbls[i]+":"});			//wackiness due to how transformations vs similarities are being constructed
 		}
 		return yOff;
 	}

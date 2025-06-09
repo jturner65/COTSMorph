@@ -28,7 +28,7 @@ public class CompoundMorph extends baseMorph {
 	/**
 	 * individual morph types to compose into final compound morph
 	 */
-	public static final String[] morphFtrNames = new String[] {
+	public static final String[] morphFtrNames = new String[]{
 		"Shape Morph",
 		"Orientation Morph",
 		"Translation Morph",
