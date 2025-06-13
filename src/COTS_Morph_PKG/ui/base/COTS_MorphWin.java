@@ -18,8 +18,8 @@ import base_UI_Objects.renderer.ProcessingRenderer;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.drawnTrajectories.DrawnSimpleTraj;
 import base_UI_Objects.windowUI.uiData.UIDataUpdater;
+import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 import base_Utils_Objects.io.messaging.MsgCodes;
-import base_Utils_Objects.tools.flags.Base_BoolFlags;
 import processing.core.PImage;
 
 public abstract class COTS_MorphWin extends Base_DispWindow {
@@ -260,153 +260,151 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
-	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
-	 *           the first element double array of min/max/mod values                                                   
-	 *           the 2nd element is starting value                                                                      
-	 *           the 3rd elem is label for object                                                                       
-	 *           the 4th element is object type (GUIObj_Type enum)
-	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
+	 * 			- The object IDX                   
+	 *          - A double array of min/max/mod values                                                   
+	 *          - The starting value                                                                      
+	 *          - The label for object                                                                       
+	 *          - The object type (GUIObj_Type enum)
+	 *          - A boolean array of behavior configuration values : (unspecified values default to false)
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *          - A boolean array of renderer format values :(unspecified values default to false)
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
-	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
-	 * 				the first element is true label
-	 * 				the second element is false label
-	 * 				the third element is integer flag idx 
 	 */
-	@Override 
-	protected final void setupGUIObjsAras(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, TreeMap<Integer,Object[]> tmpBtnNamesArray) { 
-		tmpListObjVals.put(gIDX_MapType, mapPairManager.mapTypes);	
-		tmpListObjVals.put(gIDX_MorphType, mapPairManager.morphTypes); 
-		tmpListObjVals.put(gIDX_MorphTValType, InterpolantTypes.getListOfTypes());
-		tmpListObjVals.put(gIDX_MorphTypeOrient, mapPairManager.cmpndMorphTypes); 
-		tmpListObjVals.put(gIDX_MorphTypeSize, mapPairManager.cmpndMorphTypes); 
-		tmpListObjVals.put(gIDX_MorphTypeShape, mapPairManager.cmpndMorphTypes); 
-		tmpListObjVals.put(gIDX_MorphTypeCOVPath, mapPairManager.cmpndMorphTypes); 
-		tmpListObjVals.put(gIDX_SetBrnchStrat, branchShareStrategies);
-		tmpListObjVals.put(gIDX_CntlPtDispDetail, cntlPtDispDetail);
-		tmpListObjVals.put(gIDX_MorphAnalysisMmmntsDetail, analysisMmmntsDetail);
-		tmpListObjVals.put(gIDX_DistTestTransform, mapPairManager.morphTypes);
-		tmpListObjVals.put(gIDX_DistDimToShow, distDimToShow);
-		tmpListObjVals.put(gIDX_MorphSliceDispType, morphSliceType);
-		tmpListObjVals.put(gIDX_MorphAnimType, InterpolantBehavior.getListOfTypes());		
+	@Override
+	protected final void setupGUIObjsAras(TreeMap<String, GUIObj_Params> tmpUIObjMap){			
+//		//keyed by object idx (uiXXXIDX), entries are lists of values to use for list select ui objects	
 		
-		//tmpListObjVals.put(gIDX_MorphSliceTypeForDist, morphSliceType);			
+		tmpUIObjMap.put("gIDX_MorphTVal", uiMgr.uiObjInitAra_Float(gIDX_MorphTVal, new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[]{true, true})); 	
+		tmpUIObjMap.put("gIDX_MorphSpeed", uiMgr.uiObjInitAra_Float(gIDX_MorphSpeed, new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation")); 	
+		tmpUIObjMap.put("gIDX_MorphTValType", uiMgr.uiObjInitAra_List(gIDX_MorphTValType, 1.0*InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : ", InterpolantTypes.getListOfTypes()));
 		
-		tmpUIObjArray.put(gIDX_MorphTVal, uiMgr.uiObjInitAra_Float(new double[] { 0.0, 1.0, 0.01 }, 0.5,"Progress of Morph", new boolean[]{true, true})); 	
-		tmpUIObjArray.put(gIDX_MorphSpeed, uiMgr.uiObjInitAra_Float(new double[] { 0.0, 2.0, 0.01 }, 1.0,"Speed of Morph Animation")); 	
-		tmpUIObjArray.put(gIDX_MorphTValType, uiMgr.uiObjInitAra_List(new double[]{0.0, InterpolantTypes.getListOfTypes().length-1, 1},1.0*InterpolantTypes.linear.getVal(), "Morph Animation Interpolant Type : "));
+		tmpUIObjMap.put("gIDX_NumCellsPerSide", uiMgr.uiObjInitAra_Int(gIDX_NumCellsPerSide, new double[] { 2.0, 50.0, 1.0 }, 4.0, "# of Cells Per Grid Side")); 
 		
-		tmpUIObjArray.put(gIDX_NumCellsPerSide, uiMgr.uiObjInitAra_Int(new double[] { 2.0, 50.0, 1.0 }, 4.0, "# of Cells Per Grid Side")); 
+		tmpUIObjMap.put("gIDX_SetBrnchStrat", uiMgr.uiObjInitAra_List(gIDX_SetBrnchStrat, 0.0, "Branch Sharing Strategy", branchShareStrategies, new boolean[]{true, false, true}));
 		
-		tmpUIObjArray.put(gIDX_SetBrnchStrat, uiMgr.uiObjInitAra_List(new double[]{0.0, branchShareStrategies.length-1, 1},0.0, "Branch Sharing Strategy", new boolean[]{true, false, true}));
-		
-		tmpUIObjArray.put(gIDX_MapType, uiMgr.uiObjInitAra_List(new double[]{0.0, mapPairManager.mapTypes.length-1, 1},1.0* currMapTypeIDX, "Map Type to Show")); 
+		tmpUIObjMap.put("gIDX_MapType", uiMgr.uiObjInitAra_List(gIDX_MapType, 1.0* currMapTypeIDX, "Map Type to Show", mapPairManager.mapTypes)); 
 
-		tmpUIObjArray.put(gIDX_MorphType, uiMgr.uiObjInitAra_List(new double[]{0.0, mapPairManager.morphTypes.length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Morph Type to Process"));
+		tmpUIObjMap.put("gIDX_MorphType", uiMgr.uiObjInitAra_List(gIDX_MorphType, 1.0* mapPairManager.LERPMorphIDX, "Morph Type to Process", mapPairManager.morphTypes));
 
-		tmpUIObjArray.put(gIDX_MorphTypeOrient, uiMgr.uiObjInitAra_List(new double[]{0.0, mapPairManager.cmpndMorphTypes.length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Orientation Morph Type to Use"));
-		tmpUIObjArray.put(gIDX_MorphTypeSize, uiMgr.uiObjInitAra_List(new double[]{0.0, mapPairManager.cmpndMorphTypes.length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Size Morph Type to Use"));
-		tmpUIObjArray.put(gIDX_MorphTypeShape, uiMgr.uiObjInitAra_List(new double[]{0.0, mapPairManager.cmpndMorphTypes.length-1, 1},1.0* mapPairManager.LERPMorphIDX, "Shape Morph Type to Use"));
-		tmpUIObjArray.put(gIDX_MorphTypeCOVPath, uiMgr.uiObjInitAra_List(new double[]{0.0, mapPairManager.cmpndMorphTypes.length-1, 1},1.0* mapPairManager.LERPMorphIDX, "COV Path Morph Type to Use"));
+		tmpUIObjMap.put("gIDX_MorphTypeOrient", uiMgr.uiObjInitAra_List(gIDX_MorphTypeOrient, 1.0* mapPairManager.LERPMorphIDX, "Orientation Morph Type to Use", mapPairManager.cmpndMorphTypes));
+		tmpUIObjMap.put("gIDX_MorphTypeSize", uiMgr.uiObjInitAra_List(gIDX_MorphTypeSize, 1.0* mapPairManager.LERPMorphIDX, "Size Morph Type to Use", mapPairManager.cmpndMorphTypes));
+		tmpUIObjMap.put("gIDX_MorphTypeShape", uiMgr.uiObjInitAra_List(gIDX_MorphTypeShape, 1.0* mapPairManager.LERPMorphIDX, "Shape Morph Type to Use", mapPairManager.cmpndMorphTypes));
+		tmpUIObjMap.put("gIDX_MorphTypeCOVPath", uiMgr.uiObjInitAra_List(gIDX_MorphTypeCOVPath, 1.0* mapPairManager.LERPMorphIDX, "COV Path Morph Type to Use", mapPairManager.cmpndMorphTypes));
 		
-		tmpUIObjArray.put(gIDX_MorphAnimType, uiMgr.uiObjInitAra_List(new double[]{0.0, InterpolantBehavior.getListOfTypes().length-1, 1},1.0* InterpolantBehavior.pingPong.getVal(), "Morph Animation Type : "));
+		tmpUIObjMap.put("gIDX_MorphAnimType", uiMgr.uiObjInitAra_List(gIDX_MorphAnimType, 1.0* InterpolantBehavior.pingPong.getVal(), "Morph Animation Type : ", InterpolantBehavior.getListOfTypes()));
 		
-		tmpUIObjArray.put(gIDX_NumLineupFrames, uiMgr.uiObjInitAra_Int(new double[]{5.0, 20.0, 1.0},11.0, "# of Frames in Lineup")); 
-		tmpUIObjArray.put(gIDX_NumMorphSlices, uiMgr.uiObjInitAra_Int(new double[]{5.0, 20.0, 1.0},11.0, "# of Slices in Morph")); 
+		tmpUIObjMap.put("gIDX_NumLineupFrames", uiMgr.uiObjInitAra_Int(gIDX_NumLineupFrames, new double[]{5.0, 20.0, 1.0},11.0, "# of Frames in Lineup")); 
+		tmpUIObjMap.put("gIDX_NumMorphSlices", uiMgr.uiObjInitAra_Int(gIDX_NumMorphSlices, new double[]{5.0, 20.0, 1.0},11.0, "# of Slices in Morph")); 
 		
-		tmpUIObjArray.put(gIDX_MorphSliceDispType, uiMgr.uiObjInitAra_List(new double[]{0.0, morphSliceType.length-1, 1},0.0, "Morph Slice Spacing to Show"));		
+		tmpUIObjMap.put("gIDX_MorphSliceDispType", uiMgr.uiObjInitAra_List(gIDX_MorphSliceDispType, 0.0, "Morph Slice Spacing to Show", morphSliceType));		
 		
-		tmpUIObjArray.put(gIDX_CntlPtDispDetail, uiMgr.uiObjInitAra_List(new double[]{0.0, cntlPtDispDetail.length-1, 1},1.0*drawMapDetail, "Cntl Pt Disp Detail"));
-		tmpUIObjArray.put(gIDX_MorphAnalysisMmmntsDetail, uiMgr.uiObjInitAra_List(new double[]{0.0, analysisMmmntsDetail.length-1, 1},1.0*currMmntDispIDX, "Traj Analysis Detail"));
-		tmpUIObjArray.put(gIDX_DistTestTransform, uiMgr.uiObjInitAra_List(new double[]{0.0, mapPairManager.morphTypes.length-1, 1},0.0, "Distortion Analysis Transform"));
-		tmpUIObjArray.put(gIDX_DistDimToShow, uiMgr.uiObjInitAra_List(new double[]{0.0, distDimToShow.length-1, 1},2.0, "Distortion Dimension to Show In Colors"));
+		tmpUIObjMap.put("gIDX_CntlPtDispDetail", uiMgr.uiObjInitAra_List(gIDX_CntlPtDispDetail, 1.0*drawMapDetail, "Cntl Pt Disp Detail", cntlPtDispDetail));
+		tmpUIObjMap.put("gIDX_MorphAnalysisMmmntsDetail", uiMgr.uiObjInitAra_List(gIDX_MorphAnalysisMmmntsDetail, 1.0*currMmntDispIDX, "Traj Analysis Detail", analysisMmmntsDetail));
+		tmpUIObjMap.put("gIDX_DistTestTransform", uiMgr.uiObjInitAra_List(gIDX_DistTestTransform, 0.0, "Distortion Analysis Transform", mapPairManager.morphTypes));
+		tmpUIObjMap.put("gIDX_DistDimToShow", uiMgr.uiObjInitAra_List(gIDX_DistDimToShow, 2.0, "Distortion Dimension to Show In Colors", distDimToShow));
 		
-		tmpUIObjArray.put(gIDX_MorphDistMult, uiMgr.uiObjInitAra_Float(new double[] {-10.0, 20.0, 0.1 }, 0.0,"Distortion Mult Exponent (for Visualization)")); 	
-		//tmpUIObjArray.put(gIDX_MorphSliceTypeForDist, uiMgr.uiObjInitAra_List(new double[]{0.0, tmpListObjVals.get(gIDX_MorphSliceTypeForDist).length-1, 1},0.0, "Morph Slice Spacing For Dist Calc"));
-		
-		// add an entry for each button, in the order they are wished to be displayed
-		// true tag, false tag, btn IDX
-		int idx=0;
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Debugging", "Debug"}, Base_BoolFlags.debugIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Resetting Maps", "Reset Maps"}, resetMapCrnrsIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Resetting Map 0", "Reset Map 0"}, resetMapCrnrs_0IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Resetting Map 1", "Reset Map 1"}, resetMapCrnrs_1IDX));
-			
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs"}, matchMapCrnrs_0IDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs"}, matchMapCrnrs_1IDX));
-				
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Setting COTS Branch Strat", "Set COTS Branch Strat"}, setCurrCOTSBranchShareStratIDX));
-		
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Resetting All Branching", "Reset All Branching"}, resetAllBranchingIDX));	
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Resetting Map 0 Branching", "Reset Map 0 Branching"}, resetMapBranch_0IDX));	
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Resetting Map 1 Branching", "Reset Map 1 Branching"}, resetMapBranch_1IDX));
-
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Finding Dist From A to B","Find Dist From A to B"}, findDiffFromAtoBIDX));	
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Finding Dist From B to A","Find Dist From B to A"}, findDiffFromBToAIDX));	
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Find Best Registration (may remap verts in copy)","Find Matching Vertex Registration"}, findBestOrRegDistIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Calculating Current Morph Distortion","Calculate Current Morph Distortion"},calcMorphDistIDX));
-
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Maps", "Show Maps"},drawMapIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Registration Map", "Show Registration Maps"},drawMap_RegCopyIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Cntl Pts", "Show Cntl Pts"},drawMap_CntlPtsIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Cntl Pt Lbls", "Show Cntl Pt Lbls"},drawMap_CntlPtLblsIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Show Checkerboard Maps", "Show Wireframe Maps"},drawMap_FillOrWfIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Cell Circles", "Show Cell Circles"},drawMap_CellCirclesIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Edge Lines", "Show Edge Lines"},drawMap_EdgeLinesIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Ortho Frame", "Show Ortho Frame"},drawMap_OrthoFrameIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Map Image", "Show Map Image"},drawMap_ImageIDX));
-		
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Running Morph Sweep", "Run Morph Sweep"}, sweepMapsIDX));
-		
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Morph Map", "Show Morph Map"},drawMorph_MapIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Show Morph Checkerboard", "Show Morph Wireframe"},drawMorph_FillOrWfIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Morph Slices", "Show Morph Slices"},drawMorph_SlicesIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Show Morph Slices CB", "Show Morph Slices WF"},drawMorph_Slices_FillOrWfIDX));
-		
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Distortion Colors", "Show Distortion Colors"},drawMorph_DistColorsIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Morph Slice Info", "Show Morph Slice Info"},drawMorph_Slices_RtSideInfoIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj"},drawMorph_CntlPtTrajIDX));
-		
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Reg Map Lineup", "Show Reg Map Lineup"}, showOrientedLineupIDX));
-		
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Traj Analysis", "Show Traj Analysis"}, showTrajAnalysisWinIDX));		
-		//tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Distortion Analysis", "Show Distortion Analysis"}, showMrphStackDistAnalysisWinIDX));
-		tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Traj Analysis Graphs", "Show Traj Analysis Graphs"}, showMorphAnalysisGraphsIDX));
-		//tmpBtnNamesArray.put(idx++, uiMgr.uiObjInitAra_Btn(new String[]{"Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs"}, showMrphStackDistAnalysisGraphsIDX));
-		
-		setupGUIObjsAras_Indiv(tmpUIObjArray, tmpListObjVals, tmpBtnNamesArray.size(), tmpBtnNamesArray);
+		tmpUIObjMap.put("gIDX_MorphDistMult", uiMgr.uiObjInitAra_Float(gIDX_MorphDistMult, new double[] {-10.0, 20.0, 0.1 }, 0.0,"Distortion Mult Exponent (for Visualization)")); 	
+		//tmpUIObjMap.put("gIDX_MorphSliceTypeForDist", uiMgr.uiObjInitAra_List( ,     morphSliceType.length-1, 1},0.0, "Morph Slice Spacing For Dist Calc"));
+		setupGUIObjsAras_Indiv(tmpUIObjMap);
 	}//setupGUIObjsAras
 	
 	/**
+	 * Build UI button objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
+	 * @param firstIdx : the first index to use in the map/as the objIdx
+	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * 				the first element is the object index
+	 * 				the second element is true label
+	 * 				the third element is false label
+	 * 				the final element is integer flag idx 
+	 */
+	@Override
+	protected final void setupGUIBtnAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap) {		
+		//add an entry for each button, in the order they are wished to be displayed
+		int idx=firstIdx;
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Maps", "Reset Maps", resetMapCrnrsIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 0", "Reset Map 0", resetMapCrnrs_0IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 1", "Reset Map 1", resetMapCrnrs_1IDX));
+			
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrs_0IDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs", matchMapCrnrs_1IDX));
+				
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Setting COTS Branch Strat", "Set COTS Branch Strat", setCurrCOTSBranchShareStratIDX));
+		
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting All Branching", "Reset All Branching", resetAllBranchingIDX));	
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 0 Branching", "Reset Map 0 Branching", resetMapBranch_0IDX));	
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 1 Branching", "Reset Map 1 Branching", resetMapBranch_1IDX));
+
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Finding Dist From A to B","Find Dist From A to B", findDiffFromAtoBIDX));	
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Finding Dist From B to A","Find Dist From B to A", findDiffFromBToAIDX));	
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Find Best Registration (may remap verts in copy)","Find Matching Vertex Registration", findBestOrRegDistIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Calculating Current Morph Distortion","Calculate Current Morph Distortion",calcMorphDistIDX));
+
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Maps", "Show Maps",drawMapIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Registration Map", "Show Registration Maps",drawMap_RegCopyIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Cntl Pts", "Show Cntl Pts",drawMap_CntlPtsIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls",drawMap_CntlPtLblsIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Show Checkerboard Maps", "Show Wireframe Maps",drawMap_FillOrWfIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Cell Circles", "Show Cell Circles",drawMap_CellCirclesIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Edge Lines", "Show Edge Lines",drawMap_EdgeLinesIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Ortho Frame", "Show Ortho Frame",drawMap_OrthoFrameIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Map Image", "Show Map Image",drawMap_ImageIDX));
+		
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Running Morph Sweep", "Run Morph Sweep", sweepMapsIDX));
+		
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Map", "Show Morph Map",drawMorph_MapIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Show Morph Checkerboard", "Show Morph Wireframe",drawMorph_FillOrWfIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Slices", "Show Morph Slices",drawMorph_SlicesIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Show Morph Slices CB", "Show Morph Slices WF",drawMorph_Slices_FillOrWfIDX));
+		
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Distortion Colors", "Show Distortion Colors",drawMorph_DistColorsIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Slice Info", "Show Morph Slice Info",drawMorph_Slices_RtSideInfoIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj",drawMorph_CntlPtTrajIDX));
+		
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Reg Map Lineup", "Show Reg Map Lineup", showOrientedLineupIDX));
+		
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Traj Analysis", "Show Traj Analysis", showTrajAnalysisWinIDX));		
+		//tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Distortion Analysis", "Show Distortion Analysis", showMrphStackDistAnalysisWinIDX));
+		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Traj Analysis Graphs", "Show Traj Analysis Graphs", showMorphAnalysisGraphsIDX));
+		//tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs", showMrphStackDistAnalysisGraphsIDX));
+		
+		setupGUIBtnAras_Indiv(tmpUIBtnObjMap);
+	}//setupGUIBtnAras
+	
+	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
-	 * @param tmpUIObjArray : map of object data, keyed by UI object idx, with array values being :                    
-	 *           the first element double array of min/max/mod values                                                   
-	 *           the 2nd element is starting value                                                                      
-	 *           the 3rd elem is label for object                                                                       
-	 *           the 4th element is object type (GUIObj_Type enum)
-	 *           the 5th element is boolean array of : (unspecified values default to false)
+	 * @param tmpUIObjMap : map of GUIObj_Params, keyed by unique string, with values describing the UI object
+	 * 			- The object IDX                   
+	 *          - A double array of min/max/mod values                                                   
+	 *          - The starting value                                                                      
+	 *          - The label for object                                                                       
+	 *          - The object type (GUIObj_Type enum)
+	 *          - A boolean array of behavior configuration values : (unspecified values default to false)
 	 *           	idx 0: value is sent to owning window,  
 	 *           	idx 1: value is sent on any modifications (while being modified, not just on release), 
 	 *           	idx 2: changes to value must be explicitly sent to consumer (are not automatically sent),
-	 *           the 6th element is a boolean array of format values :(unspecified values default to false)
+	 *          - A boolean array of renderer format values :(unspecified values default to false)
 	 *           	idx 0: whether multi-line(stacked) or not                                                  
 	 *              idx 1: if true, build prefix ornament                                                      
 	 *              idx 2: if true and prefix ornament is built, make it the same color as the text fill color.
-	 * @param tmpListObjVals : map of string arrays, keyed by UI object idx, with array values being each element in the list
-	 * @param firstBtnIDX : first index to place button objects in @tmpBtnNamesArray 
-	 * @param tmpBtnNamesArray : map of Object arrays to be built containing all button definitions, keyed by sequential value == objId
-	 * 				the first element is true label
-	 * 				the second element is false label
-	 * 				the third element is integer flag idx 
 	 */
-	protected abstract void setupGUIObjsAras_Indiv(TreeMap<Integer, Object[]> tmpUIObjArray, TreeMap<Integer, String[]> tmpListObjVals, int firstBtnIDX, TreeMap<Integer, Object[]> tmpBtnNamesArray);
-	
+	protected abstract void setupGUIObjsAras_Indiv(TreeMap<String, GUIObj_Params> tmpUIObjMap);
+
+	/**
+	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing windows to add to button region
+	 * USE tmpUIBtnObjMap.size() for start idx
+	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * 				the first element is the object index
+	 * 				the second element is true label
+	 * 				the third element is false label
+	 * 				the final element is integer flag idx 
+	 */
+	protected abstract void setupGUIBtnAras_Indiv(TreeMap<String, GUIObj_Params> tmpUIBtnObjMap);	
 	/**
 	 * Called if int-handling guiObjs_Numeric[UIidx] (int or list) has new data which updated UI adapter. 
 	 * Intended to support custom per-object handling by owning window.
