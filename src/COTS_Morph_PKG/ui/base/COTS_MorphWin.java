@@ -316,65 +316,65 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	/**
 	 * Build UI button objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
 	 * @param firstIdx : the first index to use in the map/as the objIdx
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
 	@Override
-	protected final void setupGUIBtnAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBtnObjMap) {		
+	protected final void setupGUIBoolSwitchAras(int firstIdx, TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap) {		
 		//add an entry for each button, in the order they are wished to be displayed
 		int idx=firstIdx;
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Maps", "Reset Maps", resetMapCrnrsIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 0", "Reset Map 0", resetMapCrnrs_0IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 1", "Reset Map 1", resetMapCrnrs_1IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.buildDebugButton(idx++,"Debugging", "Enable Debug"));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Resetting Maps", "Reset Maps", resetMapCrnrsIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Resetting Map 0", "Reset Map 0", resetMapCrnrs_0IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Resetting Map 1", "Reset Map 1", resetMapCrnrs_1IDX));
 			
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrs_0IDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs", matchMapCrnrs_1IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Matching Map 1 to Map 0 Crnrs", "Match Map 1 to Map 0 Crnrs", matchMapCrnrs_0IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Matching Map 0 to Map 1 Crnrs", "Match Map 0 to Map 1 Crnrs", matchMapCrnrs_1IDX));
 				
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Setting COTS Branch Strat", "Set COTS Branch Strat", setCurrCOTSBranchShareStratIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Setting COTS Branch Strat", "Set COTS Branch Strat", setCurrCOTSBranchShareStratIDX));
 		
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting All Branching", "Reset All Branching", resetAllBranchingIDX));	
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 0 Branching", "Reset Map 0 Branching", resetMapBranch_0IDX));	
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Resetting Map 1 Branching", "Reset Map 1 Branching", resetMapBranch_1IDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Resetting All Branching", "Reset All Branching", resetAllBranchingIDX));	
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Resetting Map 0 Branching", "Reset Map 0 Branching", resetMapBranch_0IDX));	
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Resetting Map 1 Branching", "Reset Map 1 Branching", resetMapBranch_1IDX));
 
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Finding Dist From A to B","Find Dist From A to B", findDiffFromAtoBIDX));	
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Finding Dist From B to A","Find Dist From B to A", findDiffFromBToAIDX));	
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Find Best Registration (may remap verts in copy)","Find Matching Vertex Registration", findBestOrRegDistIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Calculating Current Morph Distortion","Calculate Current Morph Distortion",calcMorphDistIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Finding Dist From A to B","Find Dist From A to B", findDiffFromAtoBIDX));	
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Finding Dist From B to A","Find Dist From B to A", findDiffFromBToAIDX));	
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Find Best Registration (may remap verts in copy)","Find Matching Vertex Registration", findBestOrRegDistIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Calculating Current Morph Distortion","Calculate Current Morph Distortion",calcMorphDistIDX));
 
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Maps", "Show Maps",drawMapIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Registration Map", "Show Registration Maps",drawMap_RegCopyIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Cntl Pts", "Show Cntl Pts",drawMap_CntlPtsIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls",drawMap_CntlPtLblsIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Show Checkerboard Maps", "Show Wireframe Maps",drawMap_FillOrWfIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Cell Circles", "Show Cell Circles",drawMap_CellCirclesIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Edge Lines", "Show Edge Lines",drawMap_EdgeLinesIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Ortho Frame", "Show Ortho Frame",drawMap_OrthoFrameIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Map Image", "Show Map Image",drawMap_ImageIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Maps", "Show Maps",drawMapIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Registration Map", "Show Registration Maps",drawMap_RegCopyIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Cntl Pts", "Show Cntl Pts",drawMap_CntlPtsIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Cntl Pt Lbls", "Show Cntl Pt Lbls",drawMap_CntlPtLblsIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Show Checkerboard Maps", "Show Wireframe Maps",drawMap_FillOrWfIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Cell Circles", "Show Cell Circles",drawMap_CellCirclesIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Edge Lines", "Show Edge Lines",drawMap_EdgeLinesIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Ortho Frame", "Show Ortho Frame",drawMap_OrthoFrameIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Map Image", "Show Map Image",drawMap_ImageIDX));
 		
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Running Morph Sweep", "Run Morph Sweep", sweepMapsIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Running Morph Sweep", "Run Morph Sweep", sweepMapsIDX));
 		
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Map", "Show Morph Map",drawMorph_MapIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Show Morph Checkerboard", "Show Morph Wireframe",drawMorph_FillOrWfIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Slices", "Show Morph Slices",drawMorph_SlicesIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Show Morph Slices CB", "Show Morph Slices WF",drawMorph_Slices_FillOrWfIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Morph Map", "Show Morph Map",drawMorph_MapIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Show Morph Checkerboard", "Show Morph Wireframe",drawMorph_FillOrWfIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Morph Slices", "Show Morph Slices",drawMorph_SlicesIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Show Morph Slices CB", "Show Morph Slices WF",drawMorph_Slices_FillOrWfIDX));
 		
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Distortion Colors", "Show Distortion Colors",drawMorph_DistColorsIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Slice Info", "Show Morph Slice Info",drawMorph_Slices_RtSideInfoIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj",drawMorph_CntlPtTrajIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Distortion Colors", "Show Distortion Colors",drawMorph_DistColorsIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Morph Slice Info", "Show Morph Slice Info",drawMorph_Slices_RtSideInfoIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Morph Cntlpt Traj", "Show Morph Cntlpt Traj",drawMorph_CntlPtTrajIDX));
 		
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Reg Map Lineup", "Show Reg Map Lineup", showOrientedLineupIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Reg Map Lineup", "Show Reg Map Lineup", showOrientedLineupIDX));
 		
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Traj Analysis", "Show Traj Analysis", showTrajAnalysisWinIDX));		
-		//tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Distortion Analysis", "Show Distortion Analysis", showMrphStackDistAnalysisWinIDX));
-		tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Traj Analysis Graphs", "Show Traj Analysis Graphs", showMorphAnalysisGraphsIDX));
-		//tmpUIBtnObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Btn(idx++, "button_"+idx, "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs", showMrphStackDistAnalysisGraphsIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Traj Analysis", "Show Traj Analysis", showTrajAnalysisWinIDX));		
+		//tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Distortion Analysis", "Show Distortion Analysis", showMrphStackDistAnalysisWinIDX));
+		tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Traj Analysis Graphs", "Show Traj Analysis Graphs", showMorphAnalysisGraphsIDX));
+		//tmpUIBoolSwitchObjMap.put("Button_"+idx, uiMgr.uiObjInitAra_Switch(idx++, "button_"+idx, "Showing Distortion Analysis Graphs", "Show Distortion Analysis Graphs", showMrphStackDistAnalysisGraphsIDX));
 		
-		setupGUIBtnAras_Indiv(tmpUIBtnObjMap);
-	}//setupGUIBtnAras
+		setupGUIBoolSwitchAras_Indiv(tmpUIBoolSwitchObjMap);
+	}//setupGUIBoolSwitchAras
 	
 	/**
 	 * Build all UI objects to be shown in left side bar menu for this window.  This is the first child class function called by initThisWin
@@ -397,14 +397,14 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 
 	/**
 	 * Build all UI buttons to be shown in left side bar menu for this window. This is for instancing windows to add to button region
-	 * USE tmpUIBtnObjMap.size() for start idx
-	 * @param tmpUIBtnObjMap : map of GUIObj_Params to be built containing all button definitions, keyed by sequential value == objId
+	 * USE tmpUIBoolSwitchObjMap.size() for start idx
+	 * @param tmpUIBoolSwitchObjMap : map of GUIObj_Params to be built containing all flag-backed boolean switch definitions, keyed by sequential value == objId
 	 * 				the first element is the object index
 	 * 				the second element is true label
 	 * 				the third element is false label
 	 * 				the final element is integer flag idx 
 	 */
-	protected abstract void setupGUIBtnAras_Indiv(TreeMap<String, GUIObj_Params> tmpUIBtnObjMap);	
+	protected abstract void setupGUIBoolSwitchAras_Indiv(TreeMap<String, GUIObj_Params> tmpUIBoolSwitchObjMap);	
 	/**
 	 * Called if int-handling guiObjs_Numeric[UIidx] (int or list) has new data which updated UI adapter. 
 	 * Intended to support custom per-object handling by owning window.
@@ -508,26 +508,26 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 	public void handlePrivFlags_Indiv(int idx, boolean val, boolean oldVal){
 		switch (idx) {// special actions for each flag
 			case resetMapCrnrsIDX			: {			
-				if(val) {		resetAllMapCorners();	clearBtnNextFrame(idx);	}
+				if(val) {		resetAllMapCorners();	clearSwitchNextFrame(idx);	}
 				break;		}
 			case resetMapCrnrs_0IDX			: {			
-				if(val) {		resetMapCorners(0);		clearBtnNextFrame(idx);	}
+				if(val) {		resetMapCorners(0);		clearSwitchNextFrame(idx);	}
 				break;		}
 			case resetMapCrnrs_1IDX			: {			
-				if(val) {		resetMapCorners(1);		clearBtnNextFrame(idx);		}
+				if(val) {		resetMapCorners(1);		clearSwitchNextFrame(idx);		}
 				break;		}			
 			case matchMapCrnrs_0IDX			: {
-				if(val) {		matchAllMapCorners(0,1);	clearBtnNextFrame(idx);	}
+				if(val) {		matchAllMapCorners(0,1);	clearSwitchNextFrame(idx);	}
 				break;}
 			case matchMapCrnrs_1IDX			: {
-				if(val) {		matchAllMapCorners(1,0);	clearBtnNextFrame(idx);	}
+				if(val) {		matchAllMapCorners(1,0);	clearSwitchNextFrame(idx);	}
 				break;}
 			
 			case findDiffFromAtoBIDX			: {
-				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(0, 1); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(uiMgr.getPrivFlagIsDebug(), uiMgr.getPrivFlag(findBestOrRegDistIDX));	clearBtnNextFrame(idx);}
+				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(0, 1); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(uiMgr.getPrivFlagIsDebug(), uiMgr.getPrivFlag(findBestOrRegDistIDX));	clearSwitchNextFrame(idx);}
 				break;}
 			case findDiffFromBToAIDX			: {
-				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(1, 0); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(uiMgr.getPrivFlagIsDebug(), uiMgr.getPrivFlag(findBestOrRegDistIDX));	clearBtnNextFrame(idx);}
+				if(val) {		mapManagers[currMapTypeIDX].setFromAndToCopyIDXs(1, 0); mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(uiMgr.getPrivFlagIsDebug(), uiMgr.getPrivFlag(findBestOrRegDistIDX));	clearSwitchNextFrame(idx);}
 				break;}					
 			case findBestOrRegDistIDX 			: { 	
 				if(val != oldVal) {
@@ -538,21 +538,21 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
 			case calcMorphDistIDX 				:{
 				if(val) {
 					mapManagers[currMapTypeIDX].calculateMorphDistortion();
-					clearBtnNextFrame(idx);}
+					clearSwitchNextFrame(idx);}
 				break;		}
 			
 			case setCurrCOTSBranchShareStratIDX 			: {				
-				if(val) {	if(checkAndSetIntVal(gIDX_SetBrnchStrat, currBranchShareStrat)) {updateCalcObjUIVals();}	clearBtnNextFrame(idx);	}	
+				if(val) {	if(checkAndSetIntVal(gIDX_SetBrnchStrat, currBranchShareStrat)) {updateCalcObjUIVals();}	clearSwitchNextFrame(idx);	}	
 				break;}			
 
 			case resetAllBranchingIDX 			: {				
-				if(val) {		mapManagers[currMapTypeIDX].resetAllBranching();					clearBtnNextFrame(idx);	}	
+				if(val) {		mapManagers[currMapTypeIDX].resetAllBranching();					clearSwitchNextFrame(idx);	}	
 				break;}			
 			case resetMapBranch_0IDX			: {			
-				if(val) {		mapManagers[currMapTypeIDX].resetIndivMapBranching(0);		clearBtnNextFrame(idx);	}
+				if(val) {		mapManagers[currMapTypeIDX].resetIndivMapBranching(0);		clearSwitchNextFrame(idx);	}
 				break;		}
 			case resetMapBranch_1IDX			: {			
-				if(val) {		mapManagers[currMapTypeIDX].resetIndivMapBranching(1);		clearBtnNextFrame(idx);		}
+				if(val) {		mapManagers[currMapTypeIDX].resetIndivMapBranching(1);		clearSwitchNextFrame(idx);		}
 				break;		}
 			
 			case drawMapIDX						: {			break;		}
