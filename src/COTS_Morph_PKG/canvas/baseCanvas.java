@@ -7,13 +7,13 @@ import COTS_Morph_PKG.map.base.Base_PolyMap;
  *
  */
 public abstract class baseCanvas {
-	/**
-	 * map this canvas is attached to
-	 */
-	protected Base_PolyMap map;
+    /**
+     * map this canvas is attached to
+     */
+    protected Base_PolyMap map;
 
-	public baseCanvas() {
-		// TODO Auto-generated constructor stub
-	}
+    public baseCanvas() {
+        // TODO Auto-generated constructor stub
+    }
 
 }//class baseCanvas

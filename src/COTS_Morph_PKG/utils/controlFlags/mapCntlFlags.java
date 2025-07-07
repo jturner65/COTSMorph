@@ -9,32 +9,32 @@ import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
  *
  */
 public class mapCntlFlags extends Base_ControlFlags{
-	
-	protected final Base_PolyMap owner;
-	
-	public mapCntlFlags(Base_PolyMap _owner) {
-		super();
-		owner = _owner;
-	}
-	
-	public mapCntlFlags(mapCntlFlags _otr) {
-		super(_otr);		
-		owner = _otr.owner;
-	}
-	
-	////////////////////
-	// indiv values			
+    
+    protected final Base_PolyMap owner;
+    
+    public mapCntlFlags(Base_PolyMap _owner) {
+        super();
+        owner = _owner;
+    }
+    
+    public mapCntlFlags(mapCntlFlags _otr) {
+        super(_otr);        
+        owner = _otr.owner;
+    }
+    
+    ////////////////////
+    // indiv values            
 
-	@Override
-	protected void handleSettingDebug(boolean val) {
-		owner.handleMapCntlDebug(val);		
-	}
+    @Override
+    protected void handleSettingDebug(boolean val) {
+        owner.handleMapCntlDebug(val);        
+    }
 
-	@Override
-	protected void handleCntlFlagSet_Indiv(int idx, boolean val, boolean oldval) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    protected void handleCntlFlagSet_Indiv(int idx, boolean val, boolean oldval) {
+        // TODO Auto-generated method stub
+        
+    }
 
-	
+    
 }//class mapCntlFlags
