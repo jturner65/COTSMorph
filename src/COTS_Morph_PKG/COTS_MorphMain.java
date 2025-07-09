@@ -212,8 +212,15 @@ public class COTS_MorphMain extends GUI_AppManager {
         
         setDispWindow(wIdx, new COTS_Morph3DWin(ri, this, wIdx));        
     
-    }//    initVisOnce_Priv
+    }//initAllDispWindows
     
+    /**
+     * Map indexed by window ID, holding an array of the titles (idx 0) and descriptions (idx 1) for every sub window
+     * return null if none exist, and only put an entry in the map if one exists for that window
+     * @return
+     */
+    @Override
+    protected final HashMap<Integer, String[]> getSubWindowTitles(){ return null;}
     
     @Override
     //called from base class, once at start of program after vis init is called - set initial windows to show - always show UI Menu
