@@ -11,7 +11,7 @@ import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.MyMathUtils;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import processing.core.PImage;
@@ -22,7 +22,7 @@ import processing.core.PImage;
  *
  */
 public abstract class Base_PolyMap {
-    public static IRenderInterface ri;
+    public static IGraphicsAppInterface ri;
     public COTS_MorphWin win;
     public static GUI_AppManager AppMgr;
     /**
@@ -674,7 +674,7 @@ public abstract class Base_PolyMap {
     
     public void drawMap_Wf() {
         ri.pushMatState();    
-        ri.noFill();
+        ri.setNoFill();
         ri.setStroke(gridColor, gridColor[3]);
         ri.setStrokeWt(2.0f);    
         for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals.length-1;++j) {_drawPoly(i,j);}}    
@@ -739,7 +739,7 @@ public abstract class Base_PolyMap {
     public void drawMap_EdgeLines() {
         if(null==otrMap) {return;}
         ri.pushMatState();    
-        ri.noFill();
+        ri.setNoFill();
         ri.setStrokeWt(1.5f);    
         //draw lines from this map's edges to other map's edges
         _drawLineBtwnMapEdges();
@@ -751,12 +751,12 @@ public abstract class Base_PolyMap {
      */
     public void drawOrthoFrame() {
         ri.pushMatState();    
-            ri.showPtAsSphere(cntlPtCOV,5.0f, 5, IRenderInterface.gui_Black, IRenderInterface.gui_Black);
+            ri.showPtAsSphere(cntlPtCOV,5.0f, 5, IGraphicsAppInterface.gui_Black, IGraphicsAppInterface.gui_Black);
             ri.setStrokeWt(3.0f);
             ri.translate(cntlPtCOV);
-            ri.setStroke(255,0,0,255);    ri.drawLine(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);ri.showPtAsSphere(orthoFrame[0], 6.0f, 5, IRenderInterface.gui_Red, IRenderInterface.gui_Red);
-            ri.setStroke(0,255,0,255);    ri.drawLine(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);ri.showPtAsSphere(orthoFrame[1], 6.0f, 5, IRenderInterface.gui_Green, IRenderInterface.gui_Green);
-            ri.setStroke(0,0,255,255);    ri.drawLine(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);ri.showPtAsSphere(orthoFrame[2], 6.0f, 5, IRenderInterface.gui_Blue, IRenderInterface.gui_Blue);
+            ri.setStroke(255,0,0,255);    ri.drawLine(0,0,0, orthoFrame[0].x, orthoFrame[0].y, orthoFrame[0].z);ri.showPtAsSphere(orthoFrame[0], 6.0f, 5, IGraphicsAppInterface.gui_Red, IGraphicsAppInterface.gui_Red);
+            ri.setStroke(0,255,0,255);    ri.drawLine(0,0,0, orthoFrame[1].x, orthoFrame[1].y, orthoFrame[1].z);ri.showPtAsSphere(orthoFrame[1], 6.0f, 5, IGraphicsAppInterface.gui_Green, IGraphicsAppInterface.gui_Green);
+            ri.setStroke(0,0,255,255);    ri.drawLine(0,0,0, orthoFrame[2].x, orthoFrame[2].y, orthoFrame[2].z);ri.showPtAsSphere(orthoFrame[2], 6.0f, 5, IGraphicsAppInterface.gui_Blue, IGraphicsAppInterface.gui_Blue);
         ri.popMatState();                
     }//_drawOrthoFrame
     

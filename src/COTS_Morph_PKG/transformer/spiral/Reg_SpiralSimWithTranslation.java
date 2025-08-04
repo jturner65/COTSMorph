@@ -6,7 +6,7 @@ import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * similarity transform that is built using registration information
@@ -81,12 +81,12 @@ public class Reg_SpiralSimWithTranslation extends baseSpiralTransformer {
     
 
     @Override
-    protected float drawRightSideBarMenuDescr_Indiv(IRenderInterface ri, float yOff, float sideBarYDisp) {    
+    protected float drawRightSideBarMenuDescr_Indiv(IGraphicsAppInterface ri, float yOff, float sideBarYDisp) {    
         ri.translate(10.0f, 0.0f, 0.0f);
         ri.pushMatState();        
-        showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_White, 255), 5.0f, "Translation : ");
+        showOffsetText_RightSideMenu(ri, ri.getClr(IGraphicsAppInterface.gui_White, 255), 5.0f, "Translation : ");
         myPointf pt = new myPointf((myPointf)translation);
-        showOffsetText_RightSideMenu(ri, ri.getClr(IRenderInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
+        showOffsetText_RightSideMenu(ri, ri.getClr(IGraphicsAppInterface.gui_LightCyan, 255), 7.0f, "(" + pt.toStrCSV(Base_PolyMap.strPointDispFrmt8)+")");
         ri.popMatState();
         yOff += sideBarYDisp;
         ri.translate(-10.0f,sideBarYDisp, 0.0f);

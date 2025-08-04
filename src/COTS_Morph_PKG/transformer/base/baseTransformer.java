@@ -3,7 +3,7 @@ package COTS_Morph_PKG.transformer.base;
 import COTS_Morph_PKG.transform.base.baseTransform;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * class to manage the execution of one or more transforms
@@ -82,7 +82,7 @@ public abstract class baseTransformer {
     // draw routines
     protected static final String[] transLbls = {"U","V","W","X","Y","Z"};
     
-    protected final void showOffsetText_RightSideMenu(IRenderInterface ri, int[] tclr, float mult,  String txt) {
+    protected final void showOffsetText_RightSideMenu(IGraphicsAppInterface ri, int[] tclr, float mult,  String txt) {
         ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
         ri.showText(txt,0.0f,0.0f,0.0f);
         ri.translate(txt.length()*mult, 0.0f,0.0f);        
@@ -96,18 +96,18 @@ public abstract class baseTransformer {
      * @param sideBarYDisp
      * @return
      */
-    public final float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp) {
+    public final float drawRightSideBarMenuDescr(IGraphicsAppInterface pa, float yOff, float sideBarYDisp) {
         return drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, transLbls);
 //        for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(ri, yOff, sideBarYDisp, transLbls[i]);}
 //        yOff = drawRightSideBarMenuDescr_Indiv(ri, yOff, sideBarYDisp);
 //        return yOff;
     }
-    public final float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp, String[] _transLbls) {
+    public final float drawRightSideBarMenuDescr(IGraphicsAppInterface pa, float yOff, float sideBarYDisp, String[] _transLbls) {
         for (int i=0;i<trans.length;++i) { yOff += trans[i].drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp, _transLbls[i]);}
         yOff = drawRightSideBarMenuDescr_Indiv(pa, yOff, sideBarYDisp);
         return yOff;
     }
-    protected abstract float drawRightSideBarMenuDescr_Indiv(IRenderInterface pa, float yOff, float sideBarYDisp);
+    protected abstract float drawRightSideBarMenuDescr_Indiv(IGraphicsAppInterface pa, float yOff, float sideBarYDisp);
     
     
     /////////////////////////

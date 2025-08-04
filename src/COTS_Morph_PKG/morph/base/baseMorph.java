@@ -14,7 +14,7 @@ import COTS_Morph_PKG.utils.threading.runners.morphStackDistortionCalc_Runner;
 import base_Math_Objects.interpolants.base.InterpolantBehavior;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_StatsTools.analysis.floatTrajAnalyzer;
 import base_StatsTools.analysis.myPointfTrajAnalyzer;
 import base_UI_Objects.GUI_AppManager;
@@ -27,7 +27,7 @@ import base_UI_Objects.windowUI.base.Base_DispWindow;
  */
 public abstract class baseMorph {
     
-    public IRenderInterface ri;
+    public IGraphicsAppInterface ri;
     public COTS_MorphWin win;    
     /**
      * current map manager, managing key frames of a specific type that this morph is working on
@@ -744,7 +744,7 @@ public abstract class baseMorph {
     }
     
     public final float drawMorphTitle(float yOff, float sideBarYDisp) {
-        AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, morphTitle + " Morph : ");
+        AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan, morphTitle + " Morph : ");
         yOff += sideBarYDisp;
         ri.translate(0.0f, sideBarYDisp, 0.0f);
         return yOff;
@@ -757,9 +757,9 @@ public abstract class baseMorph {
         ri.pushMatState();
             AppMgr.showMenuTxt_White( label + " :[");
             for(int i=0;i<vals.length-1;++i) {
-                AppMgr.showOffsetText_RightSideMenu(ri.getClr((i==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), String.format(Base_PolyMap.strPointDispFrmt85,vals[i])+", ");
+                AppMgr.showOffsetText_RightSideMenu(ri.getClr((i==curIdx ? IGraphicsAppInterface.gui_Yellow : IGraphicsAppInterface.gui_Cyan), 255), String.format(Base_PolyMap.strPointDispFrmt85,vals[i])+", ");
             }
-            AppMgr.showOffsetText_RightSideMenu(ri.getClr((vals.length-1==curIdx ? IRenderInterface.gui_Yellow : IRenderInterface.gui_Cyan), 255), String.format(Base_PolyMap.strPointDispFrmt85,vals[vals.length-1]));
+            AppMgr.showOffsetText_RightSideMenu(ri.getClr((vals.length-1==curIdx ? IGraphicsAppInterface.gui_Yellow : IGraphicsAppInterface.gui_Cyan), 255), String.format(Base_PolyMap.strPointDispFrmt85,vals[vals.length-1]));
             AppMgr.showMenuTxt_White("]");
         ri.popMatState();    
     }
@@ -930,21 +930,21 @@ public abstract class baseMorph {
         //TreeMap<Float, baseMap> morphMaps = new TreeMap<Float, baseMap>();
         //want incr so that i get numMaps back
         Float tIncr = 1.0f/(numMaps-1.0f);  //getCurrAnimatorInterpolant
-        Float _rawt = 0.0f, t;
+        Float _rawT = 0.0f, t;
         for (int i=0;i<numMaps-1;++i) {    
-            t = mapMgr.getCurrAnimatorInterpolant(_rawt);
+            t = mapMgr.getCurrAnimatorInterpolant(_rawT);
             tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
             _calcMorphOnMap(tmpMap, true, t);
-            morphMaps.put(_rawt, tmpMap);        
-            _rawt+=tIncr;
+            morphMaps.put(_rawT, tmpMap);        
+            _rawT+=tIncr;
         }
-        _rawt=1.0f;
-        t = mapMgr.getCurrAnimatorInterpolant(_rawt);
+        _rawT=1.0f;
+        t = mapMgr.getCurrAnimatorInterpolant(_rawT);
         //tmpMap = mapMgr.buildCopyMapOfPassedMapType(mapA, "Morph @ t="+String.format("%2.3f", t));
         tmpMap = getCopyOfMap(tmpMap, mapA.mapTitle +_name + " @ t="+String.format("%2.3f", t));
         //
-        _calcMorphOnMap(tmpMap, true,_rawt);    
-        morphMaps.put(_rawt, tmpMap);                
+        _calcMorphOnMap(tmpMap, true,_rawT);    
+        morphMaps.put(_rawT, tmpMap);                
         return morphMaps;
     }
 

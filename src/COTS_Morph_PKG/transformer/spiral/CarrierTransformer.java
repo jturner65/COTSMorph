@@ -4,7 +4,7 @@ import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * calculate carrier-based transform 
@@ -73,6 +73,6 @@ public class CarrierTransformer extends baseSpiralTransformer {
     public final myPointf mapPoint(myPointf A, int[] transformIDX, float tx, float ty) {return trans[transformIDX[0]].transformPoint(trans[transformIDX[0]].transformPoint(A, tx), ty);}
 
     @Override
-    protected float drawRightSideBarMenuDescr_Indiv(IRenderInterface pa, float yOff, float sideBarYDisp) {        return yOff;    }
+    protected float drawRightSideBarMenuDescr_Indiv(IGraphicsAppInterface pa, float yOff, float sideBarYDisp) {        return yOff;    }
 
 }

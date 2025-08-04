@@ -269,8 +269,8 @@ public abstract class Base_QuadMap extends Base_PolyMap {
     @Override
     public void drawMap_Texture() {
         ri.pushMatState();    
-        ri.noFill();
-        ri.noStroke();
+        ri.setNoFill();
+        ri.setNoStroke();
         for(int i=0;i<polyPointTVals.length-1;++i) {for(int j=0;j<polyPointTVals.length-1;++j) {        _drawPolyTexture(getImageToMap(), i,j);        }}            
         ri.popMatState();
     }
@@ -308,7 +308,7 @@ public abstract class Base_QuadMap extends Base_PolyMap {
     @Override
     public final void drawMap_PolyCircles_Wf() {
         ri.pushMatState();    
-        ri.noFill();
+        ri.setNoFill();
         ri.setStroke(gridColor, gridColor[3]);
         ri.setStrokeWt(2.0f);    
         

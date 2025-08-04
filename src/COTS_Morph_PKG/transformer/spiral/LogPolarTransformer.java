@@ -5,7 +5,7 @@ import COTS_Morph_PKG.transformer.spiral.base.baseSpiralTransformer;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 public class LogPolarTransformer extends baseSpiralTransformer {
     protected final int numTransforms;
@@ -65,7 +65,7 @@ public class LogPolarTransformer extends baseSpiralTransformer {
     }
 
     @Override
-    protected float drawRightSideBarMenuDescr_Indiv(IRenderInterface pa, float yOff, float sideBarYDisp) {
+    protected float drawRightSideBarMenuDescr_Indiv(IGraphicsAppInterface pa, float yOff, float sideBarYDisp) {
         yOff += AggregateTransform.drawRightSideBarMenuDescr(pa, yOff, sideBarYDisp,"Aggregate");
         return yOff;
     }

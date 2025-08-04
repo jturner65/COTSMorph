@@ -27,7 +27,7 @@ import base_Math_Objects.interpolants.base.InterpolantTypes;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_Utils_Objects.io.messaging.MessageObject;
@@ -42,7 +42,7 @@ import processing.core.PImage;
  */
 public class mapPairManager {
 
-    public static IRenderInterface ri;
+    public static IGraphicsAppInterface ri;
     public COTS_MorphWin win;    
     public static GUI_AppManager AppMgr;
     /**
@@ -247,11 +247,11 @@ public class mapPairManager {
     
     /**
      * call from morphs to determine what current animator will yield for passed raw t value
-     * @param _rawt raw, linearly-evolved t value from 0 to 1
+     * @param _rawT raw, linearly-evolved t value from 0 to 1
      * @return 
      */
-    public float getCurrAnimatorInterpolant(float _rawt) {
-        return animators[curAnimatorIDX].calcInterpolant(_rawt);
+    public float getCurrAnimatorInterpolant(float _rawT) {
+        return animators[curAnimatorIDX].calcInterpolant(_rawT);
     }
     
 //    public void setBndPts(myPointf[][] _bndPts) {
@@ -709,7 +709,7 @@ public class mapPairManager {
     
     protected final float _drawRightSideMorphMap(float _yOff, float sideBarYDisp) {
         ri.translate(-10.0f, sideBarYDisp, 0.0f);    
-        AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Morph Map : ");
+        AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan, "Current Morph Map : ");
         ri.translate(10.0f, sideBarYDisp, 0.0f);                    
         _yOff = morphs[currMorphTypeIDX].drawMapRtSdMenuDescr(_yOff, sideBarYDisp);
         ri.translate(-10.0f, 0.0f, 0.0f);
@@ -717,7 +717,7 @@ public class mapPairManager {
     }
     protected final float _drawRightSideMorphSlices(float _yOff, float sideBarYDisp) {
         ri.translate(-10.0f, sideBarYDisp, 0.0f);    
-        AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Morph Slices : ");
+        AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan, "Morph Slices : ");
         ri.translate(10.0f, sideBarYDisp, 0.0f);                    
         _yOff = morphs[currMorphTypeIDX].drawMorphSliceRtSdMenuDescr(_yOff, sideBarYDisp);
         ri.translate(-10.0f, 0.0f, 0.0f);
@@ -725,7 +725,7 @@ public class mapPairManager {
     }
     
     public final float drawRightSideMaps(float _yOff, float sideBarYDisp, boolean _showDistClrs, boolean drawRegCopy, boolean drawMorph,  boolean drawMorphSlicesRtSideInfo) {
-        AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan,  "Current Maps : " + mapTypes[mapType] + " Maps : ");
+        AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan,  "Current Maps : " + mapTypes[mapType] + " Maps : ");
         
         ri.translate(10.0f, sideBarYDisp, 0.0f);        
         for(int i=0; i<maps.length;++i) {            _yOff = maps[i].drawRtSdMenuDescr(_yOff, sideBarYDisp, true, true);        }
@@ -734,15 +734,15 @@ public class mapPairManager {
         if(drawMorph) {            _yOff = _drawRightSideMorphMap(_yOff, sideBarYDisp);    }        
         ri.translate(-10.0f, sideBarYDisp, 0.0f);    
         if(_showDistClrs) {
-            AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Distortion Mins/Maxs : ");
+            AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan, "Current Distortion Mins/Maxs : ");
             ri.translate(10.0f, sideBarYDisp, 0.0f);    
             _yOff = morphs[currMorphTypeIDX].drawDistortionRtSideMenuMinMax(_yOff, sideBarYDisp,  currUIVals.getDistDimToShow());
             ri.translate(-10.0f, sideBarYDisp, 0.0f);    
         }
-        AppMgr.showOffsetText(0,IRenderInterface.gui_Cyan, "Current Morph : ");
+        AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan, "Current Morph : ");
         ri.translate(10.0f, sideBarYDisp, 0.0f);        
         //_yOff += sideBarYDisp;
-        AppMgr.showOffsetText(0,IRenderInterface.gui_Green, morphs[currMorphTypeIDX].morphTitle + " Morph : ");
+        AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Green, morphs[currMorphTypeIDX].morphTitle + " Morph : ");
         //_yOff += sideBarYDisp;
         ri.translate(10.0f, sideBarYDisp, 0.0f);
         _yOff = morphs[currMorphTypeIDX].drawMorphRtSdMenuDescr(_yOff, sideBarYDisp,morphSpeed);

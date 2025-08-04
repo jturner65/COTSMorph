@@ -12,7 +12,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.renderer.ProcessingRenderer;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
@@ -186,7 +186,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
         
     public final boolean is3D;
     
-    public COTS_MorphWin(IRenderInterface _p,  GUI_AppManager _AppMgr, int _winIdx, boolean _is3D) {
+    public COTS_MorphWin(IGraphicsAppInterface _p,  GUI_AppManager _AppMgr, int _winIdx, boolean _is3D) {
         super(_p, _AppMgr, _winIdx);
         is3D = _is3D;
     }
@@ -224,6 +224,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
      * This function implements the instantiation of a child window owned by this window, if such exists.
      * The implementation should be similar to how the main windows are implemented in GUI_AppManager::initAllDispWindows.
      * If no child window exists, this implementation of this function can be empty
+     * If a child window is instantiated, it MUST have its init called (childWin.initThisWin(false))
      * 
      * @param GUI_AppWinVals the window control values for the child window.
      */

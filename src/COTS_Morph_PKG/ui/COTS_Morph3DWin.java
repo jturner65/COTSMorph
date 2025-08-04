@@ -7,7 +7,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
@@ -18,9 +18,9 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
         //drag scale in 3D
     private static final float mseDrag3DScl = 1.5f;
     
-    public COTS_Morph3DWin(IRenderInterface _p,  GUI_AppManager _AppMgr,  int _winIdx) {
+    public COTS_Morph3DWin(IGraphicsAppInterface _p,  GUI_AppManager _AppMgr,  int _winIdx) {
         super(_p, _AppMgr, _winIdx, true);        
-        super.initThisWin(false);
+        
     }
     @Override
     public final String getWinName() {return "COTS_Morph3DWin";}

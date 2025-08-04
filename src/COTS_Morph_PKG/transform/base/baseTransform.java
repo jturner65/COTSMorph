@@ -3,7 +3,7 @@ package COTS_Morph_PKG.transform.base;
 import COTS_Morph_PKG.utils.controlFlags.base.Base_ControlFlags;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 
 /**
  * base class holding a definition of a transformation
@@ -35,7 +35,7 @@ public abstract class baseTransform {
     }
     protected abstract void reset_Indiv();
     
-    protected final void showOffsetText_RightSideMenu(IRenderInterface ri, int[] tclr, float mult,  String txt) {
+    protected final void showOffsetText_RightSideMenu(IGraphicsAppInterface ri, int[] tclr, float mult,  String txt) {
         ri.setFill(tclr,tclr[3]);ri.setStroke(tclr,tclr[3]);
         ri.showText(txt,0.0f,0.0f,0.0f);
         ri.translate(txt.length()*mult, 0.0f,0.0f);        
@@ -99,7 +99,7 @@ public abstract class baseTransform {
      * @param coordName
      * @return
      */
-    public abstract float drawRightSideBarMenuDescr(IRenderInterface pa, float yOff, float sideBarYDisp, String coordName);
+    public abstract float drawRightSideBarMenuDescr(IGraphicsAppInterface pa, float yOff, float sideBarYDisp, String coordName);
     
     
     public final String getDebugStr() {

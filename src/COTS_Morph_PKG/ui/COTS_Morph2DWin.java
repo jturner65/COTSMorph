@@ -7,7 +7,7 @@ import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
-import base_Render_Interface.IRenderInterface;
+import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
@@ -15,9 +15,9 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
     
     private int _numPrivButtons = numBaseCOTSWinPrivFlags + 0;
 
-    public COTS_Morph2DWin(IRenderInterface _p,  GUI_AppManager _AppMgr, int _winIdx) {
+    public COTS_Morph2DWin(IGraphicsAppInterface _p,  GUI_AppManager _AppMgr, int _winIdx) {
         super(_p, _AppMgr, _winIdx, false);        
-        super.initThisWin(false);
+        
     }
     @Override
     public final String getWinName() {return "COTS_Morph2DWin";}
