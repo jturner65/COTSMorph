@@ -973,7 +973,7 @@ public abstract class Base_PolyMap {
      * @return
      */
     public float[] calcNormBaryCoords(myPointf pt) {return pt.calcNormBaryCoords(cntlPts);}
-    public myPointf calcPointFromNormBaryCoords(float[] coords) {return myPointf.calcPointFromNormBaryCoords(cntlPts,coords);}
+    public myPointf calcPointFromNormBaryCoords(float[] coords) {return myPointf._calcPointFromNormBaryCoords(cntlPts,coords);}
 
 
     protected final void printOutAllCntlPts() {

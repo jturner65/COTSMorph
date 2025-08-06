@@ -121,7 +121,7 @@ public abstract class Base_QuadMap extends Base_PolyMap {
                 for(int i=0;i<_otr.cntlPtD_baryCoords.length;++i) {
                     cntlPtD_baryCoords[i]=_otr.cntlPtD_baryCoords[i];
                 }
-                cntlPts[3].set(myPointf.calcPointFromNormBaryCoords(cntlPts, cntlPtD_baryCoords));
+                cntlPts[3].set(myPointf._calcPointFromNormBaryCoords(cntlPts, cntlPtD_baryCoords));
             } else {
                 win.getMsgObj().dispInfoMessage("Base_QuadMap", "_updateCntrlPtDFromOtherMap", "Warning : " + this.mapTitle +" not properly calculating D control point due to otrMap == null");
             }    
