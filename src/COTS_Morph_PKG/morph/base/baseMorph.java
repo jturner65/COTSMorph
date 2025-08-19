@@ -753,7 +753,7 @@ public abstract class baseMorph {
      * draw the summaries of distortion values on right side menu, highlighting the dimension of the distortion currently being displayed
      * @param vals
      */
-    private final void _drawRtSideMenuDistSummaries(float[] vals,  String label, int curIdx) {
+    private final void _drawRtSideInfoDispDistSummaries(float[] vals,  String label, int curIdx) {
         ri.pushMatState();
             AppMgr.showMenuTxt_White( label + " :[");
             for(int i=0;i<vals.length-1;++i) {
@@ -765,12 +765,12 @@ public abstract class baseMorph {
     }
     
     
-    public final float drawDistortionRtSideMenuMinMax(float yOff, float sideBarYDisp, int curIdx) {        
-        _drawRtSideMenuDistSummaries(maxCellDistVals,"Max Dist",  curIdx);
+    public final float drawDistortionRtSideInfoDispMinMax(float yOff, float sideBarYDisp, int curIdx) {        
+        _drawRtSideInfoDispDistSummaries(maxCellDistVals,"Max Dist",  curIdx);
         yOff += sideBarYDisp;
         ri.translate(0.0f,sideBarYDisp, 0.0f);    
         
-        _drawRtSideMenuDistSummaries(minCellDistVals,"Min Dist",  curIdx);
+        _drawRtSideInfoDispDistSummaries(minCellDistVals,"Min Dist",  curIdx);
         yOff += sideBarYDisp;
         ri.translate(0.0f,sideBarYDisp, 0.0f);                
 

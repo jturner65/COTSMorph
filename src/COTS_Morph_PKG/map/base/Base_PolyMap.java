@@ -726,7 +726,7 @@ public abstract class Base_PolyMap {
             ri.rotate(-axisAngle[0],axisAngle[1],axisAngle[2],axisAngle[3]);
             ri.rotate(MyMathUtils.PI_F, 1,0,0);
         }
-        float scaleVal = frameDim/(2.0f * mostDistCntlPt._dist(cntlPtCOV));//2 x dist to get diameter instead of radius from COV
+        float scaleVal = frameDim/(2.0f * mostDistCntlPt.dist(cntlPtCOV));//2 x dist to get diameter instead of radius from COV
         ri.scale(scaleVal);        
         ri.translate(-cntlPtCOV.x,-cntlPtCOV.y, -cntlPtCOV.z );
         drawMap_LineUp_Indiv(fillOrWf, drawCircles, drawTexture);

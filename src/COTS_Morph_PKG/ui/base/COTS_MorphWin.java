@@ -14,6 +14,7 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.baseApp.GUI_AppUIFlags;
 import base_UI_Objects.renderer.ProcessingRenderer;
 import base_UI_Objects.windowUI.base.Base_DispWindow;
 import base_UI_Objects.windowUI.base.GUI_AppWinVals;
@@ -194,18 +195,22 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
     public abstract String getWinName();
     
     /**
-     * Initialize any UI control flags appropriate for all boids window application
+     * Initialize any UI control flags appropriate for window application
+     * @param appUIFlags Snapshot of the initial flags structure for the application. 
+     * Will not reflect future changes, so should not be retained
      */
-    protected final void initDispFlags() {
+    protected final void initDispFlags(GUI_AppUIFlags appUIFlags) {
         // capable of using right side menu
-        dispFlags.setHasRtSideMenu(true);    
-        initDispFlags_Indiv();
+        dispFlags.setHasRtSideInfoDisp(true);    
+        initDispFlags_Indiv(appUIFlags);
     }
     
     /**
-     * Initialize any UI control flags appropriate for specific instanced boids window
+     * Initialize any UI control flags appropriate for specific COTS morph window
+     * @param appUIFlags Snapshot of the initial flags structure for the application. 
+     * Will not reflect future changes, so should not be retained
      */
-    protected abstract void initDispFlags_Indiv();
+    protected abstract void initDispFlags_Indiv(GUI_AppUIFlags appUIFlags);
     
     
     @Override
@@ -718,7 +723,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
     }//setCameraIndiv
     
     @Override
-    protected final void drawMe(float animTimeMod) {
+    protected final void drawMe(float animTimeMod, boolean isGlblAppDebug) {
         ri.pushMatState();
         //draw maps with dependenc on wireframe/filled setting
         mapManagers[currMapTypeIDX].drawMapsAndMorphs(animTimeMod, drawMapDetail);
@@ -731,10 +736,10 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
     protected abstract void _drawMe_Indiv(float animTimeMod);
     
     @Override
-    public final void drawCustMenuObjs(float animTimeMod) {}
+    public final void drawCustMenuObjs(float animTimeMod, boolean isGlblAppDebug) {}
 
     @Override
-    protected final void drawRightSideInfoBarPriv(float modAmtMillis) {
+    protected final void drawRightSideInfoBarPriv(float modAmtMillis, boolean isGlblAppDebug) {
         float[] rtSideYOffVals = AppMgr.getRtSideYOffVals();
         //start with yOff
         ri.pushMatState();
@@ -748,7 +753,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
      * translated already to left top corner of visible screen, already in 2D
      */
     @Override
-    protected final void drawOnScreenStuffPriv(float modAmtMillis) {
+    protected final void drawOnScreenStuffPriv(float modAmtMillis, boolean isGlblAppDebug) {
         if(uiMgr.getPrivFlag(showOrientedLineupIDX)) {
             mapManagers[currMapTypeIDX].drawMaps_LineupFrames(uiMgr.getPrivFlag(drawMap_FillOrWfIDX), uiMgr.getPrivFlag(drawMap_CellCirclesIDX), uiMgr.getPrivFlag(drawMap_ImageIDX));
         } else if(uiMgr.getPrivFlag(showTrajAnalysisWinIDX) || uiMgr.getPrivFlag(showMorphAnalysisGraphsIDX)) { 

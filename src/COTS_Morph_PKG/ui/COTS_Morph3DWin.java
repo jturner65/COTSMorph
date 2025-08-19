@@ -9,6 +9,7 @@ import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
 import base_UI_Objects.GUI_AppManager;
+import base_UI_Objects.baseApp.GUI_AppUIFlags;
 import base_UI_Objects.windowUI.uiObjs.base.GUIObj_Params;
 
 public class COTS_Morph3DWin  extends COTS_MorphWin {
@@ -29,9 +30,9 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
     protected final void initMe_Indiv() {}//initMe
 
     @Override
-    protected void initDispFlags_Indiv() {
+    protected void initDispFlags_Indiv(GUI_AppUIFlags appUIFlags) {
         dispFlags.setDrawMseEdge(true);
-        dispFlags.setShowRtSideMenu(true);
+        dispFlags.setShowRtSideInfoDisp(true);
     }
 
     /**

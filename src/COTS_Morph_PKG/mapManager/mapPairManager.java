@@ -736,7 +736,7 @@ public class mapPairManager {
         if(_showDistClrs) {
             AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan, "Current Distortion Mins/Maxs : ");
             ri.translate(10.0f, sideBarYDisp, 0.0f);    
-            _yOff = morphs[currMorphTypeIDX].drawDistortionRtSideMenuMinMax(_yOff, sideBarYDisp,  currUIVals.getDistDimToShow());
+            _yOff = morphs[currMorphTypeIDX].drawDistortionRtSideInfoDispMinMax(_yOff, sideBarYDisp,  currUIVals.getDistDimToShow());
             ri.translate(-10.0f, sideBarYDisp, 0.0f);    
         }
         AppMgr.showOffsetText(0,IGraphicsAppInterface.gui_Cyan, "Current Morph : ");

@@ -127,24 +127,23 @@ public class COTS_MorphMain extends GUI_AppManager {
     @Override
     protected final MsgCodes getMinLogMsgCodes() {return null;}
 
-    /**
-     * determine which main flags to show at upper left of menu 
-     */
     @Override
-    protected void initBaseFlags_Indiv() {
-        setBaseFlagToShow_debugMode(true);
-        setBaseFlagToShow_saveAnim(true); 
-        setBaseFlagToShow_runSim(false);
-        setBaseFlagToShow_singleStep(false);
-        setBaseFlagToShow_showRtSideMenu(true);        
-        setBaseFlagToShow_showStatusBar(true);
-        setBaseFlagToShow_showDrawableCanvas(false);
-    }
-    
+    protected boolean hideAppFlag_DebugMode() {             return false;}
+    @Override
+    protected boolean hideAppFlag_SaveAnim() {              return false;}
+    @Override
+    protected boolean hideAppFlag_RunSim() {                return true;}
+    @Override
+    protected boolean hideAppFlag_SingleStep() {            return true;}
+    @Override
+    protected boolean hideAppFlag_showRtSideInfoDisp() {    return false;}
+    @Override
+    protected boolean hideAppFlag_showStatusBar() {         return false;}
+    @Override
+    protected boolean hideAppFlag_showCanvas() {            return true;}   
     @Override
     //build windows here
     protected void initAllDispWindows() {
-        showInfo = true;
         //titles and descs, need to be set before sidebar menu is defined
         String[] _winTitles = new String[]{"","2D COTS Morph","3D COTS Morph"},//,"SOM Map UI"},
                 _winDescr = new String[]{"","Display 2 COTS patches and the morph between them","Display 2 COTS patches in 3D and the morph between them"};
@@ -226,7 +225,6 @@ public class COTS_MorphMain extends GUI_AppManager {
     //called from base class, once at start of program after vis init is called - set initial windows to show - always show UI Menu
     protected void initOnce_Indiv(){
         setWinVisFlag(dispCOTS_3DMorph, true);
-        setShowStatusBar(true);
         
     }//    initOnce
     
@@ -240,7 +238,7 @@ public class COTS_MorphMain extends GUI_AppManager {
      * @param is3DDraw
      */
     @Override
-    protected void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw) {}
+    protected void drawMePost_Indiv(float modAmtMillis, boolean is3DDraw, boolean isGlblAppDebug) {}
     
     
     //////////////////////////////////////////////////////
