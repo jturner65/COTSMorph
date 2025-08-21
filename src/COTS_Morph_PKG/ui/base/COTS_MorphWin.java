@@ -8,8 +8,6 @@ import COTS_Morph_PKG.mapManager.mapPairManager;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Math_Objects.interpolants.base.InterpolantBehavior;
 import base_Math_Objects.interpolants.base.InterpolantTypes;
-import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
@@ -28,26 +26,26 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
     
     //ui vars
     public static final int
-        gIDX_MorphTVal                     = 0,
-        gIDX_MorphSpeed                    = 1,
-        gIDX_MorphTValType                = 2,            //type of interpolant to use for morph animation
-        gIDX_NumCellsPerSide            = 3,
-        gIDX_MapType                    = 4,    
-        gIDX_MorphType                    = 5,            //overall morphtype to use - can be overridden        
-        gIDX_MorphTypeOrient            = 6,            //morph types to use for each characteristic of morph frames
-        gIDX_MorphTypeSize                = 7,
-        gIDX_MorphTypeShape                = 8,
-        gIDX_MorphTypeCOVPath            = 9,                
-        gIDX_MorphAnimType                = 10,            //type of morphing animation to execute - ping pong, ping pong with stop, 1-way forward loop, 1 way backward loop
-        gIDX_SetBrnchStrat                = 11,            //whether branching should be forced from Edit, forced from A, forced from B, or not shared
-        gIDX_NumLineupFrames            = 12,            //# of frames to use for lineup
-        gIDX_NumMorphSlices             = 13,            //# of slices in morph
-        gIDX_MorphSliceDispType            = 14,            //type of morph slice to display - evenly spaced or "faded"
-        gIDX_CntlPtDispDetail            = 15,            //how much detail the cntrol point display will show
-        gIDX_MorphAnalysisMmmntsDetail     = 16,
-        gIDX_DistTestTransform            = 17,            //transformation to use to measure distortion
-        gIDX_DistDimToShow                = 18,            //which distortion dimension should be colored
-        gIDX_MorphDistMult                 = 19;            //distortion multiplier to use to control colors for 
+        gIDX_MorphTVal                 = 0,
+        gIDX_MorphSpeed                = 1,
+        gIDX_MorphTValType             = 2,            //type of interpolant to use for morph animation
+        gIDX_NumCellsPerSide           = 3,
+        gIDX_MapType                   = 4,    
+        gIDX_MorphType                 = 5,            //overall morphtype to use - can be overridden        
+        gIDX_MorphTypeOrient           = 6,            //morph types to use for each characteristic of morph frames
+        gIDX_MorphTypeSize             = 7,
+        gIDX_MorphTypeShape            = 8,
+        gIDX_MorphTypeCOVPath          = 9,                
+        gIDX_MorphAnimType             = 10,            //type of morphing animation to execute - ping pong, ping pong with stop, 1-way forward loop, 1 way backward loop
+        gIDX_SetBrnchStrat             = 11,            //whether branching should be forced from Edit, forced from A, forced from B, or not shared
+        gIDX_NumLineupFrames           = 12,            //# of frames to use for lineup
+        gIDX_NumMorphSlices            = 13,            //# of slices in morph
+        gIDX_MorphSliceDispType        = 14,            //type of morph slice to display - evenly spaced or "faded"
+        gIDX_CntlPtDispDetail          = 15,            //how much detail the cntrol point display will show
+        gIDX_MorphAnalysisMmmntsDetail = 16,
+        gIDX_DistTestTransform         = 17,            //transformation to use to measure distortion
+        gIDX_DistDimToShow             = 18,            //which distortion dimension should be colored
+        gIDX_MorphDistMult             = 19;            //distortion multiplier to use to control colors for 
     protected static final int numBaseCOTSWinUIObjs = 20;
     /**
      * possible branch sharing strategies
@@ -109,56 +107,55 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
     //boolean priv flags
     public static final int 
         //debug is idx 0
-        resetMapCrnrsIDX                    = 1,
-        
-        resetMapCrnrs_0IDX                    = 2,                //reset map corners to start positions
-        resetMapCrnrs_1IDX                    = 3,
+        resetMapCrnrsIDX                    = 1,        
+        resetMapCrnrs_0IDX                  = 2,                //reset map corners to start positions
+        resetMapCrnrs_1IDX                  = 3,
                 
-        matchMapCrnrs_0IDX                    = 4,                //match map corners - map 1 will get corners set from map 0
-        matchMapCrnrs_1IDX                    = 5,                //match map corners - map 0 will get corners set from map 1
+        matchMapCrnrs_0IDX                  = 4,                //match map corners - map 1 will get corners set from map 0
+        matchMapCrnrs_1IDX                  = 5,                //match map corners - map 0 will get corners set from map 1
                                         
-        findDiffFromAtoBIDX                    = 6,                //find angle, scale and displacement from A to B
-        findDiffFromBToAIDX                    = 7,                //find angle, scale and displacement from B to A
+        findDiffFromAtoBIDX                 = 6,                //find angle, scale and displacement from A to B
+        findDiffFromBToAIDX                 = 7,                //find angle, scale and displacement from B to A
         findBestOrRegDistIDX                = 8,                //find best distance between quad verts - potentially reassigning verts, or find registration distance
         
         calcMorphDistIDX                    = 9,                //calculate the current morph distortion
         
-        setCurrCOTSBranchShareStratIDX         = 10,                //send currently set COTS branch sharing strategy to map managers and update
+        setCurrCOTSBranchShareStratIDX      = 10,                //send currently set COTS branch sharing strategy to map managers and update
         
         resetAllBranchingIDX                = 11,
-        resetMapBranch_0IDX                    = 12,                //reset map's branching to 0
-        resetMapBranch_1IDX                    = 13,
+        resetMapBranch_0IDX                 = 12,                //reset map's branching to 0
+        resetMapBranch_1IDX                 = 13,
         
         //////////////////////
         // drawing map flags
-        drawMapIDX                            = 14,                //draw map grid
-        drawMap_CntlPtsIDX                    = 15,                //draw map control poin
-        drawMap_FillOrWfIDX                    = 16,                //draw either filled checkerboards or wireframe for mapping grid
-        drawMap_CellCirclesIDX                 = 17,                //draw inscribed circles within checkerboard cells
+        drawMapIDX                          = 14,                //draw map grid
+        drawMap_CntlPtsIDX                  = 15,                //draw map control poin
+        drawMap_FillOrWfIDX                 = 16,                //draw either filled checkerboards or wireframe for mapping grid
+        drawMap_CellCirclesIDX              = 17,                //draw inscribed circles within checkerboard cells
         drawMap_ImageIDX                    = 18,                //draw the map's image
-        drawMap_OrthoFrameIDX                 = 19,                 //draw orthogonal frame at map's center
-        drawMap_CntlPtLblsIDX                = 20,                //draw labels for control points
-        drawMap_RegCopyIDX                    = 21,                //draw the registration copy map of the similarity between A and B
+        drawMap_OrthoFrameIDX               = 19,                 //draw orthogonal frame at map's center
+        drawMap_CntlPtLblsIDX               = 20,                //draw labels for control points
+        drawMap_RegCopyIDX                  = 21,                //draw the registration copy map of the similarity between A and B
         drawMap_EdgeLinesIDX                = 22,                //draw the edge lines linking map A and B
         
         //////////////////////
         // calc/drawing morph flags
         //usePerFtrMorph_IDX                = 22,                //whether to use per feature morphs or global morphs
         drawMorph_MapIDX                    = 23,                //draw morph frame
-        drawMorph_SlicesIDX                    = 24,
+        drawMorph_SlicesIDX                 = 24,
         drawMorph_Slices_FillOrWfIDX        = 25,                //draw either filled checkerboards or wireframe for morph slices
         drawMorph_Slices_RtSideInfoIDX      = 26,                //draw info about morph slices on right side menu
         drawMorph_CntlPtTrajIDX             = 27,                //show trajectory of COV and control pts
-        drawMorph_FillOrWfIDX                 = 28,
-        drawMorph_DistColorsIDX                = 29,
+        drawMorph_FillOrWfIDX               = 28,
+        drawMorph_DistColorsIDX             = 29,
         //////////////////////
         // animating morph flags        
         sweepMapsIDX                        = 30,                //sweep from one mapping to other mapping
-        showTrajAnalysisWinIDX                = 31,                //show display of graphs of trajectory analysis - either this or oriented lineup should be shown, not both
-        showMorphAnalysisGraphsIDX            = 32,
-        showMrphStackDistAnalysisWinIDX        = 33,
-        showMrphStackDistAnalysisGraphsIDX    = 34,
-        showOrientedLineupIDX                = 35;                //show keyframe display of morph, all registered and displayed side by side
+        showTrajAnalysisWinIDX              = 31,                //show display of graphs of trajectory analysis - either this or oriented lineup should be shown, not both
+        showMorphAnalysisGraphsIDX          = 32,
+        showMrphStackDistAnalysisWinIDX     = 33,
+        showMrphStackDistAnalysisGraphsIDX  = 34,
+        showOrientedLineupIDX               = 35;                //show keyframe display of morph, all registered and displayed side by side
     
     protected static final int numBaseCOTSWinPrivFlags = 36;
     /**
@@ -794,13 +791,13 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
     
     //move without click
     @Override
-    protected final boolean hndlMouseMove_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld) {        
+    protected final boolean hndlMouseMove_Indiv(int mouseX, int mouseY) {        
         return false;
     }
 
     @Override
-    protected final boolean hndlMouseClick_Indiv(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn) {
-        boolean value = mapManagers[currMapTypeIDX].hndlMouseClickInMaps(mouseX, mouseY, mseClckInWorld, mseBtn, keyPressed);
+    protected final boolean hndlMouseClick_Indiv(int mouseX, int mouseY, int mseBtn) {
+        boolean value = mapManagers[currMapTypeIDX].hndlMouseClickInMaps(mouseX, mouseY, mseBtn, keyPressed);
         return value;
     }
     /**
@@ -810,7 +807,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
      * @param mouseY
      * @return
      */
-    public abstract myPointf getMouseClkPtInWorld(myPoint mseClckInWorld,int mouseX, int mouseY);
+    public abstract myPointf getMouseClkPtInWorld(int mouseX, int mouseY);
     /**
      * called by maps - finds distance to either passed point (in 2D) or passed ray cast (in 3D)
      * @param _pt0
@@ -823,18 +820,16 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
     
     private int updateCount = 0, maxUpdateForRefresh = 5;
     @Override
-    protected final boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
-        if(mapManagers[currMapTypeIDX].currMseModMap != null) {
-    
-            handleMapMseDrag(mouseX, mouseY, pmouseX, pmouseY, mouseClickIn3D, mseDragInWorld, mseBtn);
+    protected final boolean hndlMouseDrag_Indiv(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn) {
+        if(mapManagers[currMapTypeIDX].currMseModMap != null) {    
+            handleMapMseDrag(mouseX, mouseY, pmouseX, pmouseY, mseBtn);
             ++updateCount;
             //if((baseMapManager.CarrierSimRegTransIDX==currMorphTypeIDX) || (uiMgr.getPrivFlag(drawMap_RegCopyIDX))) {mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false);}
             if(updateCount == maxUpdateForRefresh) {                
                 if((mapManagers[currMapTypeIDX].checkCurrMorphUsesReg()) || (uiMgr.getPrivFlag(drawMap_RegCopyIDX))) {                    
                     //msgObj.dispInfoMessage("COTS_MorphWin::"+this.name, "hndlMouseDragIndiv", "Start find map diff : " +updateCount);
                     mapManagers[currMapTypeIDX].findDifferenceBetweenMaps(false, uiMgr.getPrivFlag(findBestOrRegDistIDX));
-                    //msgObj.dispInfoMessage("COTS_MorphWin::"+this.name, "hndlMouseDragIndiv", "Done find map diff");
-                    
+                    //msgObj.dispInfoMessage("COTS_MorphWin::"+this.name, "hndlMouseDragIndiv", "Done find map diff");                    
                 }
                 updateCount = 0;
             }
@@ -853,7 +848,7 @@ public abstract class COTS_MorphWin extends Base_DispWindow {
      * @param mseDragInWorld displacement vector of mouse, in plane of screen normal
      * @param mseBtn which button was pressed
      */
-    protected abstract void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn);
+    protected abstract void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn);
     @Override
     protected boolean handleMouseWheel_Indiv(int ticks, float mult) {        return false;    }
     @Override

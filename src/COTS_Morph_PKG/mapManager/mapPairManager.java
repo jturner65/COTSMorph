@@ -24,7 +24,6 @@ import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import COTS_Morph_PKG.utils.mapUpdFromUIData;
 import base_Math_Objects.interpolants.base.Base_Interpolant;
 import base_Math_Objects.interpolants.base.InterpolantTypes;
-import base_Math_Objects.vectorObjs.doubles.myPoint;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
@@ -41,9 +40,17 @@ import processing.core.PImage;
  *
  */
 public class mapPairManager {
-
+    /**
+     * 
+     */
     public static IGraphicsAppInterface ri;
-    public COTS_MorphWin win;    
+    /**
+     * 
+     */
+    public COTS_MorphWin win;
+    /**
+     * 
+     */
     public static GUI_AppManager AppMgr;
     /**
      * descriptive name of this map manager
@@ -914,14 +921,14 @@ public class mapPairManager {
      * @param keyPressed
      * @return
      */
-    public final boolean hndlMouseClickInMaps(int mouseX, int mouseY, myPoint mseClckInWorld, int mseBtn, char keyPressed) {
+    public final boolean hndlMouseClickInMaps(int mouseX, int mouseY, int mseBtn, char keyPressed) {
         //check every map for closest control corner to click location
         TreeMap<Float,Base_PolyMap>  mapDists = new TreeMap<Float,Base_PolyMap>();
         //msgObj.dispInfoMessage("COTS_Morph3DWin", "hndlMouseClickIndiv", "Mouse button pressed : " + mseBtn + " Key Pressed : " + keyPressed + " Key Coded : " + keyCodePressed);
         //get a point on ray through mouse location in world
         myPointf _rayOrigin = AppMgr.getMseLoc_f();
-        myVectorf _rayDir = AppMgr.getEyeToMouseRay_f();
-        myPointf mseLocInWorld_f = win.getMouseClkPtInWorld(mseClckInWorld,mouseX,mouseY);
+        myVectorf _rayDir = AppMgr.getEyeToMse_f();
+        myPointf mseLocInWorld_f = win.getMouseClkPtInWorld(mouseX,mouseY);
         
         for(int j=0;j<maps.length;++j) {    
             mapDists.put(maps[j].findClosestCntlPt(mseLocInWorld_f, _rayOrigin, _rayDir), maps[j]);
@@ -947,9 +954,9 @@ public class mapPairManager {
         boolean isScale = (key=='s') || (key=='S'), isRotation = (key=='r') || (key=='R'), isTranslation = (key=='t')||(key=='T');
         boolean performFinalIndiv = true;
         if(isScale || isRotation || isTranslation) {
-            if(isScale) {                                currMseModMap.dilateMap_MseDrag(defVec);            } 
-            else if(isRotation) {                        currMseModMap.rotateMapInPlane_MseDrag(mseClickIn3D_f, defVec);        }    //isRotation
-            else if(isTranslation) {                    currMseModMap.moveMapInPlane(defVec);}
+            if(isScale) {                           currMseModMap.dilateMap_MseDrag(defVec);            } 
+            else if(isRotation) {                   currMseModMap.rotateMapInPlane_MseDrag(mseClickIn3D_f, defVec);        }    //isRotation
+            else if(isTranslation) {                currMseModMap.moveMapInPlane(defVec);}
         } else {                            //cntl point movement            
             performFinalIndiv = currMseModMap.mseDragPickedCntlPt(defVec);
         }

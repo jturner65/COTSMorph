@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
@@ -155,7 +154,7 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
         return myVectorf._sub(vecToPt, myVectorf._mult(_rayDir, proj)).sqMagn;
     }
     @Override
-    public final myPointf getMouseClkPtInWorld(myPoint mseClckInWorld,int mouseX, int mouseY) {return new myPointf(mseClckInWorld.x, mseClckInWorld.y, mseClckInWorld.z);}
+    public final myPointf getMouseClkPtInWorld(int mouseX, int mouseY) {return AppMgr.getMseLoc_f();}
 
     /**
      * handle map-specific mouse drag interaction
@@ -168,11 +167,11 @@ public class COTS_Morph3DWin  extends COTS_MorphWin {
      * @param mseBtn which button was pressed
      */    
     @Override
-    protected final void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
-        myVectorf mseDragInWorld_f = new myVectorf(mseDragInWorld);
+    protected final void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn) {
+        myVectorf mseDragInWorld_f = AppMgr.getMseDragVec_f();
         myVectorf[] basisVecs = mapManagers[currMapTypeIDX].currMseModMap.basisVecs;
         myVectorf defVec = myVectorf._add(myVectorf._mult(basisVecs[1], mseDrag3DScl*mseDragInWorld_f._dot(basisVecs[1])), myVectorf._mult(basisVecs[2],mseDrag3DScl* mseDragInWorld_f._dot(basisVecs[2])));        
-        myPointf mseClickIn3D_f = new myPointf(mouseClickIn3D.x, mouseClickIn3D.y, mouseClickIn3D.z);
+        myPointf mseClickIn3D_f = AppMgr.getMseLoc_f();
         //mapManagers[currMapTypeIDX].currMseModMap.mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
         boolean changed = mapManagers[currMapTypeIDX].mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
         if(changed) {

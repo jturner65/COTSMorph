@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 
 import COTS_Morph_PKG.ui.base.COTS_MorphWin;
 import base_Math_Objects.vectorObjs.doubles.myPoint;
-import base_Math_Objects.vectorObjs.doubles.myVector;
 import base_Math_Objects.vectorObjs.floats.myPointf;
 import base_Math_Objects.vectorObjs.floats.myVectorf;
 import base_Render_Interface.IGraphicsAppInterface;
@@ -145,7 +144,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
     @Override
     public final Float findDistToPtOrRay(myPointf _pt0, myPointf _pt, myPointf _notUsedPt, myVectorf _notUsedVec) {        return myPointf._SqrDist(_pt0, _pt);    };
     @Override
-    public final myPointf getMouseClkPtInWorld(myPoint mseClckInWorld,int mouseX, int mouseY) {return new myPointf(mouseX,mouseY,0);}
+    public final myPointf getMouseClkPtInWorld(int mouseX, int mouseY) {return new myPointf(mouseX,mouseY,0);}
 
     /**
      * handle map-specific mouse drag interaction
@@ -159,8 +158,7 @@ public class COTS_Morph2DWin extends COTS_MorphWin {
      */
     
     @Override
-    protected final void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, myPoint mouseClickIn3D, myVector mseDragInWorld, int mseBtn) {
-        //myVectorf mseDragInWorld_f = new myVectorf(mseDragInWorld);
+    protected final void handleMapMseDrag(int mouseX, int mouseY, int pmouseX, int pmouseY, int mseBtn) {
         myVectorf defVec = new myVectorf(1.0f*(mouseX-pmouseX), 1.0f*(mouseY-pmouseY),0.0f);
         myPointf mseClickIn3D_f = new myPointf(mouseX, mouseY, 0);
         //mapManagers[currMapTypeIDX].currMseModMap.mseDragInMap(defVec, mseClickIn3D_f,keyPressed,keyCodePressed);
